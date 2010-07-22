@@ -71,42 +71,7 @@ public class DoComputeHandler extends AbstractHandler implements IHandler {
 		// used to compute the ASTNodes corresponding to the text selection
 		ITextSelection textSelection = (ITextSelection) selection;
 
-		/* 
-		 * used to find out what the classpath entry related to the IFile of the text selection. 
-		 * this is necessary for some algorithms that might use the Soot framework
-		 */
-		IProject project = textSelectionFile.getProject();
-		IJavaProject javaProject = null;
-
-		try {
-			if (textSelectionFile.getProject().isNatureEnabled("org.eclipse.jdt.core.javanature")) {
-				javaProject = JavaCore.create(project);
-			}
-		} catch (CoreException e) {
-			e.printStackTrace();
-			throw new ExecutionException("Not a Java Project");
-		}
-
-		/*
-		 * When using the Soot framework, we need the path to the package root in which the file is
-		 * located. There may be other ways to acomplish this. 
-		 * TODO look for optimal way of finding it.
-		 */
-		String pathToSourceClasspathEntry = null;
-
-		IClasspathEntry[] classPathEntries = null;
-		try {
-			classPathEntries = javaProject.getResolvedClasspath(true);
-			for (IClasspathEntry entry : classPathEntries) {
-				if (entry.getEntryKind() == IClasspathEntry.CPE_SOURCE) {
-					pathToSourceClasspathEntry = ResourcesPlugin.getWorkspace().getRoot().getFile(entry.getPath()).getLocation().toOSString();
-					break;
-				}
-			}
-		} catch (JavaModelException e) {
-			e.printStackTrace();
-			throw new ExecutionException("No source classpath identified");
-		}
+		
 		// this visitor will compute the ASTNodes that were selected by the user
 		SelectionNodesVisitor selectionNodesVisitor = new SelectionNodesVisitor(textSelection);
 		/*
@@ -135,7 +100,8 @@ public class DoComputeHandler extends AbstractHandler implements IHandler {
 		 * This is the only algorithm implementated so far.
 		 */
 		Declaration declarationAlgorithm = new Declaration(selectionNodes, jdtCompilationUnit, coloredSourceFile);
-		declarationAlgorithm.execute();
+//		declarationAlgorithm.execute();
+		declarationAlgorithm.executeWithSoot(textSelectionFile);
 		System.out.println(declarationAlgorithm.getMessage());
 
 		return null;
