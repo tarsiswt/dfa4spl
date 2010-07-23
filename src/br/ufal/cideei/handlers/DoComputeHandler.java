@@ -29,6 +29,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.handlers.HandlerUtil;
 
+import br.ufal.cideei.algorithms.assignment.Assignment;
 import br.ufal.cideei.algorithms.declaration.Declaration;
 import br.ufal.cideei.visitors.SelectionNodesVisitor;
 import de.ovgu.cide.features.source.ColoredSourceFile;
@@ -100,9 +101,18 @@ public class DoComputeHandler extends AbstractHandler implements IHandler {
 		 * This is the only algorithm implementated so far.
 		 */
 		Declaration declarationAlgorithm = new Declaration(selectionNodes, jdtCompilationUnit, coloredSourceFile);
-//		declarationAlgorithm.execute();
-		declarationAlgorithm.executeWithSoot(textSelectionFile);
+		declarationAlgorithm.execute();
+//		declarationAlgorithm.executeWithSoot(textSelectionFile);
+		System.out.println("--Declaration--Start");
 		System.out.println(declarationAlgorithm.getMessage());
+		System.out.println("--Declaration--End");
+		
+		Assignment assignmentAlgorithm = new Assignment(selectionNodes, jdtCompilationUnit, coloredSourceFile);
+//		assignmentAlgorithm.executeWithSoot(textSelectionFile);
+		assignmentAlgorithm.execute();
+		System.out.println("--Assignment--Start");
+		System.out.println(assignmentAlgorithm.getMessage());
+		System.out.println("--Assignment--End");
 
 		return null;
 	}

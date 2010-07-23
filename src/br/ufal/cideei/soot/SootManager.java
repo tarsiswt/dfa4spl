@@ -9,13 +9,15 @@ import soot.options.Options;
 
 public class SootManager {
 	public static void configure(String classpath){
+		PhaseOptions.v().setPhaseOption("jb.ls", "enabled:false");
+		PhaseOptions.v().setPhaseOption("jb.lp", "unsplit-original-locals:true");
+		
 		Options.v().set_keep_line_number(true);
 		Options.v().set_src_prec(Options.src_prec_java);
-		Options.v().setPhaseOption("jb", "use-original-names:true");
+		PhaseOptions.v().setPhaseOption("jb", "use-original-names:true");
 		Options.v().set_soot_classpath(classpath);
 		Options.v().set_prepend_classpath(true);
 		PhaseOptions.v().setPhaseOption("tag.ln", "on");
-
 	}
 	
 	public static void reset(){

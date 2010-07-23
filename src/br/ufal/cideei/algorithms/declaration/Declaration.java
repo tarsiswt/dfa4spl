@@ -40,6 +40,8 @@ import soot.toolkits.scalar.SimpleLocalDefs;
 import soot.toolkits.scalar.SimpleLocalUses;
 import soot.toolkits.scalar.UnitValueBoxPair;
 import soot.util.Chain;
+import br.ufal.cideei.algorithms.BaseSootAlgorithm;
+import br.ufal.cideei.algorithms.IAlgorithm;
 import br.ufal.cideei.soot.SootManager;
 import de.ovgu.cide.features.source.ColoredSourceFile;
 
@@ -58,7 +60,7 @@ import de.ovgu.cide.features.source.ColoredSourceFile;
  * @author Társis
  * 
  */
-public class Declaration {
+public class Declaration extends BaseSootAlgorithm {
 
 	/** Will be set at the end of the execute method. */
 	private String message = null;
@@ -165,45 +167,13 @@ public class Declaration {
 		if (nodes.isEmpty()) {
 			return;
 		}
+		
 		/*
 		 * used to find out what the classpath entry related to the IFile of the
 		 * text selection. this is necessary for some algorithms that might use
 		 * the Soot framework
 		 */
-		IProject project = textSelectionFile.getProject();
-		IJavaProject javaProject = null;
-
-		try {
-			if (textSelectionFile.getProject().isNatureEnabled("org.eclipse.jdt.core.javanature")) {
-				javaProject = JavaCore.create(project);
-			}
-		} catch (CoreException e) {
-			e.printStackTrace();
-			throw new ExecutionException("Not a Java Project");
-		}
-
-		/*
-		 * When using the Soot framework, we need the path to the package root
-		 * in which the file is located. There may be other ways to acomplish
-		 * this. TODO look for optimal way of finding it.
-		 */
-
-		String pathToSourceClasspathEntry = null;
-		String pathToSourceFile = ResourcesPlugin.getWorkspace().getRoot().getFile(textSelectionFile.getFullPath()).getLocation().toOSString();
-
-		IClasspathEntry[] classPathEntries = null;
-		try {
-			classPathEntries = javaProject.getResolvedClasspath(true);
-			for (IClasspathEntry entry : classPathEntries) {
-				if (entry.getEntryKind() == IClasspathEntry.CPE_SOURCE) {
-					pathToSourceClasspathEntry = ResourcesPlugin.getWorkspace().getRoot().getFile(entry.getPath()).getLocation().toOSString();
-					break;
-				}
-			}
-		} catch (JavaModelException e) {
-			e.printStackTrace();
-			throw new ExecutionException("No source classpath identified");
-		}
+		String pathToSourceClasspathEntry = this.getCorrespondentClasspath(textSelectionFile);
 
 		/*
 		 * To compute the method in which the selection was made we only take
@@ -211,89 +181,60 @@ public class Declaration {
 		 */
 		MethodDeclaration methodDeclaration = getParentMethod(nodes.iterator().next());
 
-		try {
-			String methodDeclarationName = methodDeclaration.getName().getIdentifier();
-			String declaringMethodClass = methodDeclaration.resolveBinding().getDeclaringClass().getQualifiedName();
+		/*
+		 * We need both the method name and it's declaring class in order to query
+		 * for information withing Soot.
+		 */
+		String methodDeclarationName = methodDeclaration.getName().getIdentifier();
+		String declaringMethodClass = methodDeclaration.resolveBinding().getDeclaringClass().getQualifiedName();
 
-			System.out.println(pathToSourceClasspathEntry);
-			SootManager.configure(pathToSourceClasspathEntry);
-			SootMethod sootMethod = SootManager.getMethod(declaringMethodClass, methodDeclarationName);
-			Body activeBody = sootMethod.retrieveActiveBody();
+		SootManager.configure(pathToSourceClasspathEntry);
+		SootMethod sootMethod = SootManager.getMethod(declaringMethodClass, methodDeclarationName);
+		Body activeBody = sootMethod.retrieveActiveBody();
 
-			UnitGraph unitGraph = new BriefUnitGraph(activeBody);
-			LocalDefs localDefs = new SimpleLocalDefs(unitGraph);
-			SimpleLocalUses localUses = new SimpleLocalUses(unitGraph,localDefs); 
+		/*
+		 * This is the core of the algorithm implementation with Soot.
+		 * We need to relate the ASTNodes that were computed earlier from text selection
+		 * to Units. To do that we used the lines from the source code.
+		 * 
+		 * Then for every Unit that was selected we need to find out what they do declare.
+		 * 
+		 * Now, knowing which Locals where declared on those units, we need to search in all the
+		 * Units in the method for uses of that declaration.
+		 * 
+		 * For every use found, we print the message.
+		 * 
+		 * This approach has several drawbacks compared to the other implementation:
+		 * * It requires a lot less code
+		 * * It is reasonably slower(TODO: needs some testing on this)
+		 * * The following code seems to capture the variable declarations that are temporary
+		 *   and were created by the compilation of the source.
+		 * * It does not take into account declarations like: String str;
+		 *   Probably something related to the underlying IR.
+		 *   
+		 * Thus, this implementation, as is, is not recommended for use in the tool.
+		 *   
+		 */
+		UnitGraph unitGraph = new BriefUnitGraph(activeBody);
+		LocalDefs localDefs = new SimpleLocalDefs(unitGraph);
+		SimpleLocalUses localUses = new SimpleLocalUses(unitGraph, localDefs);
 
-			Collection<Integer> lines = getLinesFromASTNodes(nodes, compilationUnit);
-			Collection<Unit> selectUnits = getUnitsFromLines(lines, activeBody);
-			
-			System.out.println("-----------------------");
-			UnitGraph unitGraph2 = new ExceptionalUnitGraph(activeBody);
-			for (Unit eachSelectedUnit : selectUnits) {
-				for (ValueBox vbox : eachSelectedUnit.getDefBoxes()){
-					Local localDefinition = (Local)vbox.getValue();
-					for (Unit eachUnitInBody : activeBody.getUnits()){
-						List usesInEachUnit = localUses.getUsesOf(eachUnitInBody);
-						for (Object unitValuePairObj : usesInEachUnit){
-							UnitValueBoxPair unitValuePair = (UnitValueBoxPair)unitValuePairObj;
-							if (((Local)(unitValuePair.getValueBox().getValue())).equivTo(localDefinition)){
-								System.out.println("Provides " + localDefinition.getName() + " to line " + getLineFromUnit(unitValuePair.getUnit()).toString());
-							}
+		Collection<Integer> lines = getLinesFromASTNodes(nodes, compilationUnit);
+		Collection<Unit> selectUnits = getUnitsFromLines(lines, activeBody);
+
+		UnitGraph unitGraph2 = new ExceptionalUnitGraph(activeBody);
+		for (Unit eachSelectedUnit : selectUnits) {
+			for (ValueBox vbox : eachSelectedUnit.getDefBoxes()) {
+				Local localDefinition = (Local) vbox.getValue();
+				for (Unit eachUnitInBody : activeBody.getUnits()) {
+					List usesInEachUnit = localUses.getUsesOf(eachUnitInBody);
+					for (Object unitValuePairObj : usesInEachUnit) {
+						UnitValueBoxPair unitValuePair = (UnitValueBoxPair) unitValuePairObj;
+						if (((Local) (unitValuePair.getValueBox().getValue())).equivTo(localDefinition)) {
+							System.out.println("Provides " + localDefinition.getName() + " to line " + getLineFromUnit(unitValuePair.getUnit()).toString());
 						}
 					}
 				}
-				
-			}
-		} catch (Exception ex) {
-			ex.printStackTrace();
-		}
-	}
-
-	private Collection<Integer> getLinesFromASTNodes(Collection<ASTNode> nodes, CompilationUnit compilationUnit) {
-		Set<Integer> lineSet = new HashSet<Integer>();
-		for (ASTNode node : nodes) {
-			lineSet.add(compilationUnit.getLineNumber(node.getStartPosition()));
-		}
-		return lineSet;
-	}
-	
-	private Integer getLineFromUnit(Unit unit){
-		if (unit.hasTag("SourceLnPosTag")) {
-			SourceLnPosTag lineTag = (SourceLnPosTag) unit.getTag("SourceLnPosTag");
-			return lineTag.startLn();
-		}
-		return null;
-	}
-
-	private Collection<Unit> getUnitsFromLines(Collection<Integer> lines, Body body) {
-		Set<Unit> unitSet = new HashSet<Unit>();
-		for (Integer line : lines) {
-			Chain<Unit> units = body.getUnits();
-			for (Unit unit : units) {
-				if (unit.hasTag("SourceLnPosTag")) {
-					SourceLnPosTag lineTag = (SourceLnPosTag) unit.getTag("SourceLnPosTag");
-					if (lineTag != null) {
-						System.out.println(line + ":" + lineTag.startLn() + ":" + unit.toString());
-						if (lineTag.startLn() == line.intValue()) {
-							unitSet.add(unit);
-						}
-					}
-				} else {
-					System.out.println(line + ":nl:" + unit.toString());
-				}
-			}
-		}
-		return unitSet;
-	}
-
-	private MethodDeclaration getParentMethod(ASTNode node) {
-		if (node == null) {
-			return null;
-		} else {
-			if (node.getNodeType() == ASTNode.METHOD_DECLARATION) {
-				return (MethodDeclaration) node;
-			} else {
-				return getParentMethod(node.getParent());
 			}
 		}
 	}
