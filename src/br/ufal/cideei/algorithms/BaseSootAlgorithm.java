@@ -22,7 +22,9 @@ import soot.Unit;
 import soot.tagkit.SourceLnPosTag;
 import soot.util.Chain;
 
-public abstract class BaseSootAlgorithm implements IAlgorithm {
+public abstract class BaseSootAlgorithm extends BaseAlgorithm {
+	
+	public abstract void executeWithSoot(IFile file) throws ExecutionException;
 
 	protected Collection<Integer> getLinesFromASTNodes(Collection<ASTNode> nodes, CompilationUnit compilationUnit) {
 		Set<Integer> lineSet = new HashSet<Integer>();
@@ -52,24 +54,10 @@ public abstract class BaseSootAlgorithm implements IAlgorithm {
 							unitSet.add(unit);
 						}
 					}
-				} else {
-					System.out.println(line + ":nl:" + unit.toString());
-				}
+				} 
 			}
 		}
 		return unitSet;
-	}
-
-	protected MethodDeclaration getParentMethod(ASTNode node) {
-		if (node == null) {
-			return null;
-		} else {
-			if (node.getNodeType() == ASTNode.METHOD_DECLARATION) {
-				return (MethodDeclaration) node;
-			} else {
-				return getParentMethod(node.getParent());
-			}
-		}
 	}
 	
 	protected String getCorrespondentClasspath(IFile file) throws ExecutionException{

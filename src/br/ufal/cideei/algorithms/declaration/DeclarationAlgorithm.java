@@ -47,7 +47,7 @@ import de.ovgu.cide.features.source.ColoredSourceFile;
 
 /**
  * 
- * This class perform the Declaration algorithms. It will check for uses of a
+ * This class perform the Declaration algorithm. It will check for uses of a
  * declared variable in a selection and will display the lines in which the
  * variable is referenced.
  * 
@@ -60,7 +60,7 @@ import de.ovgu.cide.features.source.ColoredSourceFile;
  * @author Társis
  * 
  */
-public class Declaration extends BaseSootAlgorithm {
+public class DeclarationAlgorithm extends BaseSootAlgorithm {
 
 	/** Will be set at the end of the execute method. */
 	private String message = null;
@@ -77,7 +77,7 @@ public class Declaration extends BaseSootAlgorithm {
 	/**
 	 * Disables default constructor
 	 */
-	private Declaration() {
+	private DeclarationAlgorithm() {
 	}
 
 	/**
@@ -90,7 +90,7 @@ public class Declaration extends BaseSootAlgorithm {
 	 * @param file
 	 *            the file
 	 */
-	public Declaration(Set<ASTNode> nodes, CompilationUnit compilationUnit, ColoredSourceFile file) {
+	public DeclarationAlgorithm(Set<ASTNode> nodes, CompilationUnit compilationUnit, ColoredSourceFile file) {
 		this.file = file;
 		this.nodes = nodes;
 		this.compilationUnit = compilationUnit;
