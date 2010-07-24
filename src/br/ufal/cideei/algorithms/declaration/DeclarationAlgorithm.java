@@ -1,6 +1,5 @@
 package br.ufal.cideei.algorithms.declaration;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -10,13 +9,6 @@ import java.util.Set;
 
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.jdt.core.IClasspathEntry;
-import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jdt.core.JavaCore;
-import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
@@ -26,22 +18,15 @@ import soot.Body;
 import soot.Local;
 import soot.SootMethod;
 import soot.Unit;
-import soot.UnitBox;
 import soot.ValueBox;
-import soot.jimple.Jimple;
-import soot.tagkit.LineNumberTag;
-import soot.tagkit.SourceLnPosTag;
 import soot.toolkits.graph.BriefUnitGraph;
 import soot.toolkits.graph.ExceptionalUnitGraph;
 import soot.toolkits.graph.UnitGraph;
 import soot.toolkits.scalar.LocalDefs;
-import soot.toolkits.scalar.LocalUses;
 import soot.toolkits.scalar.SimpleLocalDefs;
 import soot.toolkits.scalar.SimpleLocalUses;
 import soot.toolkits.scalar.UnitValueBoxPair;
-import soot.util.Chain;
 import br.ufal.cideei.algorithms.BaseSootAlgorithm;
-import br.ufal.cideei.algorithms.IAlgorithm;
 import br.ufal.cideei.soot.SootManager;
 import de.ovgu.cide.features.source.ColoredSourceFile;
 

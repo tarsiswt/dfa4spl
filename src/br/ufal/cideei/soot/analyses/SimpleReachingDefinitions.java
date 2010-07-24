@@ -4,16 +4,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
-import soot.Local;
 import soot.Unit;
-import soot.Value;
-import soot.ValueBox;
-import soot.jimple.FieldRef;
-import soot.jimple.internal.JimpleLocal;
 import soot.toolkits.graph.DirectedGraph;
-import soot.toolkits.scalar.ArraySparseSet;
 import soot.toolkits.scalar.FlowSet;
-import soot.toolkits.scalar.ForwardFlowAnalysis;
 
 public class SimpleReachingDefinitions 
 {

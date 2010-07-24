@@ -75,7 +75,7 @@ public abstract class MonotonicDataFlowFramework<E> {
 	 * @param stmt The {@link Statement}.
 	 * @return The in-set of the given {@link Statement}.
 	 */
-	Set<E> getInSet(Statement stmt) {
+	Set<E> getInSet(ASTNode stmt) {
 		assert stmt != null;
 		Set<E> inSet;
 		boolean first = true;

@@ -15,7 +15,6 @@ import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.CompilationUnit;
-import org.eclipse.jdt.core.dom.MethodDeclaration;
 
 import soot.Body;
 import soot.Unit;
@@ -85,7 +84,6 @@ public abstract class BaseSootAlgorithm extends BaseAlgorithm {
 		 */
 
 		String pathToSourceClasspathEntry = null;
-		String pathToSourceFile = ResourcesPlugin.getWorkspace().getRoot().getFile(file.getFullPath()).getLocation().toOSString();
 
 		IClasspathEntry[] classPathEntries = null;
 		try {

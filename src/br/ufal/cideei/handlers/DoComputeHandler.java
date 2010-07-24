@@ -7,26 +7,14 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IHandler;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.ICompilationUnit;
-import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
-import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.CompilationUnit;
-import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.dialogs.PopupDialog;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Rectangle;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 import br.ufal.cideei.algorithms.assignment.AssignmentAlgorithm;
@@ -50,7 +38,7 @@ public class DoComputeHandler extends AbstractHandler implements IHandler {
 	 * .ExecutionEvent)
 	 */
 	@Override
-	public Object execute(ExecutionEvent ee) throws ExecutionException {
+	public Object execute(ExecutionEvent event) throws ExecutionException {
 
 		/*
 		 * In order to perform analyses on the selected code, there are few
@@ -60,14 +48,13 @@ public class DoComputeHandler extends AbstractHandler implements IHandler {
 		 * selection - The method name which contains the text selection - The
 		 * ColoredSourceFile object of the text selection
 		 */
-		Shell shell = HandlerUtil.getActiveShellChecked(ee);
-		ISelection selection = HandlerUtil.getCurrentSelectionChecked(ee);
+		ISelection selection = HandlerUtil.getCurrentSelectionChecked(event);
 
 		if (!(selection instanceof ITextSelection))
 			throw new ExecutionException("Not a text selection");
 
 		// used to find out the project name and later to create a compilation unit from it
-		IFile textSelectionFile = (IFile) HandlerUtil.getActiveEditorChecked(ee).getEditorInput().getAdapter(IFile.class);
+		IFile textSelectionFile = (IFile) HandlerUtil.getActiveEditorChecked(event).getEditorInput().getAdapter(IFile.class);
 
 		// used to compute the ASTNodes corresponding to the text selection
 		ITextSelection textSelection = (ITextSelection) selection;

@@ -14,7 +14,7 @@ public class ReachingDefinition {
 		analysis.computeFixPoint();
 	}
 	
-	public Set<Pair<String,ASTNode>> getReachingDefsAt(Statement stmt){
+	public Set<Pair<String,ASTNode>> getReachingDefsAt(ASTNode stmt){
 		return analysis.getInSet(stmt);
 	}
 }

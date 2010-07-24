@@ -5,11 +5,8 @@ import java.util.Set;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
-import org.eclipse.jdt.core.dom.VariableDeclarationStatement;
 
 import br.ufal.cideei.algorithms.BaseAlgorithm;
-import br.ufal.cideei.algorithms.BaseSootAlgorithm;
-import br.ufal.cideei.algorithms.IAlgorithm;
 import de.ovgu.cide.features.source.ColoredSourceFile;
 import dk.itu.smartemf.ofbiz.analysis.ReachingDefinition;
 
@@ -17,7 +14,6 @@ import dk.itu.smartemf.ofbiz.analysis.ReachingDefinition;
  * 
  * This class perform the Assignment algorithm. It will check for uses of a
  * declared variable in a selection and compute nodes the assignment reaches.
- * 
  * 
  * To run the algorithm use the {@link #execute()} method to perform the
  * operation and then call {@link #getMessage()} to retrive the output message.
@@ -81,25 +77,31 @@ public class AssignmentAlgorithm extends BaseAlgorithm {
 		 * "inverted" Reaching Definition. That is, it will visit the subtree of
 		 * an ASTNode (in this case the method) and compute which nodes are
 		 * reached by a given reaching definition.
+		 * 
+		 * The parameter are null ass we will reuse this object in the loop and
+		 * reset its state before visiting nodes again.
 		 */
-		ReachedByDefinitionVisitor reachedByDefinitionVisitor = new ReachedByDefinitionVisitor(null, null);
+		ReachedByDefinitionVisitor reachedByDefinitionVisitor2 = new ReachedByDefinitionVisitor(null, null);
 
 		/*
 		 * Now for the main loop, we'll simply look for the reached definitions
 		 * of every selected definition, and then store it in the message.
 		 */
-		StringBuilder stringBuilder = new StringBuilder();
-		for (ASTNode node : nodes) {
-			if (node instanceof VariableDeclarationStatement) {
-				VariableDeclarationStatement declarationNode = (VariableDeclarationStatement) node;
-				reachedByDefinitionVisitor.reset(reachingDefinition, declarationNode);
-				methodDeclaration.accept(reachedByDefinitionVisitor);
-				Set<ASTNode> reachedNodes = reachedByDefinitionVisitor.getReachedNodes();
+
+		StringBuilder stringBuilder = new StringBuilder();		
+		try {
+			for (ASTNode node : nodes) {
+				reachedByDefinitionVisitor2.reset(reachingDefinition, node);
+				methodDeclaration.accept(reachedByDefinitionVisitor2);
+				Set<ASTNode> reachedNodes = reachedByDefinitionVisitor2.getReachedNodes();
 				for (ASTNode reachedNode : reachedNodes) {
-					stringBuilder.append("Provides " + declarationNode + " to line " + compilationUnit.getLineNumber(reachedNode.getStartPosition()) + "\n");
+					stringBuilder.append("Provides " + node + " to " + reachedNode +" (line " + compilationUnit.getLineNumber(reachedNode.getStartPosition()) + ")\n");
 				}
 			}
+		} catch (Exception ex) {
+			ex.printStackTrace();
 		}
+
 		this.message = stringBuilder.toString();
 	}
 
