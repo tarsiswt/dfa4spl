@@ -15,10 +15,15 @@ import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 import br.ufal.cideei.algorithms.assignment.AssignmentAlgorithm;
 import br.ufal.cideei.algorithms.declaration.DeclarationAlgorithm;
+import br.ufal.cideei.algorithms.unique.UniqueUsesAlgorithm;
+import br.ufal.cideei.features.CIDEFeatureExtracter;
+import br.ufal.cideei.features.IFeatureExtracter;
+import br.ufal.cideei.ui.InfoPopup;
 import br.ufal.cideei.visitors.SelectionNodesVisitor;
 import de.ovgu.cide.features.source.ColoredSourceFile;
 
@@ -49,22 +54,25 @@ public class DoComputeHandler extends AbstractHandler implements IHandler {
 		 * ColoredSourceFile object of the text selection
 		 */
 		ISelection selection = HandlerUtil.getCurrentSelectionChecked(event);
-
+		Shell shell = HandlerUtil.getActiveShellChecked(event);
+		
 		if (!(selection instanceof ITextSelection))
 			throw new ExecutionException("Not a text selection");
 
-		// used to find out the project name and later to create a compilation unit from it
+		/*
+		 * used to find out the project name and later to create a compilation
+		 * unit from it
+		 */
 		IFile textSelectionFile = (IFile) HandlerUtil.getActiveEditorChecked(event).getEditorInput().getAdapter(IFile.class);
 
 		// used to compute the ASTNodes corresponding to the text selection
 		ITextSelection textSelection = (ITextSelection) selection;
 
-		
 		// this visitor will compute the ASTNodes that were selected by the user
 		SelectionNodesVisitor selectionNodesVisitor = new SelectionNodesVisitor(textSelection);
 		/*
-		 * Now we need to create a compilation unit for the file, and then parse it to
-		 * generate an AST in which we will perform our analyses.
+		 * Now we need to create a compilation unit for the file, and then parse
+		 * it to generate an AST in which we will perform our analyses.
 		 */
 		ICompilationUnit compilationUnit = null;
 		CompilationUnit jdtCompilationUnit = null;
@@ -77,29 +85,40 @@ public class DoComputeHandler extends AbstractHandler implements IHandler {
 		jdtCompilationUnit.accept(selectionNodesVisitor);
 
 		Set<ASTNode> selectionNodes = selectionNodesVisitor.getNodes();
-		
+
 		/*
-		 *  Not yet used. We'll need to query for the colors(features) associated with the ASTNodes we are analysing.
-		 *  For now, we are only checking for the lice number. 
+		 * Not yet used. We'll need to query for the colors(features) associated
+		 * with the ASTNodes we are analysing. For now, we are only checking for
+		 * the lice number.
 		 */
 		ColoredSourceFile coloredSourceFile = null;
-		
+
 		/*
-		 * This is the only algorithm implementated so far.
+		 * Some algorithms might need to compare some features related to
+		 * ASTNodes. This is the only current implementation and it provides a
+		 * way to query for features from CIDE.
 		 */
-		DeclarationAlgorithm declarationAlgorithm = new DeclarationAlgorithm(selectionNodes, jdtCompilationUnit, coloredSourceFile);
+		IFeatureExtracter extracter = new CIDEFeatureExtracter(textSelectionFile);
+
+		DeclarationAlgorithm declarationAlgorithm = new DeclarationAlgorithm(selectionNodes, jdtCompilationUnit, coloredSourceFile, extracter);
 		declarationAlgorithm.execute();
-//		declarationAlgorithm.executeWithSoot(textSelectionFile);
 		System.out.println("--Declaration--Start");
 		System.out.println(declarationAlgorithm.getMessage());
+		InfoPopup.pop(shell, declarationAlgorithm.getMessage());
+		declarationAlgorithm.getMessage();
 		System.out.println("--Declaration--End");
-		
+
 		AssignmentAlgorithm assignmentAlgorithm = new AssignmentAlgorithm(selectionNodes, jdtCompilationUnit, coloredSourceFile);
-//		assignmentAlgorithm.executeWithSoot(textSelectionFile);
 		assignmentAlgorithm.execute();
 		System.out.println("--Assignment--Start");
 		System.out.println(assignmentAlgorithm.getMessage());
 		System.out.println("--Assignment--End");
+
+		UniqueUsesAlgorithm uniqueAlgorithm = new UniqueUsesAlgorithm(selectionNodes, jdtCompilationUnit, coloredSourceFile);
+		uniqueAlgorithm.execute();
+		System.out.println("--Unique--Start");
+		System.out.println(uniqueAlgorithm.getMessage());
+		System.out.println("--Unique--End");
 
 		return null;
 	}

@@ -12,7 +12,7 @@
             categoryId="br.ufal.cideei.categories.ComputeEI"
             description="Computes emergent interface"
             id="br.ufal.cideei.commands.DoCompute"
-            name="Compute EI(!)">
+            name="Compute EI">
       </command>
    </extension>
    <extension

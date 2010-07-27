@@ -27,6 +27,7 @@ import soot.toolkits.scalar.SimpleLocalDefs;
 import soot.toolkits.scalar.SimpleLocalUses;
 import soot.toolkits.scalar.UnitValueBoxPair;
 import br.ufal.cideei.algorithms.BaseSootAlgorithm;
+import br.ufal.cideei.features.IFeatureExtracter;
 import br.ufal.cideei.soot.SootManager;
 import de.ovgu.cide.features.source.ColoredSourceFile;
 
@@ -59,6 +60,8 @@ public class DeclarationAlgorithm extends BaseSootAlgorithm {
 	/** The compilation unit which we retrieve the lines from the ASTNodes. */
 	private CompilationUnit compilationUnit = null;
 
+	private IFeatureExtracter extracter;
+
 	/**
 	 * Disables default constructor
 	 */
@@ -79,6 +82,13 @@ public class DeclarationAlgorithm extends BaseSootAlgorithm {
 		this.file = file;
 		this.nodes = nodes;
 		this.compilationUnit = compilationUnit;
+	}
+
+	public DeclarationAlgorithm(Set<ASTNode> nodes, CompilationUnit compilationUnit, ColoredSourceFile file, IFeatureExtracter extracter) {
+		this.file = file;
+		this.nodes = nodes;
+		this.compilationUnit = compilationUnit;
+		this.extracter = extracter;
 	}
 
 	/**
@@ -135,24 +145,45 @@ public class DeclarationAlgorithm extends BaseSootAlgorithm {
 
 		/*
 		 * Now for each declaration we found, we get every corresponding use (in
-		 * which line)
+		 * which feature)
 		 */
 		for (SimpleName simpleName : simpleNameDeclarations) {
 			Set<SimpleName> simpleNameReferences = declarationMap.get(simpleName);
 			for (SimpleName simpleNameReference : simpleNameReferences) {
-				stringBuilder.append("provides " + simpleName.getIdentifier() + " to line "
-						+ compilationUnit.getLineNumber(simpleNameReference.getStartPosition()) + "\n");
+				Set<String> simpleNameFeatures = extracter.getFeatures(simpleName);
+//				System.out.println(compilationUnit.getLineNumber(simpleName.getStartPosition())+ ":"+simpleName+":"+simpleNameFeatures);
+				Set<String> simpleNameReferenceFeatures = extracter.getFeatures(simpleNameReference);
+
+				simpleNameReferenceFeatures.removeAll(simpleNameFeatures);
+//				if (simpleNameReferenceFeatures.size() > 0) {
+					stringBuilder.append("provides " + simpleName.getIdentifier() + " to " + buildProvidedFeaturesString(simpleNameReferenceFeatures) + " (line "
+							+ compilationUnit.getLineNumber(simpleNameReference.getStartPosition()) + ")\n");
+//				}
 			}
 		}
 
 		this.message = stringBuilder.toString();
 	}
 
+	public String buildProvidedFeaturesString(Set<String> features) {
+		if (features.size() >= 1) {
+			StringBuilder builder = new StringBuilder(features.iterator().next());
+			for (String feature : features) {
+				builder.append(", " + feature);
+			}
+			return builder.toString();
+		} else if (features.size() == 1) {
+			return features.iterator().next();
+		} else {
+			return "";
+		}
+	}
+
 	public void executeWithSoot(IFile textSelectionFile) throws ExecutionException {
 		if (nodes.isEmpty()) {
 			return;
 		}
-		
+
 		/*
 		 * used to find out what the classpath entry related to the IFile of the
 		 * text selection. this is necessary for some algorithms that might use
@@ -167,8 +198,8 @@ public class DeclarationAlgorithm extends BaseSootAlgorithm {
 		MethodDeclaration methodDeclaration = getParentMethod(nodes.iterator().next());
 
 		/*
-		 * We need both the method name and it's declaring class in order to query
-		 * for information withing Soot.
+		 * We need both the method name and it's declaring class in order to
+		 * query for information withing Soot.
 		 */
 		String methodDeclarationName = methodDeclaration.getName().getIdentifier();
 		String declaringMethodClass = methodDeclaration.resolveBinding().getDeclaringClass().getQualifiedName();
@@ -178,27 +209,28 @@ public class DeclarationAlgorithm extends BaseSootAlgorithm {
 		Body activeBody = sootMethod.retrieveActiveBody();
 
 		/*
-		 * This is the core of the algorithm implementation with Soot.
-		 * We need to relate the ASTNodes that were computed earlier from text selection
+		 * This is the core of the algorithm implementation with Soot. We need
+		 * to relate the ASTNodes that were computed earlier from text selection
 		 * to Units. To do that we used the lines from the source code.
 		 * 
-		 * Then for every Unit that was selected we need to find out what they do declare.
+		 * Then for every Unit that was selected we need to find out what they
+		 * do declare.
 		 * 
-		 * Now, knowing which Locals where declared on those units, we need to search in all the
-		 * Units in the method for uses of that declaration.
+		 * Now, knowing which Locals where declared on those units, we need to
+		 * search in all the Units in the method for uses of that declaration.
 		 * 
 		 * For every use found, we print the message.
 		 * 
-		 * This approach has several drawbacks compared to the other implementation:
-		 * * It requires a lot less code
-		 * * It is reasonably slower(TODO: needs some testing on this)
-		 * * The following code seems to capture the variable declarations that are temporary
-		 *   and were created by the compilation of the source.
-		 * * It does not take into account declarations like: String str;
-		 *   Probably something related to the underlying IR.
-		 *   
-		 * Thus, this implementation, as is, is not recommended for use in the tool.
-		 *   
+		 * This approach has several drawbacks compared to the other
+		 * implementation: * It requires a lot less code * It is reasonably
+		 * slower(TODO: needs some testing on this) * The following code seems
+		 * to capture the variable declarations that are temporary and were
+		 * created by the compilation of the source. * It does not take into
+		 * account declarations like: String str; Probably something related to
+		 * the underlying IR.
+		 * 
+		 * Thus, this implementation, as is, is not recommended for use in the
+		 * tool.
 		 */
 		UnitGraph unitGraph = new BriefUnitGraph(activeBody);
 		LocalDefs localDefs = new SimpleLocalDefs(unitGraph);
