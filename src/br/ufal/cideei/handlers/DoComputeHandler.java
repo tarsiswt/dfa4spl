@@ -104,12 +104,12 @@ public class DoComputeHandler extends AbstractHandler implements IHandler {
 		declarationAlgorithm.execute();
 		System.out.println("--Declaration--Start");
 		System.out.println(declarationAlgorithm.getMessage());
-		InfoPopup.pop(shell, declarationAlgorithm.getMessage());
+//		InfoPopup.pop(shell, declarationAlgorithm.getMessage());
 		declarationAlgorithm.getMessage();
 		System.out.println("--Declaration--End");
 
 		AssignmentAlgorithm assignmentAlgorithm = new AssignmentAlgorithm(selectionNodes, jdtCompilationUnit, coloredSourceFile);
-		assignmentAlgorithm.execute();
+		assignmentAlgorithm.sootExecute(textSelectionFile);
 		System.out.println("--Assignment--Start");
 		System.out.println(assignmentAlgorithm.getMessage());
 		System.out.println("--Assignment--End");

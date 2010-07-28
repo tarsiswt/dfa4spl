@@ -15,15 +15,28 @@ import de.ovgu.cide.features.IFeatureModel;
 import de.ovgu.cide.features.source.ColoredSourceFile;
 import de.ovgu.cide.language.jdt.ASTBridge;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class CIDEFeatureExtracter.
+ */
 public class CIDEFeatureExtracter implements IFeatureExtracter{
 	
+	/** The file. */
 	private IFile file;
 		
+	/**
+	 * Instantiates a new cIDE feature extracter.
+	 *
+	 * @param file the file
+	 */
 	public CIDEFeatureExtracter(IFile file){
 		this.file = file;
 	}
 	
 	
+	/* (non-Javadoc)
+	 * @see br.ufal.cideei.features.IFeatureExtracter#getFeatures(org.eclipse.jdt.core.dom.ASTNode)
+	 */
 	@Override
 	public Set<String> getFeatures(ASTNode node){
 		ColoredSourceFile coloredFile;
@@ -33,7 +46,6 @@ public class CIDEFeatureExtracter implements IFeatureExtracter{
 			e.printStackTrace();
 			return new HashSet<String>();
 		}
-		System.out.println(coloredFile.getColorManager().getAllUsedColors());
 		IASTNode iASTNode = ASTBridge.bridge(node);
 		Set<IFeature> cideFeatureSet = coloredFile.getColorManager().getColors(iASTNode);
 		Set<String> stringFeatureSet = new HashSet<String>(cideFeatureSet.size());
