@@ -9,8 +9,8 @@ import soot.options.Options;
 
 public class SootManager {
 	public static void configure(String classpath){
-		PhaseOptions.v().setPhaseOption("jb.ls", "enabled:false");
-		PhaseOptions.v().setPhaseOption("jb.lp", "unsplit-original-locals:true");
+//		PhaseOptions.v().setPhaseOption("jb.ls", "enabled:false");
+//		PhaseOptions.v().setPhaseOption("jb.lp", "unsplit-original-locals:true");
 		
 		Options.v().set_keep_line_number(true);
 		Options.v().set_src_prec(Options.src_prec_java);

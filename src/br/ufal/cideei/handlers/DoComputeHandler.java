@@ -19,6 +19,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 import br.ufal.cideei.algorithms.assignment.AssignmentAlgorithm;
+import br.ufal.cideei.algorithms.coa.ChainOfAssignmentAlgorithm;
 import br.ufal.cideei.algorithms.declaration.DeclarationAlgorithm;
 import br.ufal.cideei.algorithms.unique.UniqueUsesAlgorithm;
 import br.ufal.cideei.features.CIDEFeatureExtracter;
@@ -55,7 +56,7 @@ public class DoComputeHandler extends AbstractHandler implements IHandler {
 		 */
 		ISelection selection = HandlerUtil.getCurrentSelectionChecked(event);
 		Shell shell = HandlerUtil.getActiveShellChecked(event);
-		
+
 		if (!(selection instanceof ITextSelection))
 			throw new ExecutionException("Not a text selection");
 
@@ -104,7 +105,7 @@ public class DoComputeHandler extends AbstractHandler implements IHandler {
 		declarationAlgorithm.execute();
 		System.out.println("--Declaration--Start");
 		System.out.println(declarationAlgorithm.getMessage());
-//		InfoPopup.pop(shell, declarationAlgorithm.getMessage());
+		// InfoPopup.pop(shell, declarationAlgorithm.getMessage());
 		declarationAlgorithm.getMessage();
 		System.out.println("--Declaration--End");
 
@@ -119,6 +120,16 @@ public class DoComputeHandler extends AbstractHandler implements IHandler {
 		System.out.println("--Unique--Start");
 		System.out.println(uniqueAlgorithm.getMessage());
 		System.out.println("--Unique--End");
+
+		try {
+			ChainOfAssignmentAlgorithm chainOfAssignmentAlgorithm = new ChainOfAssignmentAlgorithm(selectionNodes, jdtCompilationUnit, coloredSourceFile);
+			chainOfAssignmentAlgorithm.sootExecute(textSelectionFile);
+			System.out.println("--Chain--Start");
+			System.out.println(chainOfAssignmentAlgorithm.getMessage());
+			System.out.println("--Chain--End");
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
 
 		return null;
 	}

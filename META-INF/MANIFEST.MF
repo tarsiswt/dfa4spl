@@ -18,4 +18,4 @@ Import-Package: cide.gast,
  org.eclipse.jdt.core.dom
 Bundle-ClassPath: .,
  lib/soot-2.4.0.jar,
- lib/smartemf.ofbiz.analysis.jar
+ lib/jgrapht-jdk1.6.jar

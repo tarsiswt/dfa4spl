@@ -13,8 +13,10 @@ import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 
 import soot.Body;
+import soot.Local;
 import soot.SootMethod;
 import soot.Unit;
+import soot.Value;
 import soot.ValueBox;
 import soot.toolkits.graph.BriefUnitGraph;
 import soot.toolkits.graph.ExceptionalUnitGraph;
@@ -178,15 +180,16 @@ public class AssignmentAlgorithm extends BaseAlgorithm {
 			for (Object unitBoxPairObj : simpleLocalUses.getUsesOf(eachUnit)) {
 				UnitValueBoxPair unitBoxPair = (UnitValueBoxPair) unitBoxPairObj;
 				ValueBox valueBox = unitBoxPair.getValueBox();
-				String variableString = valueBox.getValue().toString();
+				Value valueFromBox = valueBox.getValue();
+				String variableString = valueFromBox.toString();
 				/*
 				 * TODO: Is there a better way to check if a Value has its name
 				 * created by the Jimple IR or if it is the original name?
 				 */
-				if (variableString.contains("$")) {
+				if (variableString.contains("$") || (!(valueFromBox instanceof Local))) {
 					continue;
 				}
-
+				
 				if (!variableLineMap.containsKey(variableString)) {
 					variableLineMap.put(variableString, new HashSet<Integer>());
 					variableLineMap.get(variableString).add(getLineFromUnit(unitBoxPair.getUnit()));
