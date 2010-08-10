@@ -27,6 +27,7 @@ import soot.toolkits.scalar.UnitValueBoxPair;
 
 import br.ufal.cideei.algorithms.BaseAlgorithm;
 import br.ufal.cideei.soot.SootManager;
+import br.ufal.cideei.util.MethodDeclarationSootMethodBridge;
 import de.ovgu.cide.features.source.ColoredSourceFile;
 import dk.itu.smartemf.ofbiz.analysis.ReachingDefinition;
 
@@ -147,9 +148,9 @@ public class AssignmentAlgorithm extends BaseAlgorithm {
 		SootManager.configure(this.getCorrespondentClasspath(textSelectionFile));
 
 		MethodDeclaration methodDeclaration = getParentMethod(nodes.iterator().next());
-		String methodDeclarationName = methodDeclaration.getName().getIdentifier();
 		String declaringMethodClass = methodDeclaration.resolveBinding().getDeclaringClass().getQualifiedName();
-		SootMethod sootMethod = SootManager.getMethod(declaringMethodClass, methodDeclarationName);
+		MethodDeclarationSootMethodBridge mdsm = new MethodDeclarationSootMethodBridge(methodDeclaration);
+		SootMethod sootMethod = SootManager.getMethodBySignature(declaringMethodClass, mdsm.getSootMethodSubSignature());
 
 		Body body = sootMethod.retrieveActiveBody();
 		ExceptionalUnitGraph graph = new ExceptionalUnitGraph(body);

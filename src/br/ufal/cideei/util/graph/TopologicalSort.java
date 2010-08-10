@@ -1,7 +1,7 @@
 /*
  * 
  */
-package br.ufal.cideei.util;
+package br.ufal.cideei.util.graph;
 
 import java.util.ArrayList;
 import java.util.List;

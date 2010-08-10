@@ -1,4 +1,4 @@
-package br.ufal.cideei.util;
+package br.ufal.cideei.util.graph;
 
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.jgrapht.ext.StringNameProvider;
@@ -16,7 +16,7 @@ import soot.tagkit.SourceLnPosTag;
  * @param <V>
  *            the value type
  */
-public class VertexNameFilterProvider<V extends Unit> implements VertexNameProvider<V> {
+public class VertexLineNameProvider<V extends Unit> implements VertexNameProvider<V> {
 
 	/** The compilation unit. */
 	private CompilationUnit compilationUnit;
@@ -27,14 +27,14 @@ public class VertexNameFilterProvider<V extends Unit> implements VertexNameProvi
 	 * @param compilationUnit
 	 *            the compilation unit
 	 */
-	public VertexNameFilterProvider(CompilationUnit compilationUnit) {
+	public VertexLineNameProvider(CompilationUnit compilationUnit) {
 		this.compilationUnit = compilationUnit;
 	}
 
 	/**
 	 * Instantiates a new vertex name filter provider.
 	 */
-	private VertexNameFilterProvider() {
+	private VertexLineNameProvider() {
 		super();
 	}
 
@@ -47,7 +47,7 @@ public class VertexNameFilterProvider<V extends Unit> implements VertexNameProvi
 	public String getVertexName(V vertex) {
 		if (vertex.hasTag("SourceLnPosTag")) {
 			SourceLnPosTag tag = (SourceLnPosTag) vertex.getTag("SourceLnPosTag");
-			return "\"(" + tag.startLn() + ")" + vertex.toString().replace("\"", "'") + "\"";
+			return tag.startLn()+"";
 		}
 		return "\"" + vertex.toString().replace("\"", "'") + "\"";
 	}

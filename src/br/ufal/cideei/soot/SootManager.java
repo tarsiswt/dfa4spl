@@ -29,19 +29,25 @@ public class SootManager {
 	}
 	
 	public static SootClass loadAndSupport(String className){
-		SootClass sootClass = Scene.v().loadClassAndSupport("br.ufal.cidex.Main");
+		SootClass sootClass = Scene.v().loadClassAndSupport(className);
 		sootClass.setApplicationClass();	
 		Scene.v().loadNecessaryClasses();
 		return sootClass;
 	}
 	
-	public static SootMethod getMethod(String className, String methodIdentifier){
-		if (Scene.v().containsClass(className)){
-			return Scene.v().getSootClass(className).getMethodByName(methodIdentifier);
-		} else {
+	public static SootMethod getMethodByName(String className, String methodIdentifier){
+		if (!Scene.v().containsClass(className)){
 			loadAndSupport(className);
-			return Scene.v().getSootClass(className).getMethodByName(methodIdentifier);
 		}
+		return Scene.v().getSootClass(className).getMethodByName(methodIdentifier);
+	}
+	
+	public static SootMethod getMethodBySignature(String className,String signature){
+		if (!Scene.v().containsClass(className)){
+			loadAndSupport(className);
+		}
+//		System.out.println(Scene.v().getSootClass(className).getMethods());
+		return Scene.v().getSootClass(className).getMethod(signature);
 	}
 
 }

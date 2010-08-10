@@ -3,11 +3,16 @@ package br.ufal.cideei.algorithms.coa;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedSet;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -15,7 +20,10 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.CompilationUnit;
+import org.eclipse.jdt.core.dom.IMethodBinding;
+import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
+import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
 import org.jgrapht.DirectedGraph;
 import org.jgrapht.GraphPath;
 import org.jgrapht.alg.KShortestPaths;
@@ -35,6 +43,8 @@ import soot.SootMethod;
 import soot.Unit;
 import soot.Value;
 import soot.ValueBox;
+import soot.jimple.Stmt;
+import soot.jimple.toolkits.thread.mhp.MethodExtentBuilder;
 import soot.toolkits.graph.ExceptionalUnitGraph;
 import soot.toolkits.scalar.LocalUses;
 import soot.toolkits.scalar.SimpleLocalDefs;
@@ -42,8 +52,10 @@ import soot.toolkits.scalar.SimpleLocalUses;
 import soot.toolkits.scalar.UnitValueBoxPair;
 import br.ufal.cideei.algorithms.BaseAlgorithm;
 import br.ufal.cideei.soot.SootManager;
-import br.ufal.cideei.util.VertexNameFilterProvider;
-import br.ufal.cideei.util.WeighEdgeNameProvider;
+import br.ufal.cideei.util.MethodDeclarationSootMethodBridge;
+import br.ufal.cideei.util.graph.VertexLineNameProvider;
+import br.ufal.cideei.util.graph.VertexNameFilterProvider;
+import br.ufal.cideei.util.graph.WeighEdgeNameProvider;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -114,11 +126,10 @@ public class ChainOfAssignmentAlgorithm extends BaseAlgorithm {
 		 */
 		SootManager.reset();
 		SootManager.configure(this.getCorrespondentClasspath(textSelectionFile));
-
 		MethodDeclaration methodDeclaration = getParentMethod(nodes.iterator().next());
-		String methodDeclarationName = methodDeclaration.getName().getIdentifier();
 		String declaringMethodClass = methodDeclaration.resolveBinding().getDeclaringClass().getQualifiedName();
-		SootMethod sootMethod = SootManager.getMethod(declaringMethodClass, methodDeclarationName);
+		MethodDeclarationSootMethodBridge mdsm = new MethodDeclarationSootMethodBridge(methodDeclaration);
+		SootMethod sootMethod = SootManager.getMethodBySignature(declaringMethodClass, mdsm.getSootMethodSubSignature());
 
 		Body body = sootMethod.retrieveActiveBody();
 		ExceptionalUnitGraph graph = new ExceptionalUnitGraph(body);
@@ -188,7 +199,18 @@ public class ChainOfAssignmentAlgorithm extends BaseAlgorithm {
 
 				List<GraphPath<Unit, DefaultWeightedEdge>> paths = shortestPaths.getPaths(nextUnitInGraph);
 				if (paths != null) {
-					GraphPath<Unit, DefaultWeightedEdge> graphPath = paths.get(paths.size() - 1);
+//					GraphPath<Unit, DefaultWeightedEdge> graphPath = paths.get(paths.size() - 1);
+					GraphPath<Unit, DefaultWeightedEdge> graphPath = paths.get(0);
+
+					/*
+					 * Since every edge on the graph have weight 1, we`ll ignore
+					 * paths that have a total weight of 1, that is, those
+					 * graphs with size equals to 1 or less.
+					 */
+					if (graphPath.getWeight() <= 1) {
+						continue;
+					}
+
 					if (!unitChainsToMap.containsKey(eachUnit)) {
 						unitChainsToMap.put(eachUnit, new HashSet<Integer>());
 					}
@@ -208,6 +230,7 @@ public class ChainOfAssignmentAlgorithm extends BaseAlgorithm {
 			Unit entryUnit = entry.getKey();
 			Integer entryUnitLine = this.getLineFromUnit(entryUnit);
 			Set<Integer> entryUnitLines = entry.getValue();
+
 			for (Integer line : entryUnitLines) {
 				stringBuilder.append("Line " + entryUnitLine + " chains to " + line + "\n");
 			}
@@ -218,18 +241,31 @@ public class ChainOfAssignmentAlgorithm extends BaseAlgorithm {
 		 * For debug only: this will export the generated graph as a .DOT, that
 		 * aids in the visualisation of the generated graph.
 		 * 
-		 * The .DOT will be saved on the user home and will be named wat.dot
+		 * The .DOT will be saved on the user home and will be named comp.dot
+		 * 
+		 * Additionally, another .DOT file will be created from the same graph,
+		 * but in a simplified manner. Nodes will be the lines from source
+		 * codes, and no weight on the edges
 		 * 
 		 * TODO: treat exceptions correctly
 		 */
 		String userHomeDir = System.getProperty("user.home");
-		DOTExporter<Unit, DefaultWeightedEdge> exporter = new DOTExporter<Unit, DefaultWeightedEdge>(new VertexNameFilterProvider<Unit>(this.compilationUnit),
-				null, new WeighEdgeNameProvider<DefaultWeightedEdge>(chainGraph));
 
 		try {
-			FileWriter fileWriter = new FileWriter(new File(userHomeDir + File.separator + "wat.dot"));
-			exporter.export(fileWriter, chainGraph);
-			fileWriter.close();
+			DOTExporter<Unit, DefaultWeightedEdge> completeExporter = new DOTExporter<Unit, DefaultWeightedEdge>(new VertexNameFilterProvider<Unit>(
+					this.compilationUnit), null, new WeighEdgeNameProvider<DefaultWeightedEdge>(chainGraph));
+
+			FileWriter fileWriterForCompleteExporter = new FileWriter(new File(userHomeDir + File.separator + "comp.dot"));
+			completeExporter.export(fileWriterForCompleteExporter, chainGraph);
+			fileWriterForCompleteExporter.close();
+
+			DOTExporter<Unit, DefaultWeightedEdge> simplifiedExporter = new DOTExporter<Unit, DefaultWeightedEdge>(new VertexLineNameProvider<Unit>(
+					this.compilationUnit), null, null);
+
+			FileWriter fileWriterForSimplifiedExporter = new FileWriter(new File(userHomeDir + File.separator + "simp.dot"));
+			simplifiedExporter.export(fileWriterForSimplifiedExporter, chainGraph);
+			fileWriterForSimplifiedExporter.close();
+
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

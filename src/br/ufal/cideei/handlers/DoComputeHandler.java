@@ -101,27 +101,27 @@ public class DoComputeHandler extends AbstractHandler implements IHandler {
 		 */
 		IFeatureExtracter extracter = new CIDEFeatureExtracter(textSelectionFile);
 
-		DeclarationAlgorithm declarationAlgorithm = new DeclarationAlgorithm(selectionNodes, jdtCompilationUnit, coloredSourceFile, extracter);
-		declarationAlgorithm.execute();
-		System.out.println("--Declaration--Start");
-		System.out.println(declarationAlgorithm.getMessage());
-		// InfoPopup.pop(shell, declarationAlgorithm.getMessage());
-		declarationAlgorithm.getMessage();
-		System.out.println("--Declaration--End");
-
-		AssignmentAlgorithm assignmentAlgorithm = new AssignmentAlgorithm(selectionNodes, jdtCompilationUnit, coloredSourceFile);
-		assignmentAlgorithm.sootExecute(textSelectionFile);
-		System.out.println("--Assignment--Start");
-		System.out.println(assignmentAlgorithm.getMessage());
-		System.out.println("--Assignment--End");
-
-		UniqueUsesAlgorithm uniqueAlgorithm = new UniqueUsesAlgorithm(selectionNodes, jdtCompilationUnit, coloredSourceFile);
-		uniqueAlgorithm.execute();
-		System.out.println("--Unique--Start");
-		System.out.println(uniqueAlgorithm.getMessage());
-		System.out.println("--Unique--End");
-
 		try {
+			DeclarationAlgorithm declarationAlgorithm = new DeclarationAlgorithm(selectionNodes, jdtCompilationUnit, coloredSourceFile, extracter);
+			declarationAlgorithm.execute();
+			System.out.println("--Declaration--Start");
+			System.out.println(declarationAlgorithm.getMessage());
+			// InfoPopup.pop(shell, declarationAlgorithm.getMessage());
+			declarationAlgorithm.getMessage();
+			System.out.println("--Declaration--End");
+
+			AssignmentAlgorithm assignmentAlgorithm = new AssignmentAlgorithm(selectionNodes, jdtCompilationUnit, coloredSourceFile);
+			assignmentAlgorithm.sootExecute(textSelectionFile);
+			System.out.println("--Assignment--Start");
+			System.out.println(assignmentAlgorithm.getMessage());
+			System.out.println("--Assignment--End");
+
+//			UniqueUsesAlgorithm uniqueAlgorithm = new UniqueUsesAlgorithm(selectionNodes, jdtCompilationUnit, coloredSourceFile);
+//			uniqueAlgorithm.execute();
+//			System.out.println("--Unique--Start");
+//			System.out.println(uniqueAlgorithm.getMessage());
+//			System.out.println("--Unique--End");
+
 			ChainOfAssignmentAlgorithm chainOfAssignmentAlgorithm = new ChainOfAssignmentAlgorithm(selectionNodes, jdtCompilationUnit, coloredSourceFile);
 			chainOfAssignmentAlgorithm.sootExecute(textSelectionFile);
 			System.out.println("--Chain--Start");

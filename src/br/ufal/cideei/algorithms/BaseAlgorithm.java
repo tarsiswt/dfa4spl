@@ -63,9 +63,7 @@ public abstract class BaseAlgorithm implements IAlgorithm {
 							unitSet.add(unit);
 						}
 					}
-				} else {
-					System.out.println(line + ":nl:" + unit.toString());
-				}
+				} 
 			}
 		}
 		return unitSet;

@@ -1,4 +1,4 @@
-package br.ufal.cideei.util;
+package br.ufal.cideei.util.graph;
 
 import org.jgrapht.WeightedGraph;
 import org.jgrapht.ext.EdgeNameProvider;

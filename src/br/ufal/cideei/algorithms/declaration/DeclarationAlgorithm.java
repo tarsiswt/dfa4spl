@@ -205,7 +205,7 @@ public class DeclarationAlgorithm extends BaseSootAlgorithm {
 		String declaringMethodClass = methodDeclaration.resolveBinding().getDeclaringClass().getQualifiedName();
 
 		SootManager.configure(pathToSourceClasspathEntry);
-		SootMethod sootMethod = SootManager.getMethod(declaringMethodClass, methodDeclarationName);
+		SootMethod sootMethod = SootManager.getMethodByName(declaringMethodClass, methodDeclarationName);
 		Body activeBody = sootMethod.retrieveActiveBody();
 
 		/*
