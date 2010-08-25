@@ -12,6 +12,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.SortedSet;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -29,6 +30,7 @@ import org.jgrapht.GraphPath;
 import org.jgrapht.alg.KShortestPaths;
 import org.jgrapht.ext.DOTExporter;
 import org.jgrapht.ext.StringNameProvider;
+import org.jgrapht.graph.DefaultDirectedWeightedGraph;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.DefaultWeightedEdge;
 import org.jgrapht.graph.SimpleDirectedGraph;
@@ -43,15 +45,19 @@ import soot.SootMethod;
 import soot.Unit;
 import soot.Value;
 import soot.ValueBox;
+import soot.jimple.NopStmt;
 import soot.jimple.Stmt;
 import soot.jimple.toolkits.thread.mhp.MethodExtentBuilder;
 import soot.toolkits.graph.ExceptionalUnitGraph;
+import soot.toolkits.scalar.FlowSet;
 import soot.toolkits.scalar.LocalUses;
 import soot.toolkits.scalar.SimpleLocalDefs;
 import soot.toolkits.scalar.SimpleLocalUses;
 import soot.toolkits.scalar.UnitValueBoxPair;
 import br.ufal.cideei.algorithms.BaseAlgorithm;
 import br.ufal.cideei.soot.SootManager;
+import br.ufal.cideei.soot.analyses.SimpleReachingDefinitionsAnalysis;
+import br.ufal.cideei.soot.analyses.SimpleReachingDefinitions;
 import br.ufal.cideei.util.MethodDeclarationSootMethodBridge;
 import br.ufal.cideei.util.graph.VertexLineNameProvider;
 import br.ufal.cideei.util.graph.VertexNameFilterProvider;
@@ -105,7 +111,6 @@ public class ChainOfAssignmentAlgorithm extends BaseAlgorithm {
 	 */
 	@Override
 	public void execute() {
-		// TODO Auto-generated method stub
 	}
 
 	/**
@@ -116,7 +121,6 @@ public class ChainOfAssignmentAlgorithm extends BaseAlgorithm {
 	 * @throws ExecutionException
 	 *             the execution exception
 	 */
-	// TODO: tratar exceções corretamente
 	public void sootExecute(IFile textSelectionFile) throws ExecutionException {
 
 		/*
@@ -148,19 +152,27 @@ public class ChainOfAssignmentAlgorithm extends BaseAlgorithm {
 		Collection<Integer> lines = this.getLinesFromASTNodes(nodes, compilationUnit);
 		Collection<Unit> units = this.getUnitsFromLines(lines, body);
 
+		// System.out.println("Lista de units na selection");
+		// for (Unit unit : units){
+		// System.out.println(unit);
+		// }
+
 		/*
 		 * Initiate the chain contribution graph that will be populated in the
 		 * following loop recursively.
 		 */
-		SimpleDirectedWeightedGraph<Unit, DefaultWeightedEdge> chainGraph = new SimpleDirectedWeightedGraph<Unit, DefaultWeightedEdge>(
+		DefaultDirectedWeightedGraph<Unit, DefaultWeightedEdge> chainGraph = new DefaultDirectedWeightedGraph<Unit, DefaultWeightedEdge>(
 				DefaultWeightedEdge.class);
 
 		/*
 		 * For every unit in the selection, we`ll recursively compute the chain
 		 * contribution graph.
 		 */
+		// SimpleReachingDefinitionsRmk rd = new
+		// SimpleReachingDefinitionsRmk(graph);
+		SimpleReachingDefinitionsAnalysis rda = new SimpleReachingDefinitionsAnalysis(graph);
 		for (Unit eachUnit : units) {
-			recursiveGraphBuilder(eachUnit, simpleLocalUses, chainGraph);
+			recursiveGraphBuilder(eachUnit, rda, simpleLocalUses, chainGraph);
 		}
 
 		/*
@@ -191,7 +203,8 @@ public class ChainOfAssignmentAlgorithm extends BaseAlgorithm {
 			while (graphIterator.hasNext()) {
 				Unit nextUnitInGraph = graphIterator.next();
 				/*
-				 * Making sure that we are not searching for path of lenght 0.
+				 * Making sure that we are not searching for path in which the
+				 * start vertex = end vertex
 				 */
 				if (nextUnitInGraph.equals(eachUnit)) {
 					continue;
@@ -199,7 +212,8 @@ public class ChainOfAssignmentAlgorithm extends BaseAlgorithm {
 
 				List<GraphPath<Unit, DefaultWeightedEdge>> paths = shortestPaths.getPaths(nextUnitInGraph);
 				if (paths != null) {
-//					GraphPath<Unit, DefaultWeightedEdge> graphPath = paths.get(paths.size() - 1);
+					// GraphPath<Unit, DefaultWeightedEdge> graphPath =
+					// paths.get(paths.size() - 1);
 					GraphPath<Unit, DefaultWeightedEdge> graphPath = paths.get(0);
 
 					/*
@@ -215,9 +229,6 @@ public class ChainOfAssignmentAlgorithm extends BaseAlgorithm {
 						unitChainsToMap.put(eachUnit, new HashSet<Integer>());
 					}
 					unitChainsToMap.get(eachUnit).add(this.getLineFromUnit(graphPath.getEndVertex()));
-					// stringBuilder.append(this.getLineFromUnit(eachUnit) +
-					// " chains to " +
-					// this.getLineFromUnit(graphPath.getEndVertex()) + "\n");
 				}
 			}
 		}
@@ -248,6 +259,10 @@ public class ChainOfAssignmentAlgorithm extends BaseAlgorithm {
 		 * codes, and no weight on the edges
 		 * 
 		 * TODO: treat exceptions correctly
+		 * 
+		 * TODO: move this functionality to a different location, perhaps in a
+		 * different class, by exposing the generated graph through a get
+		 * method?
 		 */
 		String userHomeDir = System.getProperty("user.home");
 
@@ -272,7 +287,12 @@ public class ChainOfAssignmentAlgorithm extends BaseAlgorithm {
 	}
 
 	/**
-	 * Recursive graph builder.
+	 * Recursively build the chain contribution graph. For every local use of a
+	 * unit, create a vertex for that unit, and then an edge between then. If
+	 * they belong to the same line, then the edge weight is 0, otherwise it is
+	 * 1.
+	 * 
+	 * Repeat for every created vertex.
 	 * 
 	 * @param unit
 	 *            the each unit
@@ -281,7 +301,58 @@ public class ChainOfAssignmentAlgorithm extends BaseAlgorithm {
 	 * @param chainGraph
 	 *            the chain graph
 	 */
-	private void recursiveGraphBuilder(Unit unit, LocalUses localUses, SimpleDirectedWeightedGraph<Unit, DefaultWeightedEdge> chainGraph) {
+	private void recursiveGraphBuilder(Unit unit, SimpleReachingDefinitionsAnalysis reachingDef, LocalUses localUses,
+			DefaultDirectedWeightedGraph<Unit, DefaultWeightedEdge> chainGraph) {
+		List<Unit> reachedUses = reachingDef.getReachedUses(unit);
+		for (Unit reachedUse : reachedUses) {
+			List<ValueBox> defBoxes = unit.getDefBoxes();
+			for (ValueBox defBox : defBoxes) {
+				Value defValueInBox = defBox.getValue();
+				List<ValueBox> useBoxes = reachedUse.getUseBoxes();
+				for (ValueBox useBox : useBoxes) {
+					if (defValueInBox.equals(useBox.getValue())) {
+
+						if (!chainGraph.containsVertex(unit)) {
+							chainGraph.addVertex(unit);
+						}
+						if (!chainGraph.containsVertex(reachedUse)) {
+							chainGraph.addVertex(reachedUse);
+						}
+						if (chainGraph.containsEdge(unit, reachedUse)) {
+							continue;
+						}
+
+						DefaultWeightedEdge weightedEdge = chainGraph.addEdge(unit, reachedUse);
+						if (weightedEdge != null) {
+							if (this.getLineFromUnit(reachedUse).equals(this.getLineFromUnit(unit))) {
+								chainGraph.setEdgeWeight(weightedEdge, 0);
+							} else {
+								chainGraph.setEdgeWeight(weightedEdge, 1);
+							}
+						}
+						recursiveGraphBuilder(reachedUse, reachingDef, localUses, chainGraph);
+					}
+				}
+			}
+		}
+	}
+
+	/**
+	 * Recursively build the chain contribution graph. For every local use of a
+	 * unit, create a vertex for that unit, and then an edge between then. If
+	 * they belong to the same line, then the edge weight is 0, otherwise it is
+	 * 1.
+	 * 
+	 * Repeat for every created vertex.
+	 * 
+	 * @param unit
+	 *            the each unit
+	 * @param localUses
+	 *            the local uses
+	 * @param chainGraph
+	 *            the chain graph
+	 */
+	private void recursiveGraphBuilder(Unit unit, LocalUses localUses, DefaultDirectedWeightedGraph<Unit, DefaultWeightedEdge> chainGraph) {
 		for (Object unitBoxPairObj : localUses.getUsesOf(unit)) {
 			UnitValueBoxPair unitBoxPair = (UnitValueBoxPair) unitBoxPairObj;
 			Unit unitFromPair = unitBoxPair.getUnit();
@@ -294,7 +365,11 @@ public class ChainOfAssignmentAlgorithm extends BaseAlgorithm {
 			}
 			DefaultWeightedEdge weightedEdge = chainGraph.addEdge(unit, unitFromPair);
 			if (weightedEdge != null) {
-				chainGraph.setEdgeWeight(weightedEdge, 1);
+				if (this.getLineFromUnit(unitFromPair).equals(this.getLineFromUnit(unit))) {
+					chainGraph.setEdgeWeight(weightedEdge, 0);
+				} else {
+					chainGraph.setEdgeWeight(weightedEdge, 1);
+				}
 			}
 			recursiveGraphBuilder(unitFromPair, localUses, chainGraph);
 		}

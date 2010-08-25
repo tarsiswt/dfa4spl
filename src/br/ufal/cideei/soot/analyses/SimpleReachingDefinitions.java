@@ -1,43 +1,113 @@
 package br.ufal.cideei.soot.analyses;
 
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 
+import soot.Local;
 import soot.Unit;
+import soot.Value;
+import soot.ValueBox;
+import soot.jimple.AssignStmt;
 import soot.toolkits.graph.DirectedGraph;
+import soot.toolkits.scalar.ArraySparseSet;
 import soot.toolkits.scalar.FlowSet;
+import soot.toolkits.scalar.ForwardFlowAnalysis;
 
-public class SimpleReachingDefinitions 
-{
-	private HashMap<Unit,List<Definition>> unitToDefinitionAfter;
-	private HashMap<Unit,List<Definition>> unitToDefinitionBefore;
-	
-	public SimpleReachingDefinitions(DirectedGraph<Unit> graph)
-	{
-		SimpleReachingDefinitionsAnalysis analysis = new SimpleReachingDefinitionsAnalysis(graph);
+// TODO: Auto-generated Javadoc
+/**
+ * The Class SimpleReachingDefinitions.
+ */
+public class SimpleReachingDefinitions extends ForwardFlowAnalysis<Unit, FlowSet> {
 
-		this.unitToDefinitionAfter = new HashMap<Unit,List<Definition>>(graph.size() * 2 + 1, 0.7f);
-		this.unitToDefinitionBefore = new HashMap<Unit,List<Definition>>(graph.size() * 2 + 1, 0.7f);
+	/** The empty set. */
+	private FlowSet emptySet;
 
-		for (Unit unit: graph)
-		{
-			FlowSet set = (FlowSet) analysis.getFlowBefore(unit);
-			this.unitToDefinitionBefore.put(unit,
-					Collections.unmodifiableList(set.toList()));
+	/**
+	 * Instantiates a new simple reaching definitions.
+	 *
+	 * @param graph the graph
+	 */
+	public SimpleReachingDefinitions(DirectedGraph<Unit> graph) {
+		super(graph);
+		this.emptySet = new ArraySparseSet();
+		super.doAnalysis();
+	}
 
-			set = (FlowSet) analysis.getFlowAfter(unit);
-			this.unitToDefinitionAfter.put(unit,
-					Collections.unmodifiableList(set.toList()));
+	/* (non-Javadoc)
+	 * @see soot.toolkits.scalar.AbstractFlowAnalysis#copy(java.lang.Object, java.lang.Object)
+	 */
+	@Override
+	protected void copy(FlowSet source, FlowSet dest) {
+		source.copy(dest);
+	}
+
+	/* (non-Javadoc)
+	 * @see soot.toolkits.scalar.AbstractFlowAnalysis#merge(java.lang.Object, java.lang.Object, java.lang.Object)
+	 */
+	@Override
+	protected void merge(FlowSet source1, FlowSet source2, FlowSet dest) {
+		source1.union(source2, dest);
+	}
+
+	/* (non-Javadoc)
+	 * @see soot.toolkits.scalar.AbstractFlowAnalysis#entryInitialFlow()
+	 */
+	@Override
+	protected FlowSet entryInitialFlow() {
+		return this.emptySet.clone();
+	}
+
+	/* (non-Javadoc)
+	 * @see soot.toolkits.scalar.AbstractFlowAnalysis#newInitialFlow()
+	 */
+	@Override
+	protected FlowSet newInitialFlow() {
+		return this.emptySet.clone();
+	}
+
+	/* (non-Javadoc)
+	 * @see soot.toolkits.scalar.FlowAnalysis#flowThrough(java.lang.Object, java.lang.Object, java.lang.Object)
+	 */
+	@Override
+	protected void flowThrough(FlowSet source, Unit unit, FlowSet dest) {
+		kill(source, unit, dest);
+		gen(dest, unit);
+	}
+
+	/**
+	 * Kill.
+	 *
+	 * @param src the src
+	 * @param unit the unit
+	 * @param dest the dest
+	 */
+	private void kill(FlowSet src, Unit unit, FlowSet dest) {
+		FlowSet kills = emptySet.clone();
+		if (unit instanceof AssignStmt) {
+			AssignStmt assignStmt = (AssignStmt) unit;
+			for (Object earlierAssignment : src.toList()) {
+				if (earlierAssignment instanceof AssignStmt) {
+					AssignStmt stmt = (AssignStmt) earlierAssignment;
+					if (stmt.getLeftOp().equivTo(assignStmt.getLeftOp())) {
+						kills.add(earlierAssignment);
+					}
+				}
+			}
+		}
+		src.difference(kills, dest);
+	}
+
+	/**
+	 * Gen.
+	 *
+	 * @param dest the dest
+	 * @param unit the unit
+	 */
+	private void gen(FlowSet dest, Unit unit) {
+		if (unit instanceof AssignStmt) {
+			AssignStmt stmt = (AssignStmt) unit;
+			Local local = (Local) stmt.getLeftOp();
+			String name = local.getName();
+			dest.add(unit);
 		}
 	}
-
-	public List<Definition> getReachingDefinitionsAfter(Unit _unit) {
-		return this.unitToDefinitionAfter.get(_unit);
-	}
-
-	public List<Definition> getReachingDefinitionsBefore(Unit _unit) {
-		return this.unitToDefinitionBefore.get(_unit);
-	}	
-
 }

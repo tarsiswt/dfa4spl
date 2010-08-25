@@ -22,7 +22,19 @@ import soot.Unit;
 import soot.tagkit.SourceLnPosTag;
 import soot.util.Chain;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class BaseAlgorithm.
+ */
 public abstract class BaseAlgorithm implements IAlgorithm {
+
+	/**
+	 * Gets the parent method.
+	 * 
+	 * @param node
+	 *            the node
+	 * @return the parent method
+	 */
 	protected MethodDeclaration getParentMethod(ASTNode node) {
 		if (node == null) {
 			return null;
@@ -34,7 +46,29 @@ public abstract class BaseAlgorithm implements IAlgorithm {
 			}
 		}
 	}
-	
+
+	protected void getUnitsFromASTNodes(Collection<? extends ASTNode> nodes, CompilationUnit comp, Body body) {
+		Chain<Unit> units = body.getUnits();
+		for (ASTNode node : nodes){
+			for (Unit unit : units){
+				if (unit.hasTag("SourceLnPosTag")) {
+					SourceLnPosTag lineTag = (SourceLnPosTag) unit.getTag("SourceLnPosTag");
+					int unitLine = lineTag.startLn();
+					int unitColumn = lineTag.startPos();					
+				}
+			}
+		}
+	}
+
+	/**
+	 * Gets the lines from ast nodes.
+	 * 
+	 * @param nodes
+	 *            the nodes
+	 * @param compilationUnit
+	 *            the compilation unit
+	 * @return the lines from ast nodes
+	 */
 	protected Collection<Integer> getLinesFromASTNodes(Collection<ASTNode> nodes, CompilationUnit compilationUnit) {
 		Set<Integer> lineSet = new HashSet<Integer>();
 		for (ASTNode node : nodes) {
@@ -43,6 +77,13 @@ public abstract class BaseAlgorithm implements IAlgorithm {
 		return lineSet;
 	}
 
+	/**
+	 * Gets the line from unit.
+	 * 
+	 * @param unit
+	 *            the unit
+	 * @return the line from unit
+	 */
 	protected Integer getLineFromUnit(Unit unit) {
 		if (unit.hasTag("SourceLnPosTag")) {
 			SourceLnPosTag lineTag = (SourceLnPosTag) unit.getTag("SourceLnPosTag");
@@ -51,6 +92,15 @@ public abstract class BaseAlgorithm implements IAlgorithm {
 		return null;
 	}
 
+	/**
+	 * Gets the units from lines.
+	 * 
+	 * @param lines
+	 *            the lines
+	 * @param body
+	 *            the body
+	 * @return the units from lines
+	 */
 	protected Collection<Unit> getUnitsFromLines(Collection<Integer> lines, Body body) {
 		Set<Unit> unitSet = new HashSet<Unit>();
 		for (Integer line : lines) {
@@ -63,13 +113,22 @@ public abstract class BaseAlgorithm implements IAlgorithm {
 							unitSet.add(unit);
 						}
 					}
-				} 
+				}
 			}
 		}
 		return unitSet;
 	}
-	
-	protected String getCorrespondentClasspath(IFile file) throws ExecutionException{
+
+	/**
+	 * Gets the correspondent classpath.
+	 * 
+	 * @param file
+	 *            the file
+	 * @return the correspondent classpath
+	 * @throws ExecutionException
+	 *             the execution exception
+	 */
+	protected String getCorrespondentClasspath(IFile file) throws ExecutionException {
 		/*
 		 * used to find out what the classpath entry related to the IFile of the
 		 * text selection. this is necessary for some algorithms that might use
@@ -94,7 +153,6 @@ public abstract class BaseAlgorithm implements IAlgorithm {
 		 */
 
 		String pathToSourceClasspathEntry = null;
-		String pathToSourceFile = ResourcesPlugin.getWorkspace().getRoot().getFile(file.getFullPath()).getLocation().toOSString();
 
 		IClasspathEntry[] classPathEntries = null;
 		try {

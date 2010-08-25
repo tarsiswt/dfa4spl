@@ -47,7 +47,7 @@ public class VertexNameFilterProvider<V extends Unit> implements VertexNameProvi
 	public String getVertexName(V vertex) {
 		if (vertex.hasTag("SourceLnPosTag")) {
 			SourceLnPosTag tag = (SourceLnPosTag) vertex.getTag("SourceLnPosTag");
-			return tag.startLn() + "";
+			return "\"" + "(" + tag.startLn() + ")" + vertex.toString().replace("\"", "'") + "\"";
 		}
 		return "\"" + vertex.toString().replace("\"", "'") + "\"";
 	}
