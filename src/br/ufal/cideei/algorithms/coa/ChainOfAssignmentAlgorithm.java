@@ -3,17 +3,11 @@ package br.ufal.cideei.algorithms.coa;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
-import java.util.SortedSet;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -21,35 +15,20 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.CompilationUnit;
-import org.eclipse.jdt.core.dom.IMethodBinding;
-import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
-import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
-import org.jgrapht.DirectedGraph;
 import org.jgrapht.GraphPath;
 import org.jgrapht.alg.KShortestPaths;
 import org.jgrapht.ext.DOTExporter;
-import org.jgrapht.ext.StringNameProvider;
 import org.jgrapht.graph.DefaultDirectedWeightedGraph;
-import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.DefaultWeightedEdge;
-import org.jgrapht.graph.SimpleDirectedGraph;
-import org.jgrapht.graph.SimpleDirectedWeightedGraph;
 import org.jgrapht.traverse.DepthFirstIterator;
 
-import de.ovgu.cide.features.source.ColoredSourceFile;
-
 import soot.Body;
-import soot.Local;
 import soot.SootMethod;
 import soot.Unit;
 import soot.Value;
 import soot.ValueBox;
-import soot.jimple.NopStmt;
-import soot.jimple.Stmt;
-import soot.jimple.toolkits.thread.mhp.MethodExtentBuilder;
 import soot.toolkits.graph.ExceptionalUnitGraph;
-import soot.toolkits.scalar.FlowSet;
 import soot.toolkits.scalar.LocalUses;
 import soot.toolkits.scalar.SimpleLocalDefs;
 import soot.toolkits.scalar.SimpleLocalUses;
@@ -57,11 +36,11 @@ import soot.toolkits.scalar.UnitValueBoxPair;
 import br.ufal.cideei.algorithms.BaseAlgorithm;
 import br.ufal.cideei.soot.SootManager;
 import br.ufal.cideei.soot.analyses.SimpleReachingDefinitionsAnalysis;
-import br.ufal.cideei.soot.analyses.SimpleReachingDefinitions;
 import br.ufal.cideei.util.MethodDeclarationSootMethodBridge;
 import br.ufal.cideei.util.graph.VertexLineNameProvider;
 import br.ufal.cideei.util.graph.VertexNameFilterProvider;
 import br.ufal.cideei.util.graph.WeighEdgeNameProvider;
+import de.ovgu.cide.features.source.ColoredSourceFile;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -351,6 +330,7 @@ public class ChainOfAssignmentAlgorithm extends BaseAlgorithm {
 	 *            the local uses
 	 * @param chainGraph
 	 *            the chain graph
+	 * @deprecated
 	 */
 	private void recursiveGraphBuilder(Unit unit, LocalUses localUses, DefaultDirectedWeightedGraph<Unit, DefaultWeightedEdge> chainGraph) {
 		for (Object unitBoxPairObj : localUses.getUsesOf(unit)) {

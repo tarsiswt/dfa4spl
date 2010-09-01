@@ -15,7 +15,7 @@ import org.jgrapht.ext.EdgeNameProvider;
 public class WeighEdgeNameProvider<E> implements EdgeNameProvider<E> {
 
 	/** The graph. */
-	private WeightedGraph graph;
+	private WeightedGraph<?, E> graph;
 
 	/**
 	 * Instantiates a new weigh edge name provider.
@@ -23,7 +23,7 @@ public class WeighEdgeNameProvider<E> implements EdgeNameProvider<E> {
 	 * @param graph
 	 *            the graph
 	 */
-	public WeighEdgeNameProvider(WeightedGraph graph) {
+	public WeighEdgeNameProvider(WeightedGraph<?, E> graph) {
 		this.graph = graph;
 	}
 

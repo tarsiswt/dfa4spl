@@ -47,7 +47,7 @@ public class SimpleReachingDefinitionsAnalysis {
 				continue;
 			}
 			FlowSet reachingDefSet = this.reachingDefinitions.getFlowAfter(nextUnit);
-			Iterator<Unit> flowIterator = reachingDefSet.toList().iterator();
+			Iterator<? extends Unit> flowIterator = reachingDefSet.toList().iterator();
 			while(flowIterator.hasNext()){
 				Unit nextUnitInFlow = flowIterator.next();
 				if (nextUnitInFlow instanceof NopStmt){

@@ -47,19 +47,6 @@ public abstract class BaseAlgorithm implements IAlgorithm {
 		}
 	}
 
-	protected void getUnitsFromASTNodes(Collection<? extends ASTNode> nodes, CompilationUnit comp, Body body) {
-		Chain<Unit> units = body.getUnits();
-		for (ASTNode node : nodes){
-			for (Unit unit : units){
-				if (unit.hasTag("SourceLnPosTag")) {
-					SourceLnPosTag lineTag = (SourceLnPosTag) unit.getTag("SourceLnPosTag");
-					int unitLine = lineTag.startLn();
-					int unitColumn = lineTag.startPos();					
-				}
-			}
-		}
-	}
-
 	/**
 	 * Gets the lines from ast nodes.
 	 * 

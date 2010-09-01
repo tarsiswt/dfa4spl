@@ -20,7 +20,6 @@ public class Pair<E1, E2> {
 		return first.hashCode() + second.hashCode();
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public boolean equals(Object o) {
 		if (o instanceof Pair) {

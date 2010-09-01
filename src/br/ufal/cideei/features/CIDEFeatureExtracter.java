@@ -7,11 +7,8 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.jdt.core.dom.ASTNode;
 
 import cide.gast.IASTNode;
-
-import de.ovgu.cide.features.FeatureModelManager;
 import de.ovgu.cide.features.FeatureModelNotFoundException;
 import de.ovgu.cide.features.IFeature;
-import de.ovgu.cide.features.IFeatureModel;
 import de.ovgu.cide.features.source.ColoredSourceFile;
 import de.ovgu.cide.language.jdt.ASTBridge;
 
@@ -25,7 +22,7 @@ public class CIDEFeatureExtracter implements IFeatureExtracter{
 	private IFile file;
 		
 	/**
-	 * Instantiates a new cIDE feature extracter.
+	 * Instantiates a new CIDE feature extracter.
 	 *
 	 * @param file the file
 	 */

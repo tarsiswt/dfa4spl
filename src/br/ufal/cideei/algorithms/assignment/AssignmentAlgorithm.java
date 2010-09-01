@@ -18,13 +18,10 @@ import soot.SootMethod;
 import soot.Unit;
 import soot.Value;
 import soot.ValueBox;
-import soot.toolkits.graph.BriefUnitGraph;
 import soot.toolkits.graph.ExceptionalUnitGraph;
-import soot.toolkits.graph.UnitGraph;
 import soot.toolkits.scalar.SimpleLocalDefs;
 import soot.toolkits.scalar.SimpleLocalUses;
 import soot.toolkits.scalar.UnitValueBoxPair;
-
 import br.ufal.cideei.algorithms.BaseAlgorithm;
 import br.ufal.cideei.soot.SootManager;
 import br.ufal.cideei.util.MethodDeclarationSootMethodBridge;

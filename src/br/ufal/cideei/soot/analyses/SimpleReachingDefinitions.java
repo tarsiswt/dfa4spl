@@ -1,11 +1,6 @@
 package br.ufal.cideei.soot.analyses;
 
-import java.util.List;
-
-import soot.Local;
 import soot.Unit;
-import soot.Value;
-import soot.ValueBox;
 import soot.jimple.AssignStmt;
 import soot.toolkits.graph.DirectedGraph;
 import soot.toolkits.scalar.ArraySparseSet;
@@ -16,7 +11,7 @@ import soot.toolkits.scalar.ForwardFlowAnalysis;
 /**
  * The Class SimpleReachingDefinitions.
  */
-public class SimpleReachingDefinitions extends ForwardFlowAnalysis<Unit, FlowSet> {
+class SimpleReachingDefinitions extends ForwardFlowAnalysis<Unit, FlowSet> {
 
 	/** The empty set. */
 	private FlowSet emptySet;
@@ -104,9 +99,6 @@ public class SimpleReachingDefinitions extends ForwardFlowAnalysis<Unit, FlowSet
 	 */
 	private void gen(FlowSet dest, Unit unit) {
 		if (unit instanceof AssignStmt) {
-			AssignStmt stmt = (AssignStmt) unit;
-			Local local = (Local) stmt.getLeftOp();
-			String name = local.getName();
 			dest.add(unit);
 		}
 	}

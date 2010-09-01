@@ -1,7 +1,6 @@
 package br.ufal.cideei.util.graph;
 
 import org.eclipse.jdt.core.dom.CompilationUnit;
-import org.jgrapht.ext.StringNameProvider;
 import org.jgrapht.ext.VertexNameProvider;
 
 import soot.Unit;
@@ -18,9 +17,6 @@ import soot.tagkit.SourceLnPosTag;
  */
 public class VertexNameFilterProvider<V extends Unit> implements VertexNameProvider<V> {
 
-	/** The compilation unit. */
-	private CompilationUnit compilationUnit;
-
 	/**
 	 * Instantiates a new vertex name filter provider.
 	 * 
@@ -28,12 +24,12 @@ public class VertexNameFilterProvider<V extends Unit> implements VertexNameProvi
 	 *            the compilation unit
 	 */
 	public VertexNameFilterProvider(CompilationUnit compilationUnit) {
-		this.compilationUnit = compilationUnit;
 	}
 
 	/**
 	 * Instantiates a new vertex name filter provider.
 	 */
+	@SuppressWarnings("unused")
 	private VertexNameFilterProvider() {
 		super();
 	}

@@ -22,6 +22,7 @@ public class SelectionNodesVisitor extends ASTVisitor {
 	/**
 	 * Instantiates a new selection nodes visitor.
 	 */
+	@SuppressWarnings("unused")
 	private SelectionNodesVisitor() {
 	}
 

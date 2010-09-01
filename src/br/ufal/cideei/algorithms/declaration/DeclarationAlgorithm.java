@@ -20,7 +20,6 @@ import soot.SootMethod;
 import soot.Unit;
 import soot.ValueBox;
 import soot.toolkits.graph.BriefUnitGraph;
-import soot.toolkits.graph.ExceptionalUnitGraph;
 import soot.toolkits.graph.UnitGraph;
 import soot.toolkits.scalar.LocalDefs;
 import soot.toolkits.scalar.SimpleLocalDefs;
@@ -55,6 +54,7 @@ public class DeclarationAlgorithm extends BaseSootAlgorithm {
 	private Set<ASTNode> nodes = null;
 
 	/** Not used. */
+	@SuppressWarnings("unused")
 	private ColoredSourceFile file = null;
 
 	/** The compilation unit which we retrieve the lines from the ASTNodes. */
@@ -65,6 +65,7 @@ public class DeclarationAlgorithm extends BaseSootAlgorithm {
 	/**
 	 * Disables default constructor
 	 */
+	@SuppressWarnings("unused")
 	private DeclarationAlgorithm() {
 	}
 
@@ -239,12 +240,11 @@ public class DeclarationAlgorithm extends BaseSootAlgorithm {
 		Collection<Integer> lines = getLinesFromASTNodes(nodes, compilationUnit);
 		Collection<Unit> selectUnits = getUnitsFromLines(lines, activeBody);
 
-		UnitGraph unitGraph2 = new ExceptionalUnitGraph(activeBody);
 		for (Unit eachSelectedUnit : selectUnits) {
 			for (ValueBox vbox : eachSelectedUnit.getDefBoxes()) {
 				Local localDefinition = (Local) vbox.getValue();
 				for (Unit eachUnitInBody : activeBody.getUnits()) {
-					List usesInEachUnit = localUses.getUsesOf(eachUnitInBody);
+					List<?> usesInEachUnit = localUses.getUsesOf(eachUnitInBody);
 					for (Object unitValuePairObj : usesInEachUnit) {
 						UnitValueBoxPair unitValuePair = (UnitValueBoxPair) unitValuePairObj;
 						if (((Local) (unitValuePair.getValueBox().getValue())).equivTo(localDefinition)) {

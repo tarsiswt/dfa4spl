@@ -1,15 +1,8 @@
 package br.ufal.cideei.util;
 
-import java.util.List;
-
 import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
-import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
-
-import soot.SootMethod;
-import soot.Type;
-import soot.jimple.Jimple;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -23,6 +16,7 @@ public class MethodDeclarationSootMethodBridge {
 	/**
 	 * Instantiates a new method declaration soot method bridge.
 	 */
+	@SuppressWarnings("unused")
 	private MethodDeclarationSootMethodBridge(){}
 
 	/**

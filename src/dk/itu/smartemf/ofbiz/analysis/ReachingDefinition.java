@@ -4,7 +4,6 @@ import java.util.Set;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
-import org.eclipse.jdt.core.dom.Statement;
 
 public class ReachingDefinition {
 	ReachingDefinitionAnalysis analysis;

@@ -2,7 +2,6 @@ package br.ufal.cideei.features;
 
 import java.util.Set;
 
-import org.eclipse.core.resources.IFile;
 import org.eclipse.jdt.core.dom.ASTNode;
 
 // TODO: Auto-generated Javadoc

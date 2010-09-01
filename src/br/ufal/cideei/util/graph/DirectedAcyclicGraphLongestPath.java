@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.jgrapht.DirectedGraph;
+import org.jgrapht.graph.DefaultEdge;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -19,7 +20,7 @@ import org.jgrapht.DirectedGraph;
  * @param <V> the value type
  * @param <E> the element type
  */
-public class DirectedAcyclicGraphLongestPath<V, E> {
+public class DirectedAcyclicGraphLongestPath<V, E extends DefaultEdge> {
 	
 	/** The graph. */
 	private DirectedGraph<V, E> graph;
