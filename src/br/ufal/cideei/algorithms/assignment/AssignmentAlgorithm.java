@@ -24,8 +24,8 @@ import soot.toolkits.scalar.SimpleLocalUses;
 import soot.toolkits.scalar.UnitValueBoxPair;
 import br.ufal.cideei.algorithms.BaseAlgorithm;
 import br.ufal.cideei.soot.SootManager;
+import br.ufal.cideei.soot.instrument.ASTNodeUnitBridge;
 import br.ufal.cideei.util.MethodDeclarationSootMethodBridge;
-import de.ovgu.cide.features.source.ColoredSourceFile;
 import dk.itu.smartemf.ofbiz.analysis.ReachingDefinition;
 
 /**
@@ -41,9 +41,6 @@ import dk.itu.smartemf.ofbiz.analysis.ReachingDefinition;
  */
 public class AssignmentAlgorithm extends BaseAlgorithm {
 
-	/** The file. */
-	private ColoredSourceFile file;
-
 	/** The nodes. */
 	private Set<ASTNode> nodes;
 
@@ -58,13 +55,10 @@ public class AssignmentAlgorithm extends BaseAlgorithm {
 	 * 
 	 * @param nodes
 	 *            the nodes
-	 * @param compilationUnit
-	 *            the compilation unit
 	 * @param file
 	 *            the file
 	 */
-	public AssignmentAlgorithm(Set<ASTNode> nodes, CompilationUnit compilationUnit, ColoredSourceFile file) {
-		this.file = file;
+	public AssignmentAlgorithm(Set<ASTNode> nodes, CompilationUnit compilationUnit) {
 		this.nodes = nodes;
 		this.compilationUnit = compilationUnit;
 	}
@@ -165,8 +159,8 @@ public class AssignmentAlgorithm extends BaseAlgorithm {
 		 * The input is gathered as ASTNode, so we use the line number from the
 		 * source code to convert the nodes into Units.
 		 */
-		Collection<Integer> lines = this.getLinesFromASTNodes(nodes, compilationUnit);
-		Collection<Unit> units = this.getUnitsFromLines(lines, body);
+		Collection<Integer> lines = ASTNodeUnitBridge.getLinesFromASTNodes(nodes, compilationUnit);
+		Collection<Unit> units = ASTNodeUnitBridge.getUnitsFromLines(lines, body);
 
 		/*
 		 * Now for the main loop. All we need to do is iterate over the
@@ -190,9 +184,9 @@ public class AssignmentAlgorithm extends BaseAlgorithm {
 				
 				if (!variableLineMap.containsKey(variableString)) {
 					variableLineMap.put(variableString, new HashSet<Integer>());
-					variableLineMap.get(variableString).add(getLineFromUnit(unitBoxPair.getUnit()));
+					variableLineMap.get(variableString).add(ASTNodeUnitBridge.getLineFromUnit(unitBoxPair.getUnit()));
 				} else {
-					variableLineMap.get(variableString).add(getLineFromUnit(unitBoxPair.getUnit()));
+					variableLineMap.get(variableString).add(ASTNodeUnitBridge.getLineFromUnit(unitBoxPair.getUnit()));
 				}
 			}
 		}

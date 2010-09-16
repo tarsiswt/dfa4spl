@@ -110,11 +110,11 @@ public class DoComputeHandler extends AbstractHandler implements IHandler {
 			declarationAlgorithm.getMessage();
 			System.out.println("--Declaration--End");
 
-			AssignmentAlgorithm assignmentAlgorithm = new AssignmentAlgorithm(selectionNodes, jdtCompilationUnit, coloredSourceFile);
-			assignmentAlgorithm.sootExecute(textSelectionFile);
-			System.out.println("--Assignment--Start");
-			System.out.println(assignmentAlgorithm.getMessage());
-			System.out.println("--Assignment--End");
+//			AssignmentAlgorithm assignmentAlgorithm = new AssignmentAlgorithm(selectionNodes, jdtCompilationUnit, coloredSourceFile);
+//			assignmentAlgorithm.sootExecute(textSelectionFile);
+//			System.out.println("--Assignment--Start");
+//			System.out.println(assignmentAlgorithm.getMessage());
+//			System.out.println("--Assignment--End");
 
 //			UniqueUsesAlgorithm uniqueAlgorithm = new UniqueUsesAlgorithm(selectionNodes, jdtCompilationUnit, coloredSourceFile);
 //			uniqueAlgorithm.execute();
@@ -122,8 +122,9 @@ public class DoComputeHandler extends AbstractHandler implements IHandler {
 //			System.out.println(uniqueAlgorithm.getMessage());
 //			System.out.println("--Unique--End");
 
-			ChainOfAssignmentAlgorithm chainOfAssignmentAlgorithm = new ChainOfAssignmentAlgorithm(selectionNodes, jdtCompilationUnit, coloredSourceFile);
-			chainOfAssignmentAlgorithm.sootExecute(textSelectionFile);
+			ChainOfAssignmentAlgorithm chainOfAssignmentAlgorithm = new ChainOfAssignmentAlgorithm(selectionNodes, jdtCompilationUnit, coloredSourceFile, extracter);
+//			chainOfAssignmentAlgorithm.sootExecute(textSelectionFile);
+			chainOfAssignmentAlgorithm.instrument(textSelectionFile);
 			System.out.println("--Chain--Start");
 			System.out.println(chainOfAssignmentAlgorithm.getMessage());
 			System.out.println("--Chain--End");

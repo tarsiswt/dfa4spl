@@ -1,43 +1,30 @@
 package br.ufal.cideei.soot.analyses;
 
+import java.util.Collection;
+import java.util.Set;
+
 import soot.Unit;
 import soot.jimple.AssignStmt;
 import soot.toolkits.graph.DirectedGraph;
 import soot.toolkits.scalar.ArraySparseSet;
 import soot.toolkits.scalar.FlowSet;
-import soot.toolkits.scalar.ForwardFlowAnalysis;
 
-// TODO: Auto-generated Javadoc
-/**
- * The Class SimpleReachingDefinitions.
- */
-class SimpleReachingDefinitions extends ForwardFlowAnalysis<Unit, FlowSet> {
-
-	/** The empty set. */
+public class FeatureSensitiveReachingDefinitionsAnalysis extends FeatureSensitiviteFowardFlowAnalysis<Unit,FlowSet,Collection> {
+	
 	private FlowSet emptySet;
-
-	/**
-	 * Instantiates a new simple reaching definitions.
-	 *
-	 * @param graph the graph
-	 */
-	public SimpleReachingDefinitions(DirectedGraph<Unit> graph) {
-		super(graph);
+	
+	public FeatureSensitiveReachingDefinitionsAnalysis(DirectedGraph graph, Set configuration) {
+		super(graph, configuration);
 		this.emptySet = new ArraySparseSet();
 		super.doAnalysis();
 	}
 
-	/* (non-Javadoc)
-	 * @see soot.toolkits.scalar.AbstractFlowAnalysis#copy(java.lang.Object, java.lang.Object)
-	 */
 	@Override
-	protected void copy(FlowSet source, FlowSet dest) {
-		source.copy(dest);
+	protected void filteredFlowThrough(FlowSet arg0, Unit arg1, FlowSet arg2) {
+		// TODO Auto-generated method stub
+		
 	}
 
-	/* (non-Javadoc)
-	 * @see soot.toolkits.scalar.AbstractFlowAnalysis#merge(java.lang.Object, java.lang.Object, java.lang.Object)
-	 */
 	@Override
 	protected void merge(FlowSet source1, FlowSet source2, FlowSet dest) {
 		source1.union(source2, dest);
@@ -102,4 +89,11 @@ class SimpleReachingDefinitions extends ForwardFlowAnalysis<Unit, FlowSet> {
 			dest.add(unit);
 		}
 	}
+
+	@Override
+	protected void copy(FlowSet source, FlowSet dest) {
+		source.copy(dest);
+	}
+
+
 }

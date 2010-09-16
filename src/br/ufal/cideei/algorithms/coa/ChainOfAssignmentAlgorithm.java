@@ -1,11 +1,17 @@
 package br.ufal.cideei.algorithms.coa;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -24,18 +30,35 @@ import org.jgrapht.graph.DefaultWeightedEdge;
 import org.jgrapht.traverse.DepthFirstIterator;
 
 import soot.Body;
+import soot.G;
+import soot.PatchingChain;
+import soot.Printer;
 import soot.SootMethod;
+import soot.SourceLocator;
 import soot.Unit;
 import soot.Value;
 import soot.ValueBox;
+import soot.options.Options;
+import soot.toolkits.graph.BriefUnitGraph;
+import soot.toolkits.graph.DirectedGraph;
 import soot.toolkits.graph.ExceptionalUnitGraph;
 import soot.toolkits.scalar.LocalUses;
 import soot.toolkits.scalar.SimpleLocalDefs;
 import soot.toolkits.scalar.SimpleLocalUses;
 import soot.toolkits.scalar.UnitValueBoxPair;
+import soot.tools.CFGViewer;
+import soot.util.cfgcmd.CFGGraphType;
+import soot.util.cfgcmd.CFGToDotGraph;
+import soot.util.dot.DotGraph;
 import br.ufal.cideei.algorithms.BaseAlgorithm;
+import br.ufal.cideei.features.IFeatureExtracter;
 import br.ufal.cideei.soot.SootManager;
+import br.ufal.cideei.soot.SootUnitGraphSerializer;
+import br.ufal.cideei.soot.UnitUtil;
+import br.ufal.cideei.soot.analyses.FeatureSensitiveReachingDefinitionsAnalysis;
 import br.ufal.cideei.soot.analyses.SimpleReachingDefinitionsAnalysis;
+import br.ufal.cideei.soot.instrument.ASTNodeUnitBridge;
+import br.ufal.cideei.soot.instrument.FeatureModelInstrumentor;
 import br.ufal.cideei.util.MethodDeclarationSootMethodBridge;
 import br.ufal.cideei.util.graph.VertexLineNameProvider;
 import br.ufal.cideei.util.graph.VertexNameFilterProvider;
@@ -60,6 +83,8 @@ public class ChainOfAssignmentAlgorithm extends BaseAlgorithm {
 	/** The message. */
 	private String message = "";
 
+	private IFeatureExtracter extracter;
+
 	/**
 	 * Instantiates a new chain of assignment algorithm. The current
 	 * implementation of this algorith will follow these steps: 1) compute the
@@ -77,10 +102,11 @@ public class ChainOfAssignmentAlgorithm extends BaseAlgorithm {
 	 * @param file
 	 *            the file
 	 */
-	public ChainOfAssignmentAlgorithm(Set<ASTNode> nodes, CompilationUnit compilationUnit, ColoredSourceFile file) {
+	public ChainOfAssignmentAlgorithm(Set<ASTNode> nodes, CompilationUnit compilationUnit, ColoredSourceFile file, IFeatureExtracter extracter) {
 		this.file = file;
 		this.nodes = nodes;
 		this.compilationUnit = compilationUnit;
+		this.extracter = extracter;
 	}
 
 	/*
@@ -90,6 +116,36 @@ public class ChainOfAssignmentAlgorithm extends BaseAlgorithm {
 	 */
 	@Override
 	public void execute() {
+	}
+
+	public void instrument(IFile textSelectionFile) throws ExecutionException {
+		if (nodes.isEmpty()) {
+			return;
+		}
+		SootManager.reset();
+		SootManager.configure(this.getCorrespondentClasspath(textSelectionFile));
+		MethodDeclaration methodDeclaration = getParentMethod(nodes.iterator().next());
+		String declaringMethodClass = methodDeclaration.resolveBinding().getDeclaringClass().getQualifiedName();
+		MethodDeclarationSootMethodBridge mdsm = new MethodDeclarationSootMethodBridge(methodDeclaration);
+		SootMethod sootMethod = SootManager.getMethodBySignature(declaringMethodClass, mdsm.getSootMethodSubSignature());
+
+		Body body = sootMethod.retrieveActiveBody();
+		FeatureModelInstrumentor.v(extracter).transform(body, compilationUnit);
+		
+		UnitUtil.serializeBody(body, null);
+		UnitUtil.serializeGraph(body, null);
+		
+		HashSet<String> config = new HashSet<String>();
+		config.add("A");
+			
+		FeatureSensitiveReachingDefinitionsAnalysis analysis = new FeatureSensitiveReachingDefinitionsAnalysis(new BriefUnitGraph(body), config);
+		PatchingChain<Unit> units = body.getUnits();
+		Iterator<Unit> iterator = units.iterator();
+		while (iterator.hasNext()) {
+			Unit unit = (Unit) iterator.next();
+			System.out.println(unit);
+			System.out.println(analysis.getFlowAfter(unit));
+		}		
 	}
 
 	/**
@@ -115,26 +171,23 @@ public class ChainOfAssignmentAlgorithm extends BaseAlgorithm {
 		SootMethod sootMethod = SootManager.getMethodBySignature(declaringMethodClass, mdsm.getSootMethodSubSignature());
 
 		Body body = sootMethod.retrieveActiveBody();
+		SootManager.runPacks(extracter);
+
 		ExceptionalUnitGraph graph = new ExceptionalUnitGraph(body);
+		System.out.println("graph size: " + graph.size());
 
 		/*
-		 * We'll use Soot built-in LocalUses and LocalDefs anaylses to compute
+		 * We'll use our Soot reaching definition analysis wrapper to compute
 		 * which units a given assignments reaches.
 		 */
-		SimpleLocalDefs simpleLocalDefs = new SimpleLocalDefs(graph);
-		SimpleLocalUses simpleLocalUses = new SimpleLocalUses(graph, simpleLocalDefs);
+		SimpleReachingDefinitionsAnalysis reachingDefinitions = new SimpleReachingDefinitionsAnalysis(graph);
 
 		/*
 		 * The input is gathered as ASTNode, so we use the line number from the
 		 * source code to convert the nodes into Units.
 		 */
-		Collection<Integer> lines = this.getLinesFromASTNodes(nodes, compilationUnit);
-		Collection<Unit> units = this.getUnitsFromLines(lines, body);
-
-		// System.out.println("Lista de units na selection");
-		// for (Unit unit : units){
-		// System.out.println(unit);
-		// }
+		Collection<Integer> lines = ASTNodeUnitBridge.getLinesFromASTNodes(nodes, compilationUnit);
+		Collection<Unit> units = ASTNodeUnitBridge.getUnitsFromLines(lines, body);
 
 		/*
 		 * Initiate the chain contribution graph that will be populated in the
@@ -147,12 +200,11 @@ public class ChainOfAssignmentAlgorithm extends BaseAlgorithm {
 		 * For every unit in the selection, we`ll recursively compute the chain
 		 * contribution graph.
 		 */
-		// SimpleReachingDefinitionsRmk rd = new
-		// SimpleReachingDefinitionsRmk(graph);
-		SimpleReachingDefinitionsAnalysis rda = new SimpleReachingDefinitionsAnalysis(graph);
 		for (Unit eachUnit : units) {
-			recursiveGraphBuilder(eachUnit, rda, simpleLocalUses, chainGraph);
+			recursiveGraphBuilder(eachUnit, reachingDefinitions, chainGraph);
 		}
+
+		System.out.println("chain graph size: " + chainGraph.vertexSet().size());
 
 		/*
 		 * Now we must find the longest path from every node from the selection
@@ -207,7 +259,7 @@ public class ChainOfAssignmentAlgorithm extends BaseAlgorithm {
 					if (!unitChainsToMap.containsKey(eachUnit)) {
 						unitChainsToMap.put(eachUnit, new HashSet<Integer>());
 					}
-					unitChainsToMap.get(eachUnit).add(this.getLineFromUnit(graphPath.getEndVertex()));
+					unitChainsToMap.get(eachUnit).add(ASTNodeUnitBridge.getLineFromUnit(graphPath.getEndVertex()));
 				}
 			}
 		}
@@ -218,7 +270,7 @@ public class ChainOfAssignmentAlgorithm extends BaseAlgorithm {
 		StringBuilder stringBuilder = new StringBuilder();
 		for (Entry<Unit, Set<Integer>> entry : unitChainsToMap.entrySet()) {
 			Unit entryUnit = entry.getKey();
-			Integer entryUnitLine = this.getLineFromUnit(entryUnit);
+			Integer entryUnitLine = ASTNodeUnitBridge.getLineFromUnit(entryUnit);
 			Set<Integer> entryUnitLines = entry.getValue();
 
 			for (Integer line : entryUnitLines) {
@@ -280,8 +332,9 @@ public class ChainOfAssignmentAlgorithm extends BaseAlgorithm {
 	 * @param chainGraph
 	 *            the chain graph
 	 */
-	private void recursiveGraphBuilder(Unit unit, SimpleReachingDefinitionsAnalysis reachingDef, LocalUses localUses,
+	private void recursiveGraphBuilder(Unit unit, SimpleReachingDefinitionsAnalysis reachingDef,
 			DefaultDirectedWeightedGraph<Unit, DefaultWeightedEdge> chainGraph) {
+		System.out.println(unit);
 		List<Unit> reachedUses = reachingDef.getReachedUses(unit);
 		for (Unit reachedUse : reachedUses) {
 			List<ValueBox> defBoxes = unit.getDefBoxes();
@@ -303,13 +356,13 @@ public class ChainOfAssignmentAlgorithm extends BaseAlgorithm {
 
 						DefaultWeightedEdge weightedEdge = chainGraph.addEdge(unit, reachedUse);
 						if (weightedEdge != null) {
-							if (this.getLineFromUnit(reachedUse).equals(this.getLineFromUnit(unit))) {
+							if (ASTNodeUnitBridge.getLineFromUnit(reachedUse).equals(ASTNodeUnitBridge.getLineFromUnit(unit))) {
 								chainGraph.setEdgeWeight(weightedEdge, 0);
 							} else {
 								chainGraph.setEdgeWeight(weightedEdge, 1);
 							}
 						}
-						recursiveGraphBuilder(reachedUse, reachingDef, localUses, chainGraph);
+						recursiveGraphBuilder(reachedUse, reachingDef, chainGraph);
 					}
 				}
 			}
@@ -345,7 +398,7 @@ public class ChainOfAssignmentAlgorithm extends BaseAlgorithm {
 			}
 			DefaultWeightedEdge weightedEdge = chainGraph.addEdge(unit, unitFromPair);
 			if (weightedEdge != null) {
-				if (this.getLineFromUnit(unitFromPair).equals(this.getLineFromUnit(unit))) {
+				if (ASTNodeUnitBridge.getLineFromUnit(unitFromPair).equals(ASTNodeUnitBridge.getLineFromUnit(unit))) {
 					chainGraph.setEdgeWeight(weightedEdge, 0);
 				} else {
 					chainGraph.setEdgeWeight(weightedEdge, 1);

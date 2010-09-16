@@ -3,8 +3,12 @@ package br.ufal.cideei.util.graph;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.jgrapht.ext.VertexNameProvider;
 
+import br.ufal.cideei.soot.instrument.FeatureTag;
+
 import soot.Unit;
+import soot.tagkit.Base64;
 import soot.tagkit.SourceLnPosTag;
+import soot.tagkit.StringTag;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -43,7 +47,17 @@ public class VertexNameFilterProvider<V extends Unit> implements VertexNameProvi
 	public String getVertexName(V vertex) {
 		if (vertex.hasTag("SourceLnPosTag")) {
 			SourceLnPosTag tag = (SourceLnPosTag) vertex.getTag("SourceLnPosTag");
-			return "\"" + "(" + tag.startLn() + ")" + vertex.toString().replace("\"", "'") + "\"";
+			String feat;
+			try {
+				FeatureTag<String> ftag = (FeatureTag<String>) vertex.getTag("FeatureTag");
+				feat = ftag.getFeatures().toString();
+			} catch (Exception ex) {
+				ex.printStackTrace();
+				feat = "";
+			}
+
+			// String feat = "";
+			return "\"" + "(" + tag.startLn() + ")" + vertex.toString().replace("\"", "'") + feat + "\"";
 		}
 		return "\"" + vertex.toString().replace("\"", "'") + "\"";
 	}

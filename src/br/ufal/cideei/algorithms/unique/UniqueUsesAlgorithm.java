@@ -7,20 +7,18 @@ import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.SimpleName;
 
-import de.ovgu.cide.features.source.ColoredSourceFile;
+//import de.ovgu.cide.features.source.ColoredSourceFile;
 import br.ufal.cideei.algorithms.BaseAlgorithm;
 
 public class UniqueUsesAlgorithm extends BaseAlgorithm {
 
 	private Set<ASTNode> nodes;
 	private CompilationUnit compilationUnit;
-	private ColoredSourceFile file;
 	private String message = "";
 
-	public UniqueUsesAlgorithm(Set<ASTNode> nodes, CompilationUnit compilationUnit, ColoredSourceFile file) {
+	public UniqueUsesAlgorithm(Set<ASTNode> nodes, CompilationUnit compilationUnit, Object file) {
 		this.nodes = nodes;
 		this.compilationUnit = compilationUnit;
-		this.file = file;
 	}
 
 	@Override

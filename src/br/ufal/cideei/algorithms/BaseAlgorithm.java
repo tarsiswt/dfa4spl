@@ -1,9 +1,5 @@
 package br.ufal.cideei.algorithms;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
-
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -14,13 +10,7 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.ASTNode;
-import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
-
-import soot.Body;
-import soot.Unit;
-import soot.tagkit.SourceLnPosTag;
-import soot.util.Chain;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -47,64 +37,6 @@ public abstract class BaseAlgorithm implements IAlgorithm {
 		}
 	}
 
-	/**
-	 * Gets the lines from ast nodes.
-	 * 
-	 * @param nodes
-	 *            the nodes
-	 * @param compilationUnit
-	 *            the compilation unit
-	 * @return the lines from ast nodes
-	 */
-	protected Collection<Integer> getLinesFromASTNodes(Collection<ASTNode> nodes, CompilationUnit compilationUnit) {
-		Set<Integer> lineSet = new HashSet<Integer>();
-		for (ASTNode node : nodes) {
-			lineSet.add(compilationUnit.getLineNumber(node.getStartPosition()));
-		}
-		return lineSet;
-	}
-
-	/**
-	 * Gets the line from unit.
-	 * 
-	 * @param unit
-	 *            the unit
-	 * @return the line from unit
-	 */
-	protected Integer getLineFromUnit(Unit unit) {
-		if (unit.hasTag("SourceLnPosTag")) {
-			SourceLnPosTag lineTag = (SourceLnPosTag) unit.getTag("SourceLnPosTag");
-			return lineTag.startLn();
-		}
-		return null;
-	}
-
-	/**
-	 * Gets the units from lines.
-	 * 
-	 * @param lines
-	 *            the lines
-	 * @param body
-	 *            the body
-	 * @return the units from lines
-	 */
-	protected Collection<Unit> getUnitsFromLines(Collection<Integer> lines, Body body) {
-		Set<Unit> unitSet = new HashSet<Unit>();
-		for (Integer line : lines) {
-			Chain<Unit> units = body.getUnits();
-			for (Unit unit : units) {
-				if (unit.hasTag("SourceLnPosTag")) {
-					SourceLnPosTag lineTag = (SourceLnPosTag) unit.getTag("SourceLnPosTag");
-					if (lineTag != null) {
-						if (lineTag.startLn() == line.intValue()) {
-							unitSet.add(unit);
-						}
-					}
-				}
-			}
-		}
-		return unitSet;
-	}
 
 	/**
 	 * Gets the correspondent classpath.

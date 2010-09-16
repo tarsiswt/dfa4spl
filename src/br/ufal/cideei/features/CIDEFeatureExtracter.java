@@ -16,26 +16,31 @@ import de.ovgu.cide.language.jdt.ASTBridge;
 /**
  * The Class CIDEFeatureExtracter.
  */
-public class CIDEFeatureExtracter implements IFeatureExtracter{
-	
+public class CIDEFeatureExtracter implements IFeatureExtracter {
+
 	/** The file. */
 	private IFile file;
-		
+
 	/**
 	 * Instantiates a new CIDE feature extracter.
-	 *
-	 * @param file the file
+	 * 
+	 * @param file
+	 *            the file
 	 */
-	public CIDEFeatureExtracter(IFile file){
+	public CIDEFeatureExtracter(IFile file) {
 		this.file = file;
 	}
-	
-	
-	/* (non-Javadoc)
-	 * @see br.ufal.cideei.features.IFeatureExtracter#getFeatures(org.eclipse.jdt.core.dom.ASTNode)
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * br.ufal.cideei.features.IFeatureExtracter#getFeatures(org.eclipse.jdt
+	 * .core.dom.ASTNode)
 	 */
+	// TODO: treat exception correctly
 	@Override
-	public Set<String> getFeatures(ASTNode node){
+	public Set<String> getFeatures(ASTNode node) {
 		ColoredSourceFile coloredFile;
 		try {
 			coloredFile = ColoredSourceFile.getColoredSourceFile(file);
@@ -46,8 +51,11 @@ public class CIDEFeatureExtracter implements IFeatureExtracter{
 		IASTNode iASTNode = ASTBridge.bridge(node);
 		Set<IFeature> cideFeatureSet = coloredFile.getColorManager().getColors(iASTNode);
 		Set<String> stringFeatureSet = new HashSet<String>(cideFeatureSet.size());
-		for (IFeature feature : cideFeatureSet){
-			stringFeatureSet.add(feature.getName());
+		for (IFeature feature : cideFeatureSet) {
+			String featureName = feature.getName();
+			if (!stringFeatureSet.contains(featureName)) {
+				stringFeatureSet.add(featureName);
+			}
 		}
 		return stringFeatureSet;
 	}
