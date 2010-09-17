@@ -16,10 +16,24 @@ import soot.toolkits.graph.DirectedGraph;
 import soot.util.cfgcmd.CFGGraphType;
 import soot.util.dot.DotGraph;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class UnitUtil contains convenience methods to serialize information from memory to help with visualisation and debugging.
+ */
 public class UnitUtil {
+	
+	/**
+	 * This is a utility class. There's no need for a constructor since all methods are static.
+	 */
 	private UnitUtil() {
 	}
 
+	/**
+	 * Serialize a SootMethod Body in the Jimple IR into a provided file path.
+	 *
+	 * @param body the body
+	 * @param fileName the file name, or null to use the default Soot output folder.
+	 */
 	public static void serializeBody(Body body, String fileName) {
 		/*
 		 * prints .jimple file
@@ -46,9 +60,16 @@ public class UnitUtil {
 				e.printStackTrace();
 				return;
 			}
+			System.out.println("Generated Jimple file in " + fileName);
 		}
 	}
 
+	/**
+	 * Serialize a Unit graph in the DOT format into a provided file path.
+	 *
+	 * @param body the body
+	 * @param fileName the file name, or null to use the default Soot output folder.
+	 */
 	public static void serializeGraph(Body body, String fileName) {
 		CFGGraphType graphtype = CFGGraphType.BRIEF_UNIT_GRAPH;
 		DirectedGraph<Unit> graph = graphtype.buildGraph(body);
@@ -65,7 +86,7 @@ public class UnitUtil {
 			fileName = fileName + methodname.replace(java.io.File.separatorChar, '.') + DotGraph.DOT_EXTENSION;
 		}
 
-		System.out.println("Generate dot file in " + fileName);
+		System.out.println("Generated dot file in " + fileName);
 		canvas.plot(fileName);
 
 	}

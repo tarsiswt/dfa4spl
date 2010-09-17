@@ -39,6 +39,9 @@ import soot.util.dot.DotGraphEdge;
 import soot.util.dot.DotGraphNode;
 
 /**
+ * Warning: this source code along with its Javadoc was completely copied from the Soot framework, as it was impossible, since it was package-visible.
+ * 
+ * 
  * Class that creates a {@link DotGraph} visualization of a control flow graph.
  */
 public class SootUnitGraphSerializer extends CFGToDotGraph {

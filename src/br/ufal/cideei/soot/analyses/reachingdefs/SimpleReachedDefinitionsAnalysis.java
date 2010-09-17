@@ -1,4 +1,4 @@
-package br.ufal.cideei.soot.analyses;
+package br.ufal.cideei.soot.analyses.reachingdefs;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -16,23 +16,19 @@ import soot.toolkits.scalar.ForwardFlowAnalysis;
 /**
  * The Class SimpleReachingDefinitionsAnalysis.
  */
-public class SimpleReachingDefinitionsAnalysis {
+public class SimpleReachedDefinitionsAnalysis extends AbstractReachedDefinitions{
 	
 	/** The reaching definitions. */
 	private SimpleReachingDefinitions reachingDefinitions;
-	
-	/** The graph. */
-	DirectedGraph<Unit> graph;
 
 	/**
 	 * Instantiates a new simple reaching definitions analysis.
 	 *
 	 * @param graph the graph
 	 */
-	public SimpleReachingDefinitionsAnalysis(DirectedGraph<Unit> graph) {
-		this.graph = graph;
+	public SimpleReachedDefinitionsAnalysis(DirectedGraph<Unit> graph) {
+		super(graph);
 		this.reachingDefinitions = new SimpleReachingDefinitions(graph);
-		
 	}
 	
 	/**
@@ -124,17 +120,22 @@ class SimpleReachingDefinitions extends ForwardFlowAnalysis<Unit, FlowSet> {
 	}
 
 	/**
-	 * Kill.
-	 *
-	 * @param src the src
-	 * @param unit the unit
-	 * @param dest the dest
+	 * Creates a KILL set for a given Unit and it to the FlowSet dest. In this
+	 * case, our KILL set are the Assignments made to the same Value that this
+	 * Unit assigns to.
+	 * 
+	 * @param src
+	 *            the src
+	 * @param unit
+	 *            the unit
+	 * @param dest
+	 *            the dest
 	 */
-	private void kill(FlowSet src, Unit unit, FlowSet dest) {
+	private void kill(FlowSet source, Unit unit, FlowSet dest) {
 		FlowSet kills = emptySet.clone();
 		if (unit instanceof AssignStmt) {
 			AssignStmt assignStmt = (AssignStmt) unit;
-			for (Object earlierAssignment : src.toList()) {
+			for (Object earlierAssignment : source.toList()) {
 				if (earlierAssignment instanceof AssignStmt) {
 					AssignStmt stmt = (AssignStmt) earlierAssignment;
 					if (stmt.getLeftOp().equivTo(assignStmt.getLeftOp())) {
@@ -143,15 +144,19 @@ class SimpleReachingDefinitions extends ForwardFlowAnalysis<Unit, FlowSet> {
 				}
 			}
 		}
-		src.difference(kills, dest);
+		source.difference(kills, dest);
 	}
 
 	/**
-	 * Gen.
-	 *
-	 * @param dest the dest
-	 * @param unit the unit
+	 * Creates a GEN set for a given Unit and it to the FlowSet dest. In this
+	 * case, our GEN set are all the definitions present in the unit.
+	 * 
+	 * @param dest
+	 *            the dest
+	 * @param unit
+	 *            the unit
 	 */
+	// TODO: MUST ITERATOR THROUGH ALL DEFBOXES!!!
 	private void gen(FlowSet dest, Unit unit) {
 		if (unit instanceof AssignStmt) {
 			dest.add(unit);

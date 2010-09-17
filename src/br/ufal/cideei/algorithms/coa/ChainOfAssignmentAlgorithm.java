@@ -55,8 +55,8 @@ import br.ufal.cideei.features.IFeatureExtracter;
 import br.ufal.cideei.soot.SootManager;
 import br.ufal.cideei.soot.SootUnitGraphSerializer;
 import br.ufal.cideei.soot.UnitUtil;
-import br.ufal.cideei.soot.analyses.FeatureSensitiveReachingDefinitionsAnalysis;
-import br.ufal.cideei.soot.analyses.SimpleReachingDefinitionsAnalysis;
+import br.ufal.cideei.soot.analyses.reachingdefs.FeatureSensitiveReachedDefinitionsAnalysis;
+import br.ufal.cideei.soot.analyses.reachingdefs.SimpleReachedDefinitionsAnalysis;
 import br.ufal.cideei.soot.instrument.ASTNodeUnitBridge;
 import br.ufal.cideei.soot.instrument.FeatureModelInstrumentor;
 import br.ufal.cideei.util.MethodDeclarationSootMethodBridge;
@@ -137,14 +137,28 @@ public class ChainOfAssignmentAlgorithm extends BaseAlgorithm {
 		
 		HashSet<String> config = new HashSet<String>();
 		config.add("A");
+		BriefUnitGraph graph = new BriefUnitGraph(body);
 			
-		FeatureSensitiveReachingDefinitionsAnalysis analysis = new FeatureSensitiveReachingDefinitionsAnalysis(new BriefUnitGraph(body), config);
+		FeatureSensitiveReachedDefinitionsAnalysis analysis = new FeatureSensitiveReachedDefinitionsAnalysis(graph, config);
+		SimpleReachedDefinitionsAnalysis simple = new SimpleReachedDefinitionsAnalysis(graph);
+		
 		PatchingChain<Unit> units = body.getUnits();
 		Iterator<Unit> iterator = units.iterator();
+
+		System.out.println("===================");
+		System.out.println("Feature Unsensitive");
 		while (iterator.hasNext()) {
 			Unit unit = (Unit) iterator.next();
-			System.out.println(unit);
-			System.out.println(analysis.getFlowAfter(unit));
+			System.out.println(unit + " reaches " + simple.getReachedUses(unit));
+		}	
+
+		Iterator<Unit> iterator2 = units.iterator();
+		System.out.println("===================");
+		System.out.println("Feature Sensitive:");
+		while (iterator2.hasNext()) {
+			Unit unit = (Unit) iterator2.next();
+			System.out.println(unit + " reaches " + analysis.getReachedUses(unit));
+//			System.out.println(analysis.getReachedUses(unit));
 		}		
 	}
 
@@ -180,7 +194,7 @@ public class ChainOfAssignmentAlgorithm extends BaseAlgorithm {
 		 * We'll use our Soot reaching definition analysis wrapper to compute
 		 * which units a given assignments reaches.
 		 */
-		SimpleReachingDefinitionsAnalysis reachingDefinitions = new SimpleReachingDefinitionsAnalysis(graph);
+		SimpleReachedDefinitionsAnalysis reachingDefinitions = new SimpleReachedDefinitionsAnalysis(graph);
 
 		/*
 		 * The input is gathered as ASTNode, so we use the line number from the
@@ -332,7 +346,7 @@ public class ChainOfAssignmentAlgorithm extends BaseAlgorithm {
 	 * @param chainGraph
 	 *            the chain graph
 	 */
-	private void recursiveGraphBuilder(Unit unit, SimpleReachingDefinitionsAnalysis reachingDef,
+	private void recursiveGraphBuilder(Unit unit, SimpleReachedDefinitionsAnalysis reachingDef,
 			DefaultDirectedWeightedGraph<Unit, DefaultWeightedEdge> chainGraph) {
 		System.out.println(unit);
 		List<Unit> reachedUses = reachingDef.getReachedUses(unit);

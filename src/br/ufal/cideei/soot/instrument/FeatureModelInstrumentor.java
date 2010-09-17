@@ -172,7 +172,6 @@ public class FeatureModelInstrumentor extends BodyTransformer {
 
 			FeatureTag<Set<String>> validConfigurationsTag = new FeatureTag<Set<String>>();
 
-			System.out.println(unitInUaf + " <feats> " + featuresInUaf);
 			Set<Set<String>> validConfigurationsPowerSet = SetUtil.configurationSet(featurePowerSet, featuresInUaf);
 			Iterator<Set<String>> validConfigurationsIterator = validConfigurationsPowerSet.iterator();
 			while (validConfigurationsIterator.hasNext()) {
@@ -185,6 +184,12 @@ public class FeatureModelInstrumentor extends BodyTransformer {
 		}
 	}
 
+	/**
+	 * Do the transformation on the body.
+	 *
+	 * @param body the body
+	 * @param compilationUnit the compilation unit
+	 */
 	public void transform(Body body, CompilationUnit compilationUnit) {
 		this.currentCompilationUnit = compilationUnit;
 		this.transform(body);

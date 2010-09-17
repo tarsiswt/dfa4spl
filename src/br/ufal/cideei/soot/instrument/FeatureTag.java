@@ -9,56 +9,63 @@ import soot.tagkit.Tag;
 
 // TODO: Auto-generated Javadoc
 /**
- * The Class FeatureTag is used to store feature-sensitive metadata. The metadata is simply stored in a List collection.
- *
- * @param <E> the element type
+ * The Class FeatureTag is used to store feature-sensitive metadata. The
+ * metadata is simply stored in a List collection.
+ * 
+ * @param <E>
+ *            the element type
  */
 public class FeatureTag<E> implements Tag {
-	
+
 	/** The Constant FEAT_TAG_NAME. */
 	private static final String FEAT_TAG_NAME = "FeatureTag";
-	
+
 	/** The feature are kept in this list */
 	private List<E> features = new ArrayList<E>();
-	
+
 	/**
 	 * Adds a feature to the list.
-	 *
-	 * @param ft the feature to be added.
+	 * 
+	 * @param ft
+	 *            the feature to be added.
 	 */
-	public void add(E ft){
+	public void add(E ft) {
 		features.add(ft);
 	}
-	
+
 	/**
 	 * Removes a given feature from the list.
-	 *
-	 * @param ft the feature to be removed.
+	 * 
+	 * @param ft
+	 *            the feature to be removed.
 	 */
-	public void remove(E ft){
+	public void remove(E ft) {
 		features.remove(ft);
 	}
-	
+
 	/**
 	 * Checks for feature.
-	 *
-	 * @param ft the feature
+	 * 
+	 * @param ft
+	 *            the feature
 	 * @return true, if the feature is contained in this Tag.
 	 */
-	public boolean hasFeature(E ft){
+	public boolean hasFeature(E ft) {
 		return features.contains(ft);
 	}
-	
+
 	/**
 	 * Gets the features as an unmodifiable List.
-	 *
+	 * 
 	 * @return the features
 	 */
-	public List<E> getFeatures(){
+	public List<E> getFeatures() {
 		return Collections.unmodifiableList(this.features);
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see soot.tagkit.Tag#getName()
 	 */
 	@Override
@@ -66,7 +73,9 @@ public class FeatureTag<E> implements Tag {
 		return FeatureTag.FEAT_TAG_NAME;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see soot.tagkit.Tag#getValue()
 	 */
 	@Override

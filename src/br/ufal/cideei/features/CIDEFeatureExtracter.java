@@ -14,11 +14,11 @@ import de.ovgu.cide.language.jdt.ASTBridge;
 
 // TODO: Auto-generated Javadoc
 /**
- * The Class CIDEFeatureExtracter.
+ * A feature extracter implementation for CIDE.
  */
 public class CIDEFeatureExtracter implements IFeatureExtracter {
 
-	/** The file. */
+	/** The file from which colors from nodes are to be extracted. */
 	private IFile file;
 
 	/**

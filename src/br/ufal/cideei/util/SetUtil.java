@@ -6,11 +6,28 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class SetUtil is a utility class to generate relevant sets to the
+ * application.
+ */
 public class SetUtil {
 
+	/**
+	 * Instantiates a new sets the util.
+	 */
 	private SetUtil() {
 	}
 
+	/**
+	 * Recursively generates a power set for a given set.
+	 * 
+	 * @param <T>
+	 *            the generic type
+	 * @param originalSet
+	 *            the original set
+	 * @return the sets the
+	 */
 	public static <T> Set<Set<T>> powerSet(Set<T> originalSet) {
 		Set<Set<T>> sets = new HashSet<Set<T>>();
 		if (originalSet.isEmpty()) {
@@ -30,6 +47,18 @@ public class SetUtil {
 		return sets;
 	}
 
+	/**
+	 * Generates a valid configuration sets for given set of features and a
+	 * power set.
+	 * 
+	 * @param <T>
+	 *            the generic type
+	 * @param featurePowerSet
+	 *            the feature power set
+	 * @param featuresInUaf
+	 *            the features in uaf
+	 * @return the sets the
+	 */
 	public static <T> Set<Set<T>> configurationSet(Set<Set<T>> featurePowerSet, Set<T> featuresInUaf) {
 		Iterator<Set<T>> powerSetIterator = featurePowerSet.iterator();
 		Set<Set<T>> resultingSet = new HashSet<Set<T>>();
@@ -38,7 +67,7 @@ public class SetUtil {
 			Iterator<T> subSetIterator = nextSubSet.iterator();
 			boolean foundFeature = false;
 
-			if (featuresInUaf.size() >=2) {
+			if (featuresInUaf.size() >= 2) {
 				Iterator<T> iterator = featuresInUaf.iterator();
 				while (iterator.hasNext()) {
 					T t = (T) iterator.next();

@@ -10,15 +10,45 @@ import org.eclipse.jdt.core.dom.CompilationUnit;
 import soot.Unit;
 import soot.tagkit.SourceLnPosTag;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class ASTNodesAtRangeFinder maps ASTNodes to Units using their positions
+ * (line and column) in the source code as a parameter.
+ */
 public class ASTNodesAtRangeFinder extends ASTVisitor {
 
+	/** The compilation unit. */
 	private CompilationUnit compilationUnit;
+
+	/** The found nodes. */
 	private Collection<ASTNode> foundNodes = new HashSet<ASTNode>();
+
+	/** The starting line. */
 	private int startLine;
+
+	/** The starting position. */
 	private int startPos;
+
+	/** The ending line. */
 	private int endLine;
+
+	/** The ending position. */
 	private int endPos;
 
+	/**
+	 * Instantiates a new ASTNodes at range finder.
+	 * 
+	 * @param startLine
+	 *            the starting line
+	 * @param startPos
+	 *            the starting posision
+	 * @param endLine
+	 *            the ending line
+	 * @param endPos
+	 *            the ending position
+	 * @param compilationUnit
+	 *            the compilation unit in which the nodes will be visited
+	 */
 	public ASTNodesAtRangeFinder(int startLine, int startPos, int endLine, int endPos, CompilationUnit compilationUnit) {
 		this.compilationUnit = compilationUnit;
 		this.startLine = startLine;
@@ -27,6 +57,16 @@ public class ASTNodesAtRangeFinder extends ASTVisitor {
 		this.endPos = endPos;
 	}
 
+	/**
+	 * Instantiates a new ASTNodes at range finder. The Unit MUST have the
+	 * SourceLnPosTag tag attached to it, or an {@link IllegalArgumentException}
+	 * will be thrown.
+	 * 
+	 * @param unit
+	 *            the unit
+	 * @param compilationUnit
+	 *            the compilation unit
+	 */
 	public ASTNodesAtRangeFinder(Unit unit, CompilationUnit compilationUnit) {
 		if (unit.hasTag("SourceLnPosTag")) {
 			SourceLnPosTag lineTag = (SourceLnPosTag) unit.getTag("SourceLnPosTag");
@@ -40,6 +80,13 @@ public class ASTNodesAtRangeFinder extends ASTVisitor {
 		}
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.eclipse.jdt.core.dom.ASTVisitor#preVisit(org.eclipse.jdt.core.dom
+	 * .ASTNode)
+	 */
 	@Override
 	public void preVisit(ASTNode node) {
 		int nodeStartPosition = node.getStartPosition();
@@ -47,11 +94,16 @@ public class ASTNodesAtRangeFinder extends ASTVisitor {
 
 		if (compilationUnit.getLineNumber(nodeStartPosition) == startLine && compilationUnit.getColumnNumber(nodeStartPosition) + 1 >= startPos
 				&& compilationUnit.getLineNumber(nodeEndPosition) == endLine && compilationUnit.getColumnNumber(nodeEndPosition) - 1 <= endPos) {
-			
+
 			this.foundNodes.add(node);
 		}
 	}
 
+	/**
+	 * Gets the nodes found. It will be empty before visiting.
+	 * 
+	 * @return the nodes
+	 */
 	public Collection<ASTNode> getNodes() {
 		return this.foundNodes;
 	}
