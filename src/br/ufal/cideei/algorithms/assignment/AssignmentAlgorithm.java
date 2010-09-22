@@ -24,7 +24,7 @@ import soot.toolkits.scalar.SimpleLocalUses;
 import soot.toolkits.scalar.UnitValueBoxPair;
 import br.ufal.cideei.algorithms.BaseAlgorithm;
 import br.ufal.cideei.soot.SootManager;
-import br.ufal.cideei.soot.instrument.ASTNodeUnitBridge;
+import br.ufal.cideei.soot.instrument.asttounit.ASTNodeUnitBridge;
 import br.ufal.cideei.util.MethodDeclarationSootMethodBridge;
 import dk.itu.smartemf.ofbiz.analysis.ReachingDefinition;
 

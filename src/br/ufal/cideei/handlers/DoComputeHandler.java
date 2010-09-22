@@ -1,6 +1,10 @@
 package br.ufal.cideei.handlers;
 
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
+import java.util.Map.Entry;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -13,10 +17,16 @@ import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.CompilationUnit;
+import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.handlers.HandlerUtil;
+
+import soot.Body;
+import soot.SootMethod;
+import soot.Unit;
+import soot.toolkits.graph.BriefUnitGraph;
 
 import br.ufal.cideei.algorithms.assignment.AssignmentAlgorithm;
 import br.ufal.cideei.algorithms.coa.ChainOfAssignmentAlgorithm;
@@ -24,7 +34,14 @@ import br.ufal.cideei.algorithms.declaration.DeclarationAlgorithm;
 import br.ufal.cideei.algorithms.unique.UniqueUsesAlgorithm;
 import br.ufal.cideei.features.CIDEFeatureExtracter;
 import br.ufal.cideei.features.IFeatureExtracter;
+import br.ufal.cideei.soot.SootManager;
+import br.ufal.cideei.soot.analyses.FeatureSensitiveAnalysisRunner;
+import br.ufal.cideei.soot.analyses.FeatureSensitiviteFowardFlowAnalysis;
+import br.ufal.cideei.soot.analyses.reachingdefs.FeatureSensitiveReachingDefinitions;
+import br.ufal.cideei.soot.instrument.FeatureModelInstrumentorTransformer;
+import br.ufal.cideei.soot.instrument.FeatureTag;
 import br.ufal.cideei.ui.InfoPopup;
+import br.ufal.cideei.util.MethodDeclarationSootMethodBridge;
 import br.ufal.cideei.visitors.SelectionNodesVisitor;
 import de.ovgu.cide.features.source.ColoredSourceFile;
 
@@ -65,6 +82,7 @@ public class DoComputeHandler extends AbstractHandler implements IHandler {
 		 * unit from it
 		 */
 		IFile textSelectionFile = (IFile) HandlerUtil.getActiveEditorChecked(event).getEditorInput().getAdapter(IFile.class);
+		System.out.println("from handler: " + textSelectionFile);
 
 		// used to compute the ASTNodes corresponding to the text selection
 		ITextSelection textSelection = (ITextSelection) selection;
@@ -75,14 +93,12 @@ public class DoComputeHandler extends AbstractHandler implements IHandler {
 		 * Now we need to create a compilation unit for the file, and then parse
 		 * it to generate an AST in which we will perform our analyses.
 		 */
-		ICompilationUnit compilationUnit = null;
-		CompilationUnit jdtCompilationUnit = null;
-		compilationUnit = JavaCore.createCompilationUnitFrom(textSelectionFile);
+		ICompilationUnit compilationUnit = JavaCore.createCompilationUnitFrom(textSelectionFile);
 		ASTParser parser = ASTParser.newParser(AST.JLS3);
 		parser.setSource(compilationUnit);
 		parser.setKind(ASTParser.K_COMPILATION_UNIT);
 		parser.setResolveBindings(true);
-		jdtCompilationUnit = (CompilationUnit) parser.createAST(null);
+		CompilationUnit jdtCompilationUnit = (CompilationUnit) parser.createAST(null);
 		jdtCompilationUnit.accept(selectionNodesVisitor);
 
 		Set<ASTNode> selectionNodes = selectionNodesVisitor.getNodes();
@@ -100,34 +116,59 @@ public class DoComputeHandler extends AbstractHandler implements IHandler {
 		 * way to query for features from CIDE.
 		 */
 		IFeatureExtracter extracter = new CIDEFeatureExtracter(textSelectionFile);
-
+		// TODO: this wrapping try is for debug only. remove later.
 		try {
-//			DeclarationAlgorithm declarationAlgorithm = new DeclarationAlgorithm(selectionNodes, jdtCompilationUnit, coloredSourceFile, extracter);
-//			declarationAlgorithm.execute();
-//			System.out.println("--Declaration--Start");
-//			System.out.println(declarationAlgorithm.getMessage());
-//			// InfoPopup.pop(shell, declarationAlgorithm.getMessage());
-//			declarationAlgorithm.getMessage();
-//			System.out.println("--Declaration--End");
 
-//			AssignmentAlgorithm assignmentAlgorithm = new AssignmentAlgorithm(selectionNodes, jdtCompilationUnit, coloredSourceFile);
-//			assignmentAlgorithm.sootExecute(textSelectionFile);
-//			System.out.println("--Assignment--Start");
-//			System.out.println(assignmentAlgorithm.getMessage());
-//			System.out.println("--Assignment--End");
+			SootManager.configure(MethodDeclarationSootMethodBridge.getCorrespondentClasspath(textSelectionFile));
+			MethodDeclaration methodDeclaration = MethodDeclarationSootMethodBridge.getParentMethod(selectionNodes.iterator().next());
+			String declaringMethodClass = methodDeclaration.resolveBinding().getDeclaringClass().getQualifiedName();
+			MethodDeclarationSootMethodBridge mdsm = new MethodDeclarationSootMethodBridge(methodDeclaration);
+			SootMethod sootMethod = SootManager.getMethodBySignature(declaringMethodClass, mdsm.getSootMethodSubSignature());
+			Body body = sootMethod.retrieveActiveBody();
 
-//			UniqueUsesAlgorithm uniqueAlgorithm = new UniqueUsesAlgorithm(selectionNodes, jdtCompilationUnit, coloredSourceFile);
-//			uniqueAlgorithm.execute();
-//			System.out.println("--Unique--Start");
-//			System.out.println(uniqueAlgorithm.getMessage());
-//			System.out.println("--Unique--End");
+			FeatureModelInstrumentorTransformer.v(extracter).transform2(body);
+			/*
+			 * TODO: For testing purposes only: manually define a set of valid
+			 * configurations. This will probably be user input, so a parser
+			 * will be needed.
+			 */
+			Set<Object> configuration1 = new HashSet<Object>();
+			configuration1.add("A");
+			Set<Object> configuration2 = new HashSet<Object>();
+			configuration2.add("B");
+			Set<Set<Object>> configurations = new HashSet<Set<Object>>();
+			configurations.add(configuration1);
+			configurations.add(configuration2);
 
-			ChainOfAssignmentAlgorithm chainOfAssignmentAlgorithm = new ChainOfAssignmentAlgorithm(selectionNodes, jdtCompilationUnit, coloredSourceFile, extracter);
-//			chainOfAssignmentAlgorithm.sootExecute(textSelectionFile);
-			chainOfAssignmentAlgorithm.instrument(textSelectionFile);
-			System.out.println("--Chain--Start");
-			System.out.println(chainOfAssignmentAlgorithm.getMessage());
-			System.out.println("--Chain--End");
+			/*
+			 * The analysis are ran for every configuration in the
+			 * configurations set automatically by the AnalysisRunner.
+			 */
+			long start = System.currentTimeMillis();
+			FeatureSensitiveAnalysisRunner runner = new FeatureSensitiveAnalysisRunner(new BriefUnitGraph(body), configurations,
+					FeatureSensitiveReachingDefinitions.class);
+			runner.execute();
+			long end = System.currentTimeMillis();
+			System.out.println("Execution time for the FeatureSensitiveReachingDefinitions analysis is " + (end-start) + "ms");
+
+			/*
+			 * TODO: For testing purposes only: print the analysis output
+			 */
+			/*Map<Set<Object>, FeatureSensitiviteFowardFlowAnalysis> results = runner.getResults();
+			for (Entry<Set<Object>, FeatureSensitiviteFowardFlowAnalysis> entry : results.entrySet()) {
+				System.out.println("configuration set:" + entry.getKey());
+				FeatureSensitiviteFowardFlowAnalysis value = entry.getValue();
+
+				Iterator<Unit> iterator = body.getUnits().iterator();
+				while (iterator.hasNext()) {
+					Unit unit = (Unit) iterator.next();
+					System.out.println(unit + " " + ((FeatureTag) unit.getTag("FeatureTag")).getFeatures());
+					System.out.println(value.getFlowAfter(unit));
+					System.out.println("---");
+				}
+				System.out.println("===");
+			}*/
+
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}

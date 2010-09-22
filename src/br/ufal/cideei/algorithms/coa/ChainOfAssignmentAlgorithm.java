@@ -57,8 +57,8 @@ import br.ufal.cideei.soot.SootUnitGraphSerializer;
 import br.ufal.cideei.soot.UnitUtil;
 import br.ufal.cideei.soot.analyses.reachingdefs.FeatureSensitiveReachedDefinitionsAnalysis;
 import br.ufal.cideei.soot.analyses.reachingdefs.SimpleReachedDefinitionsAnalysis;
-import br.ufal.cideei.soot.instrument.ASTNodeUnitBridge;
-import br.ufal.cideei.soot.instrument.FeatureModelInstrumentor;
+import br.ufal.cideei.soot.instrument.FeatureModelInstrumentorTransformer;
+import br.ufal.cideei.soot.instrument.asttounit.ASTNodeUnitBridge;
 import br.ufal.cideei.util.MethodDeclarationSootMethodBridge;
 import br.ufal.cideei.util.graph.VertexLineNameProvider;
 import br.ufal.cideei.util.graph.VertexNameFilterProvider;
@@ -116,50 +116,6 @@ public class ChainOfAssignmentAlgorithm extends BaseAlgorithm {
 	 */
 	@Override
 	public void execute() {
-	}
-
-	public void instrument(IFile textSelectionFile) throws ExecutionException {
-		if (nodes.isEmpty()) {
-			return;
-		}
-		SootManager.reset();
-		SootManager.configure(this.getCorrespondentClasspath(textSelectionFile));
-		MethodDeclaration methodDeclaration = getParentMethod(nodes.iterator().next());
-		String declaringMethodClass = methodDeclaration.resolveBinding().getDeclaringClass().getQualifiedName();
-		MethodDeclarationSootMethodBridge mdsm = new MethodDeclarationSootMethodBridge(methodDeclaration);
-		SootMethod sootMethod = SootManager.getMethodBySignature(declaringMethodClass, mdsm.getSootMethodSubSignature());
-
-		Body body = sootMethod.retrieveActiveBody();
-		FeatureModelInstrumentor.v(extracter).transform(body, compilationUnit);
-		
-		UnitUtil.serializeBody(body, null);
-		UnitUtil.serializeGraph(body, null);
-		
-		HashSet<String> config = new HashSet<String>();
-		config.add("A");
-		BriefUnitGraph graph = new BriefUnitGraph(body);
-			
-		FeatureSensitiveReachedDefinitionsAnalysis analysis = new FeatureSensitiveReachedDefinitionsAnalysis(graph, config);
-		SimpleReachedDefinitionsAnalysis simple = new SimpleReachedDefinitionsAnalysis(graph);
-		
-		PatchingChain<Unit> units = body.getUnits();
-		Iterator<Unit> iterator = units.iterator();
-
-		System.out.println("===================");
-		System.out.println("Feature Unsensitive");
-		while (iterator.hasNext()) {
-			Unit unit = (Unit) iterator.next();
-			System.out.println(unit + " reaches " + simple.getReachedUses(unit));
-		}	
-
-		Iterator<Unit> iterator2 = units.iterator();
-		System.out.println("===================");
-		System.out.println("Feature Sensitive:");
-		while (iterator2.hasNext()) {
-			Unit unit = (Unit) iterator2.next();
-			System.out.println(unit + " reaches " + analysis.getReachedUses(unit));
-//			System.out.println(analysis.getReachedUses(unit));
-		}		
 	}
 
 	/**

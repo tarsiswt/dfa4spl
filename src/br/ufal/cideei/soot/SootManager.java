@@ -5,7 +5,7 @@ import java.util.Collection;
 import br.ufal.cideei.algorithms.BaseAlgorithm;
 import br.ufal.cideei.algorithms.coa.ChainOfAssignmentAlgorithm;
 import br.ufal.cideei.features.IFeatureExtracter;
-import br.ufal.cideei.soot.instrument.FeatureModelInstrumentor;
+import br.ufal.cideei.soot.instrument.FeatureModelInstrumentorTransformer;
 import soot.G;
 import soot.Pack;
 import soot.PackManager;
@@ -30,7 +30,7 @@ public class SootManager {
 	}
 	
 	public static void runPacks(IFeatureExtracter extracter){
-		Transform t = new Transform("jtp.featmodelinst", FeatureModelInstrumentor.v(extracter));
+		Transform t = new Transform("jtp.featmodelinst", FeatureModelInstrumentorTransformer.v(extracter));
 		PackManager.v().getPack("jtp").add(t);
 		PackManager.v().runBodyPacks();
 	}

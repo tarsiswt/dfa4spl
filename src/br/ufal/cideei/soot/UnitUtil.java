@@ -60,7 +60,6 @@ public class UnitUtil {
 				e.printStackTrace();
 				return;
 			}
-			System.out.println("Generated Jimple file in " + fileName);
 		}
 	}
 
@@ -86,7 +85,6 @@ public class UnitUtil {
 			fileName = fileName + methodname.replace(java.io.File.separatorChar, '.') + DotGraph.DOT_EXTENSION;
 		}
 
-		System.out.println("Generated dot file in " + fileName);
 		canvas.plot(fileName);
 
 	}

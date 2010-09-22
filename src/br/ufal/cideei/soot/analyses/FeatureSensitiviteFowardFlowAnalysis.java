@@ -17,7 +17,7 @@ import soot.toolkits.scalar.ForwardFlowAnalysis;
  * The Class FeatureSensitiviteFowardFlowAnalysis is the base implementation for
  * forward flow analysis that are feature-sensitive. Implementing an
  * feature-sensitive analysis extending this class is very similar to extending
- * the ForwardFlowAnalysis class. 
+ * the ForwardFlowAnalysis class.
  * 
  * @param <A>
  *            the generic type
@@ -29,7 +29,7 @@ import soot.toolkits.scalar.ForwardFlowAnalysis;
 public abstract class FeatureSensitiviteFowardFlowAnalysis<A extends Unit, N extends FlowSet, T extends Collection> extends ForwardFlowAnalysis<Unit, FlowSet> {
 
 	/** The configuration. */
-	private final Set<?> configuration;
+	protected final Set<?> configuration;
 
 	/**
 	 * Instantiates a new feature sensitivite foward flow analysis.
@@ -96,5 +96,6 @@ public abstract class FeatureSensitiviteFowardFlowAnalysis<A extends Unit, N ext
 	 *            the dest
 	 */
 	protected abstract void filteredFlowThrough(FlowSet source, Unit unit, FlowSet dest);
-
+	
+	public abstract FeatureSensitiviteFowardFlowAnalysis makeNew(DirectedGraph<Object> graph, Set<Object> configuration);
 }

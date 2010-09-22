@@ -1,4 +1,4 @@
-package br.ufal.cideei.soot.instrument;
+package br.ufal.cideei.soot.instrument.asttounit;
 
 import java.util.HashSet;
 import java.util.Set;
