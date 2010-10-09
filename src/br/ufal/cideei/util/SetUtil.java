@@ -95,4 +95,21 @@ public class SetUtil {
 		}
 		return resultingSet;
 	}
+	
+	//TODO: FOR TESTING ONLY. REMOVE LATER.
+	public static Set<Set<Object>> tstconfig() {
+		Set<Object> configuration1 = new HashSet<Object>();
+		configuration1.add("A");
+		Set<Object> configuration2 = new HashSet<Object>();
+		configuration2.add("B");
+		Set<Object> configuration3 = new HashSet<Object>();
+		configuration3.add("A");
+		configuration3.add("B");
+		Set<Set<Object>> configurations = new HashSet<Set<Object>>();
+		configurations.add(configuration1);
+		configurations.add(configuration2);
+		configurations.add(configuration3);
+		return configurations;
+	}
+	
 }

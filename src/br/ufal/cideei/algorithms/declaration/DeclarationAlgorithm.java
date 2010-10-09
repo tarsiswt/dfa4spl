@@ -151,14 +151,14 @@ public class DeclarationAlgorithm extends BaseSootAlgorithm {
 		for (SimpleName simpleName : simpleNameDeclarations) {
 			Set<SimpleName> simpleNameReferences = declarationMap.get(simpleName);
 			for (SimpleName simpleNameReference : simpleNameReferences) {
-				Set<String> simpleNameFeatures = extracter.getFeatures(simpleName);
+//				Set<String> simpleNameFeatures = extracter.getFeatures(simpleName);
 //				System.out.println(compilationUnit.getLineNumber(simpleName.getStartPosition())+ ":"+simpleName+":"+simpleNameFeatures);
-				Set<String> simpleNameReferenceFeatures = extracter.getFeatures(simpleNameReference);
+//				Set<String> simpleNameReferenceFeatures = extracter.getFeatures(simpleNameReference);
 
-				simpleNameReferenceFeatures.removeAll(simpleNameFeatures);
+//				simpleNameReferenceFeatures.removeAll(simpleNameFeatures);
 //				if (simpleNameReferenceFeatures.size() > 0) {
-					stringBuilder.append("provides " + simpleName.getIdentifier() + " to " + buildProvidedFeaturesString(simpleNameReferenceFeatures) + " (line "
-							+ compilationUnit.getLineNumber(simpleNameReference.getStartPosition()) + ")\n");
+//					stringBuilder.append("provides " + simpleName.getIdentifier() + " to " + buildProvidedFeaturesString(simpleNameReferenceFeatures) + " (line "
+//							+ compilationUnit.getLineNumber(simpleNameReference.getStartPosition()) + ")\n");
 //				}
 			}
 		}

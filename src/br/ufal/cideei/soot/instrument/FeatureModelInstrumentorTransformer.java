@@ -45,6 +45,7 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 	private static FeatureModelInstrumentorTransformer instance = new FeatureModelInstrumentorTransformer();
 	private static IFeatureExtracter extracter;
 	private CompilationUnit currentCompilationUnit;
+	private IFile iFile;
 
 	/**
 	 * Instantiates a new feature model instrumentor.
@@ -64,6 +65,10 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 		return instance;
 	}
 
+	public static FeatureModelInstrumentorTransformer v() {
+		return instance;
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -72,6 +77,9 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 	 */
 	@Override
 	protected void internalTransform(Body body, String phase, Map opt) {
+		System.out.println("!");
+		preTransform(body);
+
 		/*
 		 * The feature set and its power set will be computed during the first
 		 * iteration and after the first iteration respectivelly
@@ -121,7 +129,7 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 			Iterator<ASTNode> nodesIterator = nodesTakenFromUnit.iterator();
 			while (nodesIterator.hasNext()) {
 				ASTNode nextNode = nodesIterator.next();
-				Set<String> features = extracter.getFeatures(nextNode);
+				Set<String> features = extracter.getFeatures(nextNode, this.iFile);
 
 				Iterator<String> nodesFeaturesIterator = features.iterator();
 				while (nodesFeaturesIterator.hasNext()) {
@@ -211,6 +219,15 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 	 *            the compilation unit
 	 */
 	public void transform2(Body body) {
+		preTransform(body);
+		this.transform(body);
+
+		UnitUtil.serializeBody(body, null);
+		UnitUtil.serializeGraph(body, null);
+
+	}
+
+	private void preTransform(Body body) {
 		SootClass sootClass = body.getMethod().getDeclaringClass();
 		if (!sootClass.hasTag("SourceFileTag")) {
 			throw new IllegalArgumentException("the body cannot be traced to its source file");
@@ -218,7 +235,8 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 		SourceFileTag tag = (SourceFileTag) body.getMethod().getDeclaringClass().getTag("SourceFileTag");
 
 		IPath path = new Path(tag.getAbsolutePath());
-		IFile iFile = org.eclipse.core.resources.ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(path);
+
+		this.iFile = org.eclipse.core.resources.ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(path);
 
 		ICompilationUnit compilationUnit = JavaCore.createCompilationUnitFrom(iFile);
 		ASTParser parser = ASTParser.newParser(AST.JLS3);
@@ -228,15 +246,5 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 		CompilationUnit jdtCompilationUnit = (CompilationUnit) parser.createAST(null);
 
 		this.currentCompilationUnit = jdtCompilationUnit;
-
-		System.out.print("feature-transforming " + tag.getAbsolutePath() + " ...");
-		this.transform(body);
-		System.out.println("done!");
-
-		System.out.print("serializing graph and IR code ...");
-		UnitUtil.serializeBody(body, null);
-		UnitUtil.serializeGraph(body, null);
-		System.out.println("done!");
-
 	}
 }

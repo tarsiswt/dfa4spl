@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import br.ufal.cideei.algorithms.assignment.ReachedByDefinitionVisitor;
@@ -34,9 +35,9 @@ public class FeatureSensitiveReachedDefinitionsAnalysis extends AbstractReachedD
 	 * @param configuration
 	 *            the configuration for which this analysis should be run
 	 */
-	private FeatureSensitiveReachedDefinitionsAnalysis(DirectedGraph<Unit> graph, Set<Object> configuration) {
+	private FeatureSensitiveReachedDefinitionsAnalysis(DirectedGraph<Unit> graph, Set<Object> configuration,Map<Object,Object> options) {
 		super(graph);
-		this.reachingDefinitions = new FeatureSensitiveReachingDefinitions(graph, configuration);
+		this.reachingDefinitions = new FeatureSensitiveReachingDefinitions(graph, configuration, options);
 	}
 
 	/*

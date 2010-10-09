@@ -1,6 +1,8 @@
 package br.ufal.cideei.soot.analyses;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -8,6 +10,7 @@ import java.util.Set;
 import br.ufal.cideei.soot.instrument.FeatureTag;
 import soot.Unit;
 import soot.toolkits.graph.DirectedGraph;
+import soot.toolkits.scalar.ArraySparseSet;
 import soot.toolkits.scalar.FlowAnalysis;
 import soot.toolkits.scalar.FlowSet;
 import soot.toolkits.scalar.ForwardFlowAnalysis;
@@ -30,6 +33,7 @@ public abstract class FeatureSensitiviteFowardFlowAnalysis<A extends Unit, N ext
 
 	/** The configuration. */
 	protected final Set<?> configuration;
+	private Set<Unit> unitBin = new HashSet<Unit>();
 
 	/**
 	 * Instantiates a new feature sensitivite foward flow analysis.
@@ -82,8 +86,18 @@ public abstract class FeatureSensitiviteFowardFlowAnalysis<A extends Unit, N ext
 				}
 			}
 		}
+		this.unitBin.add(unit);
 		return false;
 	}
+	
+	public FlowSet getFlowAfter(Unit unit) {
+		if (this.unitBin.contains(unit)) {
+			return new ArraySparseSet();
+		} else {
+			return super.getFlowAfter(unit);
+		}
+	}
+	
 
 	/**
 	 * Filtered flow through.
@@ -96,6 +110,4 @@ public abstract class FeatureSensitiviteFowardFlowAnalysis<A extends Unit, N ext
 	 *            the dest
 	 */
 	protected abstract void filteredFlowThrough(FlowSet source, Unit unit, FlowSet dest);
-	
-	public abstract FeatureSensitiviteFowardFlowAnalysis makeNew(DirectedGraph<Object> graph, Set<Object> configuration);
 }

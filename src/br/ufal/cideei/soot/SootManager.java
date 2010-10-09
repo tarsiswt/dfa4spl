@@ -1,6 +1,10 @@
 package br.ufal.cideei.soot;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 import br.ufal.cideei.algorithms.BaseAlgorithm;
 import br.ufal.cideei.algorithms.coa.ChainOfAssignmentAlgorithm;
@@ -18,12 +22,28 @@ import soot.options.Options;
 
 public class SootManager {
 	public static void configure(String classpath){		
+		
+		Options.v().set_allow_phantom_refs(true);
+//		Options.v().set_whole_program(true);
+		
+//		Options.v().set_verbose(true);
 		Options.v().set_keep_line_number(true);
 		Options.v().set_src_prec(Options.src_prec_java);
-		PhaseOptions.v().setPhaseOption("jb", "use-original-names:true");
 		Options.v().set_soot_classpath(classpath);
 		Options.v().set_prepend_classpath(true);
+		
+//		PhaseOptions.v().setPhaseOption("bb", "off");
+//		PhaseOptions.v().setPhaseOption("ALL", "off");
+//		PhaseOptions.v().setPhaseOption("jb.ls", "off");
+//		PhaseOptions.v().setPhaseOption("jb.ule", "off");
+//		PhaseOptions.v().setPhaseOption("jb.dae", "off");
+//		PhaseOptions.v().setPhaseOption("jb", "use-original-names:true");
+//		PhaseOptions.v().setPhaseOption("jb", "off");
+//		PhaseOptions.v().setPhaseOption("jj", "on");
+		
 		PhaseOptions.v().setPhaseOption("tag.ln", "on");
+		PhaseOptions.v().setPhaseOption("cg.cha", "off");
+		PhaseOptions.v().setPhaseOption("cg.spark", "on");
 //		PhaseOptions.v().setPhaseOption("gb", "off");
 //		PhaseOptions.v().setPhaseOption("bb", "off");
 //		PhaseOptions.v().setPhaseOption("db", "off");

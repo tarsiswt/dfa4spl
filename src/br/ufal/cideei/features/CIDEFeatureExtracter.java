@@ -20,15 +20,9 @@ public class CIDEFeatureExtracter implements IFeatureExtracter {
 
 	/** The file from which colors from nodes are to be extracted. */
 	private IFile file;
-
-	/**
-	 * Instantiates a new CIDE feature extracter.
-	 * 
-	 * @param file
-	 *            the file
-	 */
-	public CIDEFeatureExtracter(IFile file) {
-		this.file = file;
+	
+	public CIDEFeatureExtracter() {
+		// TODO Auto-generated constructor stub
 	}
 
 	/*
@@ -40,7 +34,7 @@ public class CIDEFeatureExtracter implements IFeatureExtracter {
 	 */
 	// TODO: treat exception correctly
 	@Override
-	public Set<String> getFeatures(ASTNode node) {
+	public Set<String> getFeatures(ASTNode node,IFile file) {
 		ColoredSourceFile coloredFile;
 		try {
 			coloredFile = ColoredSourceFile.getColoredSourceFile(file);

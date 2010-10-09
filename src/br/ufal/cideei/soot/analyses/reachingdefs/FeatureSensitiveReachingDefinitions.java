@@ -1,10 +1,15 @@
 package br.ufal.cideei.soot.analyses.reachingdefs;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import soot.Unit;
 import soot.jimple.AssignStmt;
+import soot.jimple.NopStmt;
 import soot.toolkits.graph.DirectedGraph;
 import soot.toolkits.scalar.ArraySparseSet;
 import soot.toolkits.scalar.FlowSet;
@@ -16,7 +21,9 @@ import br.ufal.cideei.soot.analyses.FeatureSensitiviteFowardFlowAnalysis;
 public class FeatureSensitiveReachingDefinitions extends FeatureSensitiviteFowardFlowAnalysis<Unit, FlowSet, Collection> {
 
 	/** The empty set. */
-	private FlowSet emptySet;
+	private FlowSet emptySet = new ArraySparseSet();
+
+	private FlowSet newInitialFlowSet = new ArraySparseSet();
 
 	/**
 	 * Instantiates a new feature sensitive reaching definitions.
@@ -26,17 +33,24 @@ public class FeatureSensitiveReachingDefinitions extends FeatureSensitiviteFowar
 	 * @param configuration
 	 *            the configuration
 	 */
-	public FeatureSensitiveReachingDefinitions(DirectedGraph graph, Set<Object> configuration) {
+	public FeatureSensitiveReachingDefinitions(DirectedGraph graph, Set<Object> configuration, Map options) {
 		super(graph, configuration);
-		this.emptySet = new ArraySparseSet();
-		// Itiate the analysis framework algorithms
+		if (options.containsKey("initialFlow")) {
+			Collection<? extends Unit> initialFlow = (Collection<? extends Unit>) options.get("initialFlow");
+			Iterator<? extends Unit> iterator = initialFlow.iterator();
+			while (iterator.hasNext()) {
+				Unit unit = (Unit) iterator.next();
+				newInitialFlowSet.add(unit);
+			}
+		}
+		// Initiate the analysis framework algorithms
 		super.doAnalysis();
 	}
 
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @seebr.ufal.cideei.soot.analyses.FeatureSensitiviteFowardFlowAnalysis#
+	 * @see br.ufal.cideei.soot.analyses.FeatureSensitiviteFowardFlowAnalysis#
 	 * filteredFlowThrough(soot.toolkits.scalar.FlowSet, soot.Unit,
 	 * soot.toolkits.scalar.FlowSet)
 	 */
@@ -74,7 +88,11 @@ public class FeatureSensitiveReachingDefinitions extends FeatureSensitiviteFowar
 	 */
 	@Override
 	protected FlowSet newInitialFlow() {
-		return this.emptySet.clone();
+		if (newInitialFlowSet.isEmpty()) {
+			return this.emptySet.clone();
+		} else {
+			return newInitialFlowSet.clone();
+		}
 	}
 
 	/**
@@ -125,12 +143,34 @@ public class FeatureSensitiveReachingDefinitions extends FeatureSensitiviteFowar
 	protected void copy(FlowSet source, FlowSet dest) {
 		source.copy(dest);
 	}
+	
+	public List<Unit> getReachedDefinitions(Unit target) {
+		// Iterate over all Units in the graph and search for evey Unit that the
+		// definition passed as a parameter reaches.
+		Iterator<Unit> unitIterator = this.graph.iterator();
+		List<Unit> reached = new ArrayList<Unit>();
+		while (unitIterator.hasNext()) {
+			Unit nextUnit = unitIterator.next();
+			// Ignore nop statements
+			if (nextUnit instanceof NopStmt) {
+				continue;
+			}
 
-	@Override
-	public FeatureSensitiviteFowardFlowAnalysis makeNew(DirectedGraph<Object> graph, Set<Object> configuration) {
-		// TODO Auto-generated method stub
-		return new FeatureSensitiveReachingDefinitions(graph,configuration);
+			FlowSet reachingDefSet = this.getFlowAfter(nextUnit);
+			Iterator<? extends Unit> flowIterator = reachingDefSet.toList().iterator();
+			while (flowIterator.hasNext()) {
+				Unit nextUnitInFlow = flowIterator.next();
+				if (nextUnitInFlow instanceof NopStmt) {
+					continue;
+				}
+				if (nextUnitInFlow.equals(target)) {
+					reached.add(nextUnit);
+				}
+			}
+		}
+		return reached;
 	}
-
+	
+	
 
 }

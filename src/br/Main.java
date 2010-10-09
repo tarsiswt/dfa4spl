@@ -1,7 +1,5 @@
 package br;
 
-
-
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -124,7 +122,7 @@ public class Main {
 
 			// insert "return"
 			units.add(Jimple.v().newReturnVoidStmt());
-			
+
 			{
 				UnitGraph unitGraph = new BriefUnitGraph(body);
 				SimpleLocalDefs localDefs = new SimpleLocalDefs(unitGraph);
@@ -137,14 +135,14 @@ public class Main {
 
 				scene.setMainClass(sClass);
 				scene.loadNecessaryClasses();
-				
+
 				InitAnalysis init = new InitAnalysis(unitGraph);
-				for (Unit unit : units){
+				for (Unit unit : units) {
 					System.out.println(init.getFlowAfter(unit));
 				}
 
-//				CHATransformer.v().transform();
-//				CallGraph cg = Scene.v().getCallGraph();
+				// CHATransformer.v().transform();
+				// CallGraph cg = Scene.v().getCallGraph();
 
 				// ReachingDefs reachingDefs = new ReachingDefs(unitGraph);
 				// System.out.println(reachingDefs);
@@ -152,7 +150,8 @@ public class Main {
 			}
 		}
 
-//		String fileName = SourceLocator.v().getFileNameFor(sClass, Options.output_format_class);
+		// String fileName = SourceLocator.v().getFileNameFor(sClass,
+		// Options.output_format_class);
 		String fileName = SourceLocator.v().getSourceForClass(sClass.getName());
 		System.out.println(fileName);
 		OutputStream streamOut = new JasminOutputStream(new FileOutputStream(fileName));
@@ -161,6 +160,7 @@ public class Main {
 		jasminClass.print(writerOut);
 		writerOut.flush();
 		streamOut.close();
+
 	}
 
 }
