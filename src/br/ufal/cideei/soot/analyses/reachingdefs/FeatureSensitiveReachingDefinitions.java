@@ -8,6 +8,8 @@ import java.util.Map;
 import java.util.Set;
 
 import soot.Unit;
+import soot.Value;
+import soot.ValueBox;
 import soot.jimple.AssignStmt;
 import soot.jimple.NopStmt;
 import soot.toolkits.graph.DirectedGraph;
@@ -169,6 +171,34 @@ public class FeatureSensitiveReachingDefinitions extends FeatureSensitiviteFowar
 			}
 		}
 		return reached;
+	}
+	
+	public List<Unit> getReachedUses(Unit target){
+		List<Unit> results = new ArrayList<Unit>();
+		List<Unit> reachedUnits = this.getReachedDefinitions(target);
+		
+		if (!reachedUnits.isEmpty()) {
+			ValueBox valueBox = target.getDefBoxes().get(0);
+			Value valueFromDefBox = valueBox.getValue();
+			
+			Iterator<Unit> reachedUnitsIterator = reachedUnits.iterator();
+			while (reachedUnitsIterator.hasNext()) {
+				Unit reachedUnit = (Unit) reachedUnitsIterator.next();
+				List<ValueBox> useBoxes = reachedUnit.getUseBoxes();
+				if (!useBoxes.isEmpty()) {
+					Iterator<ValueBox> valueBoxesFromReachedUnitIterator = useBoxes.iterator();
+					while (valueBoxesFromReachedUnitIterator.hasNext()) {
+						ValueBox valueUseBox = (ValueBox) valueBoxesFromReachedUnitIterator.next();
+						Value valueFromUseBox = valueUseBox.getValue();
+						if (valueFromUseBox.equivTo(valueFromDefBox)) {
+							results.add(reachedUnit);
+						}
+					}
+				}
+			}
+		}
+		
+		return results;
 	}
 	
 	

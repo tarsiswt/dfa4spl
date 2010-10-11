@@ -20,7 +20,7 @@ public class InfoPopup extends PopupDialog {
 	}
 	
 	public static InfoPopup pop(Shell shell,String content){
-		InfoPopup popup = new InfoPopup(shell,PopupDialog.INFOPOPUPRESIZE_SHELLSTYLE,true,false,false,false,false,"Emergent Interface","Analyses results");
+		InfoPopup popup = new InfoPopup(shell,PopupDialog.INFOPOPUPRESIZE_SHELLSTYLE,true,false,false,false,false,"Emergent Interface","Results");
 		popup.setContent(content);
 		popup.open();
 		return popup;

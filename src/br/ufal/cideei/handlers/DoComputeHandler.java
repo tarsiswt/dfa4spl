@@ -1,6 +1,7 @@
 package br.ufal.cideei.handlers;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -26,6 +27,8 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.handlers.HandlerUtil;
 
+import polyglot.util.CollectionUtil;
+
 import soot.Body;
 import soot.PackManager;
 import soot.PatchingChain;
@@ -41,7 +44,7 @@ import br.ufal.cideei.algorithms.assignment.AssignmentAlgorithm;
 import br.ufal.cideei.algorithms.coa.ChainOfAssignmentAlgorithm;
 import br.ufal.cideei.algorithms.declaration.DeclarationAlgorithm;
 import br.ufal.cideei.algorithms.unique.UniqueUsesAlgorithm;
-import br.ufal.cideei.features.CIDEFeatureExtracter;
+import br.ufal.cideei.features.CIDEFeatureExtracterFactory;
 import br.ufal.cideei.features.IFeatureExtracter;
 import br.ufal.cideei.soot.SootManager;
 import br.ufal.cideei.soot.analyses.FeatureSensitiveAnalysisRunner;
@@ -127,7 +130,7 @@ public class DoComputeHandler extends AbstractHandler implements IHandler {
 		 * ASTNodes. This is the only current implementation and it provides a
 		 * way to query for features from CIDE.
 		 */
-		IFeatureExtracter extracter = new CIDEFeatureExtracter();
+		IFeatureExtracter extracter = CIDEFeatureExtracterFactory.getInstance().newExtracter();
 		// TODO: this wrapping try is for debug only. remove later.
 		try {
 			/*
@@ -162,6 +165,9 @@ public class DoComputeHandler extends AbstractHandler implements IHandler {
 			 */
 			Collection<Unit> unitsInSelection = ASTNodeUnitBridge.getUnitsFromLines(ASTNodeUnitBridge.getLinesFromASTNodes(selectionNodes, jdtCompilationUnit),
 					body);
+			
+			Set<Unit> allReachedUsesUnits = new HashSet<Unit>();
+			Set<ASTNode> allReachedUsesASTNodes = new HashSet<ASTNode>();
 
 			Iterator<Unit> unitsInSelectionIterator = unitsInSelection.iterator();
 			while (unitsInSelectionIterator.hasNext()) {
@@ -172,44 +178,30 @@ public class DoComputeHandler extends AbstractHandler implements IHandler {
 				while (iterator.hasNext()) {
 					Map.Entry<Set<java.lang.Object>, FeatureSensitiviteFowardFlowAnalysis> entry = (Map.Entry<Set<Object>, FeatureSensitiviteFowardFlowAnalysis>) iterator
 							.next();
-					System.out.println("==================");
-					System.out.println(entry.getKey());
-					System.out.println("------------------");
 
 					FeatureSensitiviteFowardFlowAnalysis value = entry.getValue();
-					List<Unit> reachedUnits = ((FeatureSensitiveReachingDefinitions) value).getReachedDefinitions(unit);
-					String format = "|%1$-60s|%2$-60s|\n";
-					System.out.format(format, unit, reachedUnits);
-					
-					if (!reachedUnits.isEmpty()) {
-						ValueBox valueBox = unit.getDefBoxes().get(0);
-						Value valueFromDefBox = valueBox.getValue();
-						
-						Iterator<Unit> reachedUnitsiterator = reachedUnits.iterator();
-						while (reachedUnitsiterator.hasNext()) {
-							Unit reachedUnit = (Unit) reachedUnitsiterator.next();
-							List<ValueBox> useBoxes = reachedUnit.getUseBoxes();
-							if (!useBoxes.isEmpty()) {
-								Iterator<ValueBox> valueBoxesFromReachedUnitIterator = useBoxes.iterator();
-								while (valueBoxesFromReachedUnitIterator.hasNext()) {
-									ValueBox valueUseBox = (ValueBox) valueBoxesFromReachedUnitIterator.next();
-									Value valueFromUseBox = valueUseBox.getValue();
-									if (valueFromUseBox.equivTo(valueFromDefBox)) {
-										System.out.format(format, unit, reachedUnit);
-									}
-								}
-							}
-						}
+					List<Unit> reachedUsesUnits = ((FeatureSensitiveReachingDefinitions) value).getReachedUses(unit);
+
+					allReachedUsesUnits.addAll(reachedUsesUnits);
+					Iterator<Unit> reachedUsesUnitsIterator = reachedUsesUnits.iterator();
+					while (reachedUsesUnitsIterator.hasNext()) {
+						Unit reachedUnit = (Unit) reachedUsesUnitsIterator.next();
+						allReachedUsesASTNodes.addAll(ASTNodeUnitBridge.getASTNodesFromUnit(reachedUnit, jdtCompilationUnit));
 					}
 					
-					
-
-
-					System.out.println("==================");
-					System.out.println();
+//					System.out.println("==================");
+//					System.out.println(entry.getKey());
+//					System.out.println("------------------");
+//					String format = "|%1$-50s|%2$-50s|\n";
+//					System.out.format(format, unit, reachedUsesUnits);
+//					System.out.println("==================");
+//					System.out.println();
 
 				}
 			}
+			
+			
+			InfoPopup.pop(shell, allReachedUsesUnits.toString());
 
 
 			//

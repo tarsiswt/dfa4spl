@@ -129,7 +129,7 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 			Iterator<ASTNode> nodesIterator = nodesTakenFromUnit.iterator();
 			while (nodesIterator.hasNext()) {
 				ASTNode nextNode = nodesIterator.next();
-				Set<String> features = extracter.getFeatures(nextNode, this.iFile);
+				Set<String> features = extracter.getFeaturesNames(nextNode, this.iFile);
 
 				Iterator<String> nodesFeaturesIterator = features.iterator();
 				while (nodesFeaturesIterator.hasNext()) {
@@ -221,10 +221,6 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 	public void transform2(Body body) {
 		preTransform(body);
 		this.transform(body);
-
-		UnitUtil.serializeBody(body, null);
-		UnitUtil.serializeGraph(body, null);
-
 	}
 
 	private void preTransform(Body body) {

@@ -1,5 +1,6 @@
 package br.ufal.cideei.features;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -16,7 +17,7 @@ import de.ovgu.cide.language.jdt.ASTBridge;
 /**
  * A feature extracter implementation for CIDE.
  */
-public class CIDEFeatureExtracter implements IFeatureExtracter {
+class CIDEFeatureExtracter implements IFeatureExtracter {
 
 	/** The file from which colors from nodes are to be extracted. */
 	private IFile file;
@@ -34,16 +35,8 @@ public class CIDEFeatureExtracter implements IFeatureExtracter {
 	 */
 	// TODO: treat exception correctly
 	@Override
-	public Set<String> getFeatures(ASTNode node,IFile file) {
-		ColoredSourceFile coloredFile;
-		try {
-			coloredFile = ColoredSourceFile.getColoredSourceFile(file);
-		} catch (FeatureModelNotFoundException e) {
-			e.printStackTrace();
-			return new HashSet<String>();
-		}
-		IASTNode iASTNode = ASTBridge.bridge(node);
-		Set<IFeature> cideFeatureSet = coloredFile.getColorManager().getColors(iASTNode);
+	public Set<String> getFeaturesNames(ASTNode node,IFile file) {
+		Set<IFeature> cideFeatureSet = this.getFeatures(node, file);
 		Set<String> stringFeatureSet = new HashSet<String>(cideFeatureSet.size());
 		for (IFeature feature : cideFeatureSet) {
 			String featureName = feature.getName();
@@ -53,5 +46,20 @@ public class CIDEFeatureExtracter implements IFeatureExtracter {
 		}
 		return stringFeatureSet;
 	}
+	
+	public Set<IFeature> getFeatures(ASTNode node,IFile file) {
+		ColoredSourceFile coloredFile;
+		try {
+			coloredFile = ColoredSourceFile.getColoredSourceFile(file);
+		} catch (FeatureModelNotFoundException e) {
+			e.printStackTrace();
+			return Collections.emptySet();
+		}
+		IASTNode iASTNode = ASTBridge.bridge(node);
+		Set<IFeature> cideFeatureSet = coloredFile.getColorManager().getColors(iASTNode);
+		return cideFeatureSet;
+	}
+	
+	
 
 }

@@ -17,6 +17,6 @@ public interface IFeatureExtracter {
 	 * @param node the node
 	 * @return the features
 	 */
-	public Set<String> getFeatures(ASTNode node,IFile file);
+	public Set<String> getFeaturesNames(ASTNode node,IFile file);
 
 }
