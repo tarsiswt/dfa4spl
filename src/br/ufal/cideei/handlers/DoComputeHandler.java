@@ -30,6 +30,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import polyglot.util.CollectionUtil;
 
 import soot.Body;
+import soot.G;
 import soot.PackManager;
 import soot.PatchingChain;
 import soot.SootMethod;
@@ -297,6 +298,8 @@ public class DoComputeHandler extends AbstractHandler implements IHandler {
 			// }
 			// System.out.println("===");
 			// }
+			
+			G.v().reset();
 
 		} catch (Exception ex) {
 			ex.printStackTrace();
