@@ -37,6 +37,7 @@ import soot.Transform;
 import soot.Unit;
 import soot.Value;
 import soot.ValueBox;
+import soot.tagkit.SourceLnPosTag;
 import soot.toolkits.graph.BriefUnitGraph;
 import soot.toolkits.graph.UnitGraph;
 
@@ -58,6 +59,7 @@ import br.ufal.cideei.ui.InfoPopup;
 import br.ufal.cideei.util.MethodDeclarationSootMethodBridge;
 import br.ufal.cideei.util.SetUtil;
 import br.ufal.cideei.visitors.SelectionNodesVisitor;
+import de.ovgu.cide.features.IFeature;
 import de.ovgu.cide.features.source.ColoredSourceFile;
 
 /**
@@ -166,15 +168,16 @@ public class DoComputeHandler extends AbstractHandler implements IHandler {
 			Collection<Unit> unitsInSelection = ASTNodeUnitBridge.getUnitsFromLines(ASTNodeUnitBridge.getLinesFromASTNodes(selectionNodes, jdtCompilationUnit),
 					body);
 			
-			Set<Unit> allReachedUsesUnits = new HashSet<Unit>();
-			Set<ASTNode> allReachedUsesASTNodes = new HashSet<ASTNode>();
-
+			StringBuilder messageBuilder = new StringBuilder();
+			
 			Iterator<Unit> unitsInSelectionIterator = unitsInSelection.iterator();
 			while (unitsInSelectionIterator.hasNext()) {
 				Unit unit = (Unit) unitsInSelectionIterator.next();
+				messageBuilder.append("Provides " + unit + " to ");
 				
 				Set<Entry<Set<Object>, FeatureSensitiviteFowardFlowAnalysis>> entrySet = results.entrySet();
 				Iterator<Entry<Set<Object>, FeatureSensitiviteFowardFlowAnalysis>> iterator = entrySet.iterator();
+				Set<IFeature> tmpFeatureSet = new HashSet<IFeature>();
 				while (iterator.hasNext()) {
 					Map.Entry<Set<java.lang.Object>, FeatureSensitiviteFowardFlowAnalysis> entry = (Map.Entry<Set<Object>, FeatureSensitiviteFowardFlowAnalysis>) iterator
 							.next();
@@ -182,11 +185,15 @@ public class DoComputeHandler extends AbstractHandler implements IHandler {
 					FeatureSensitiviteFowardFlowAnalysis value = entry.getValue();
 					List<Unit> reachedUsesUnits = ((FeatureSensitiveReachingDefinitions) value).getReachedUses(unit);
 
-					allReachedUsesUnits.addAll(reachedUsesUnits);
-					Iterator<Unit> reachedUsesUnitsIterator = reachedUsesUnits.iterator();
-					while (reachedUsesUnitsIterator.hasNext()) {
-						Unit reachedUnit = (Unit) reachedUsesUnitsIterator.next();
-						allReachedUsesASTNodes.addAll(ASTNodeUnitBridge.getASTNodesFromUnit(reachedUnit, jdtCompilationUnit));
+					for (Unit reachedUnit : reachedUsesUnits) {
+						Set<IFeature> colorsOnReachedUnit = new HashSet<IFeature>();
+						Collection<ASTNode> astNodesFromUnit = ASTNodeUnitBridge.getASTNodesFromUnit(reachedUnit, jdtCompilationUnit);
+						for(ASTNode nodeFromUnit : astNodesFromUnit) {
+							colorsOnReachedUnit.addAll(extracter.getFeatures(nodeFromUnit, textSelectionFile));
+						}
+						SourceLnPosTag lineTag = (SourceLnPosTag) reachedUnit.getTag("SourceLnPosTag");
+						
+						messageBuilder.append(colorsOnReachedUnit.toString() + "(line " + lineTag.startLn() + ")\n");
 					}
 					
 //					System.out.println("==================");
@@ -201,7 +208,7 @@ public class DoComputeHandler extends AbstractHandler implements IHandler {
 			}
 			
 			
-			InfoPopup.pop(shell, allReachedUsesUnits.toString());
+			InfoPopup.pop(shell, messageBuilder.toString());
 
 
 			//

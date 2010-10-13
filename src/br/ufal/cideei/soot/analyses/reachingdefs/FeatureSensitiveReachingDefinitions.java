@@ -154,17 +154,17 @@ public class FeatureSensitiveReachingDefinitions extends FeatureSensitiviteFowar
 		while (unitIterator.hasNext()) {
 			Unit nextUnit = unitIterator.next();
 			// Ignore nop statements
-			if (nextUnit instanceof NopStmt) {
-				continue;
-			}
+			// if (nextUnit instanceof NopStmt) {
+			// continue;
+			// }
 
 			FlowSet reachingDefSet = this.getFlowAfter(nextUnit);
 			Iterator<? extends Unit> flowIterator = reachingDefSet.toList().iterator();
 			while (flowIterator.hasNext()) {
 				Unit nextUnitInFlow = flowIterator.next();
-				if (nextUnitInFlow instanceof NopStmt) {
-					continue;
-				}
+				// if (nextUnitInFlow instanceof NopStmt) {
+				// continue;
+				// }
 				if (nextUnitInFlow.equals(target)) {
 					reached.add(nextUnit);
 				}

@@ -47,6 +47,7 @@ class CIDEFeatureExtracter implements IFeatureExtracter {
 		return stringFeatureSet;
 	}
 	
+	@Override
 	public Set<IFeature> getFeatures(ASTNode node,IFile file) {
 		ColoredSourceFile coloredFile;
 		try {
