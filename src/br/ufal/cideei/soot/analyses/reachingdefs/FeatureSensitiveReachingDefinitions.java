@@ -134,7 +134,7 @@ public class FeatureSensitiveReachingDefinitions extends FeatureSensitiviteFowar
 	 * @param unit
 	 *            the unit
 	 */
-	// TODO: MUST ITERATOR THROUGH ALL DEFBOXES!!!
+	// TODO: MUST ITERATE THROUGH ALL DEFBOXES!!!
 	private void gen(FlowSet dest, Unit unit) {
 		if (unit instanceof AssignStmt) {
 			dest.add(unit);

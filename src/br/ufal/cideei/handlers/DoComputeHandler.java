@@ -299,6 +299,9 @@ public class DoComputeHandler extends AbstractHandler implements IHandler {
 			// System.out.println("===");
 			// }
 			
+			/*
+			 * Reset SOOT states and free resources
+			 */
 			G.v().reset();
 
 		} catch (Exception ex) {
