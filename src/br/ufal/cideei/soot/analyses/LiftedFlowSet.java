@@ -1,24 +1,26 @@
 package br.ufal.cideei.soot.analyses;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import br.ufal.cideei.soot.instrument.FeatureTag;
-
 import soot.Unit;
 import soot.toolkits.scalar.AbstractFlowSet;
 import soot.toolkits.scalar.FlowSet;
+import br.ufal.cideei.soot.instrument.FeatureTag;
 
 public class LiftedFlowSet<T> extends AbstractFlowSet {
-	
-	private Map<Set<String>, FlowSet> map;
-	
+
+	private Map<Set<String>, FlowSet> map = new HashMap<Set<String>, FlowSet>();
+
 	private Set<String> actualConfiguration;
-	
+
 	public LiftedFlowSet() {
 		// TODO Auto-generated constructor stub
 	}
+
+	//TODO implementar o add/remove(Object, FlowSet)?
 
 	@Override
 	public void add(Object object) {
