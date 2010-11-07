@@ -12,15 +12,9 @@ import soot.toolkits.scalar.FlowSet;
 
 public class LiftedFlowSet<T> extends AbstractFlowSet {
 	
-//	@Override
-//	public void difference(FlowSet arg0, FlowSet arg1) {
-//		// TODO Auto-generated method stub
-//		pegar cada par do meu map...
-//		para cada par
-//			arg1.difference(do cara do map, arg0);
-//	}
-	
 	Map<Set<String>, FlowSet> map;
+	
+	Set<String> actualConfiguration;
 	
 	public LiftedFlowSet() {
 		// TODO Auto-generated constructor stub
@@ -28,7 +22,6 @@ public class LiftedFlowSet<T> extends AbstractFlowSet {
 
 	@Override
 	public void add(Object object) {
-		// TODO Auto-generated method stub
 		FeatureTag<T> tag = getFeatureTag(object);
 		if (tag != null) {
 			List<Set<String>> taggedFeatures = (List<Set<String>>) tag.getFeatures();
@@ -41,26 +34,39 @@ public class LiftedFlowSet<T> extends AbstractFlowSet {
 	}
 	
 	@Override
-	public boolean contains(Object arg0) {
-		// TODO Auto-generated method stub
-		return false;
+	public boolean contains(Object object) {
+		FlowSet configurationFlowSet = map.get(actualConfiguration);
+		return configurationFlowSet.contains(object);
 	}
 
 	@Override
 	public boolean isEmpty() {
-		// TODO Auto-generated method stub
-		return false;
+		FlowSet configurationFlowSet = map.get(actualConfiguration);
+		return configurationFlowSet.isEmpty();
 	}
 
 	@Override
-	public void remove(Object arg0) {
+	public void remove(Object object) {
 		// TODO Auto-generated method stub
 		
+		// eh pra remover somente o atual ou de todas as configs???
+		// ou eu pego as configs da unit (object) e removo somente dessas configs?
+		
+//		FeatureTag<T> tag = getFeatureTag(object);
+//		if (tag != null) {
+//			List<Set<String>> taggedFeatures = (List<Set<String>>) tag.getFeatures();
+//			for (Set<String> taggedFeatureSet : taggedFeatures) {
+//				if (map.containsKey(taggedFeatureSet)) {
+//					map.get(taggedFeatureSet).add(object);
+//				}				
+//			}
+//		}
 	}
 
 	@Override
 	public int size() {
-		return map.size();
+		FlowSet configurationFlowSet = map.get(actualConfiguration);
+		return configurationFlowSet.size();
 	}
 
 	@Override
@@ -71,6 +77,28 @@ public class LiftedFlowSet<T> extends AbstractFlowSet {
 
 	public LiftedFlowSet clone() {
 		return null;
+	}
+	
+	@Override
+	public void difference(FlowSet other, FlowSet dest) {
+		// a analise vai chamar esse metodo passando LiftedFlowSet...
+		
+		LiftedFlowSet otherLifted = (LiftedFlowSet) other;
+		LiftedFlowSet destLifted = (LiftedFlowSet) dest;
+		
+		Set<Set<String>> configurations = map.keySet();
+		
+		for (Set<String> configuration : configurations) {
+			actualConfiguration = configuration;
+			
+			FlowSet otherNormal = (FlowSet) otherLifted.map.get(configuration);
+			FlowSet thisNormal = (FlowSet) map.get(configuration);
+			FlowSet destNormal = (FlowSet) destLifted.map.get(configuration);
+			
+			//tarsis: e assim mesmo? dest.metodo(this, outro)??? Nunca sei essa ordem!
+			//olhei isso na API do SOOT, mas queria confirmacao
+			destNormal.difference(thisNormal, otherNormal);
+		}
 	}
 	
 	private FeatureTag getFeatureTag(Object object) {
