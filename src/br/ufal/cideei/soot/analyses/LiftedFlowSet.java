@@ -12,12 +12,30 @@ import br.ufal.cideei.soot.instrument.FeatureTag;
 
 public class LiftedFlowSet<T> extends AbstractFlowSet {
 
-	private Map<Set<String>, FlowSet> map = new HashMap<Set<String>, FlowSet>();
+	private HashMap<Set<String>, FlowSet> map;
+
+	public HashMap<Set<String>, FlowSet> getMap() {
+		return map;
+	}
 
 	private Set<String> actualConfiguration;
 
 	public LiftedFlowSet() {
-		// TODO Auto-generated constructor stub
+		 this.map = new HashMap<Set<String>, FlowSet>();
+	}
+	
+	public LiftedFlowSet(LiftedFlowSet other) {
+		this.map = (HashMap<Set<String>, FlowSet>) other.getMap().clone();
+	}
+	
+	@Override
+	public LiftedFlowSet clone() {
+		return new LiftedFlowSet(this);
+	}
+	
+	@Override
+	public void clear() {
+		this.map.clear();
 	}
 
 	//TODO implementar o add/remove(Object, FlowSet)?
@@ -70,11 +88,6 @@ public class LiftedFlowSet<T> extends AbstractFlowSet {
 	public List toList() {
 		FlowSet configurationFlowSet = map.get(actualConfiguration);
 		return configurationFlowSet.toList();
-	}
-
-	public LiftedFlowSet clone() {
-		
-		return null;
 	}
 
 	@Override
