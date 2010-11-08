@@ -92,7 +92,6 @@ public class LiftedFlowSet<T> extends AbstractFlowSet {
 
 	@Override
 	public void copy(FlowSet dest) {
-		// TODO Auto-generated method stub
 		LiftedFlowSet otherLifted = (LiftedFlowSet) dest;
 		
 		Set<Set<String>> configurations = map.keySet();
@@ -100,9 +99,10 @@ public class LiftedFlowSet<T> extends AbstractFlowSet {
 		for (Set<String> configuration : configurations) {
 			actualConfiguration = configuration;
 			
+			FlowSet otherNormal = (FlowSet) otherLifted.map.get(configuration);
 			FlowSet thisNormal = (FlowSet) map.get(configuration);
 			
-			//copy();
+			thisNormal.copy(otherNormal);
 		}
 	}
 	
