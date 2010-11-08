@@ -77,7 +77,8 @@ public class TestReachingDefinitions extends ForwardFlowAnalysis<Unit, LiftedFlo
 	 *            the dest
 	 */
 	private void kill(LiftedFlowSet source, Unit unit, LiftedFlowSet dest) {
-		FlowSet kills = emptySet.clone();
+		
+		LiftedFlowSet kills = emptySet.clone();
 		if (unit instanceof AssignStmt) {
 			AssignStmt assignStmt = (AssignStmt) unit;
 			
@@ -89,7 +90,6 @@ public class TestReachingDefinitions extends ForwardFlowAnalysis<Unit, LiftedFlo
 					}
 				}
 			}
-			
 		}
 		source.difference(kills, dest);
 	}

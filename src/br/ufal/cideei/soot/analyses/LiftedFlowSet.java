@@ -1,8 +1,8 @@
 package br.ufal.cideei.soot.analyses;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import soot.Unit;
@@ -43,12 +43,20 @@ public class LiftedFlowSet<T> extends AbstractFlowSet {
 	@Override
 	public void add(Object object) {
 		FeatureTag<T> tag = getFeatureTag(object);
+		
 		if (tag != null) {
 			List<Set<String>> taggedFeatures = (List<Set<String>>) tag.getFeatures();
 			for (Set<String> taggedFeatureSet : taggedFeatures) {
 				if (map.containsKey(taggedFeatureSet)) {
 					map.get(taggedFeatureSet).add(object);
-				}				
+				}
+			}
+			
+			//TODO tomar cuidado com esse else... acho que vem "" e isso n‹o Ž igual a null!
+		} else {
+			//In this case, the unit is mandatory, so that it should be included in all configurations.
+			for (Set<String> featureSet : map.keySet()) {
+				map.get(featureSet).add(object);
 			}
 		}
 	}
@@ -90,6 +98,11 @@ public class LiftedFlowSet<T> extends AbstractFlowSet {
 		return configurationFlowSet.toList();
 	}
 
+	//TODO implementar nosso iterator pra evitar que os clientes conhecam nossa map???
+	//public Iterator iterator() {
+		//return map.
+	//}
+	
 	@Override
 	public void copy(FlowSet dest) {
 		LiftedFlowSet otherLifted = (LiftedFlowSet) dest;
