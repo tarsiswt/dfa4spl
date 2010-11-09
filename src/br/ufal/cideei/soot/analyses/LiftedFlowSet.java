@@ -1,8 +1,8 @@
 package br.ufal.cideei.soot.analyses;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import soot.Unit;
@@ -12,9 +12,9 @@ import br.ufal.cideei.soot.instrument.FeatureTag;
 
 public class LiftedFlowSet<T> extends AbstractFlowSet {
 
-	private HashMap<Set<String>, FlowSet> map;
+	private Map<Set<String>, FlowSet> map;
 
-	public HashMap<Set<String>, FlowSet> getMap() {
+	public Map<Set<String>, FlowSet> getMap() {
 		return map;
 	}
 

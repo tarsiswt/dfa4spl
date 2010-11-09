@@ -1,9 +1,13 @@
 package br.ufal.cideei.soot.analyses;
 
+import java.util.Map;
+import java.util.Set;
+
+import br.ufal.cideei.soot.instrument.FeatureTag;
+
 import soot.Unit;
 import soot.jimple.AssignStmt;
 import soot.toolkits.graph.DirectedGraph;
-import soot.toolkits.scalar.ArraySparseSet;
 import soot.toolkits.scalar.FlowSet;
 import soot.toolkits.scalar.ForwardFlowAnalysis;
 
@@ -94,6 +98,45 @@ public class TestReachingDefinitions extends ForwardFlowAnalysis<Unit, LiftedFlo
 		source.difference(kills, dest);
 	}
 
+	
+//	private void kill(LiftedFlowSet source, Unit unit, LiftedFlowSet dest) {
+//		
+//		LiftedFlowSet kills = emptySet.clone();
+//		
+//		Map<Set<String>, FlowSet> liftedMap = source.getMap();
+//		Set<Set<String>> configurations = liftedMap.keySet();
+//		
+//		for (Set<String> configuration : configurations) {
+//			if (unit instanceof AssignStmt) {
+//				AssignStmt assignStmt = (AssignStmt) unit;
+//				if (unit.hasTag("FeatureTag")) {
+//					FeatureTag tag = (FeatureTag) unit.getTag("FeatureTag");
+//					
+//				}
+//			}
+//		}
+//		
+//		
+//		
+//		
+//		
+//		if (unit instanceof AssignStmt) {
+//			AssignStmt assignStmt = (AssignStmt) unit;
+//			
+//			
+//			
+//			for (Object earlierAssignment : source.toList()) {
+//				if (earlierAssignment instanceof AssignStmt) {
+//					AssignStmt stmt = (AssignStmt) earlierAssignment;
+//					if (stmt.getLeftOp().equivTo(assignStmt.getLeftOp())) {
+//						kills.add(earlierAssignment);
+//					}
+//				}
+//			}
+//		}
+//		source.difference(kills, dest);
+//	}
+	
 	/**
 	 * Creates a GEN set for a given Unit and it to the FlowSet dest. In this
 	 * case, our GEN set are all the definitions present in the unit.
