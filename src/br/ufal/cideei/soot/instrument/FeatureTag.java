@@ -82,5 +82,10 @@ public class FeatureTag<E> implements Tag {
 	public byte[] getValue() throws AttributeValueException {
 		return null;
 	}
+	
+	@Override
+	public String toString() {
+		return features.toString();
+	}
 
 }

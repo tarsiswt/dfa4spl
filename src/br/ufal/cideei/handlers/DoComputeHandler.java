@@ -51,6 +51,8 @@ import br.ufal.cideei.features.IFeatureExtracter;
 import br.ufal.cideei.soot.SootManager;
 import br.ufal.cideei.soot.analyses.FeatureSensitiveAnalysisRunner;
 import br.ufal.cideei.soot.analyses.FeatureSensitiviteFowardFlowAnalysis;
+import br.ufal.cideei.soot.analyses.LiftedFlowSet;
+import br.ufal.cideei.soot.analyses.TestReachingDefinitions;
 import br.ufal.cideei.soot.analyses.reachingdefs.FeatureSensitiveReachingDefinitions;
 import br.ufal.cideei.soot.instrument.FeatureModelInstrumentorTransformer;
 import br.ufal.cideei.soot.instrument.FeatureTag;
@@ -147,35 +149,40 @@ public class DoComputeHandler extends AbstractHandler implements IHandler {
 			SootMethod sootMethod = SootManager.getMethodBySignature(declaringMethodClass, mdsm.getSootMethodSubSignature());
 			Body body = sootMethod.retrieveActiveBody();
 
+			/*
+			 * Do Jimple code instrumentation with feature model.
+			 */
 			FeatureModelInstrumentorTransformer.v(extracter).transform2(body);
-
 			if (!PackManager.v().hasPack("jtp.featmodelinst")) {
 				Transform t = new Transform("jtp.featmodelinst", FeatureModelInstrumentorTransformer.v(extracter));
 				PackManager.v().getPack("jtp").add(t);
 			}
 
+			BriefUnitGraph bodyGraph = new BriefUnitGraph(body);
+			this.runTestReachingDefs(bodyGraph);
+
 			/*
 			 * Instantiate and execute a runner for the FSRD analysis.
 			 */
-			FeatureSensitiveAnalysisRunner runner = new FeatureSensitiveAnalysisRunner(new BriefUnitGraph(body), SetUtil.tstconfig(),
+			FeatureSensitiveAnalysisRunner runner = new FeatureSensitiveAnalysisRunner(bodyGraph, SetUtil.tstconfig(),
 					FeatureSensitiveReachingDefinitions.class, new HashMap<Object, Object>());
 			runner.execute();
 			Map<Set<Object>, FeatureSensitiviteFowardFlowAnalysis> results = runner.getResults();
-			
+
 			/*
 			 * Bridges from the ASTNodes from the selection to Soot Units using
 			 * line number as a parameter.
 			 */
 			Collection<Unit> unitsInSelection = ASTNodeUnitBridge.getUnitsFromLines(ASTNodeUnitBridge.getLinesFromASTNodes(selectionNodes, jdtCompilationUnit),
 					body);
-			
+
 			StringBuilder messageBuilder = new StringBuilder();
-			
+
 			Iterator<Unit> unitsInSelectionIterator = unitsInSelection.iterator();
 			while (unitsInSelectionIterator.hasNext()) {
 				Unit unit = (Unit) unitsInSelectionIterator.next();
 				messageBuilder.append("Provides " + unit + " to ");
-				
+
 				Set<Entry<Set<Object>, FeatureSensitiviteFowardFlowAnalysis>> entrySet = results.entrySet();
 				Iterator<Entry<Set<Object>, FeatureSensitiviteFowardFlowAnalysis>> iterator = entrySet.iterator();
 				Set<IFeature> tmpFeatureSet = new HashSet<IFeature>();
@@ -189,28 +196,26 @@ public class DoComputeHandler extends AbstractHandler implements IHandler {
 					for (Unit reachedUnit : reachedUsesUnits) {
 						Set<IFeature> colorsOnReachedUnit = new HashSet<IFeature>();
 						Collection<ASTNode> astNodesFromUnit = ASTNodeUnitBridge.getASTNodesFromUnit(reachedUnit, jdtCompilationUnit);
-						for(ASTNode nodeFromUnit : astNodesFromUnit) {
+						for (ASTNode nodeFromUnit : astNodesFromUnit) {
 							colorsOnReachedUnit.addAll(extracter.getFeatures(nodeFromUnit, textSelectionFile));
 						}
 						SourceLnPosTag lineTag = (SourceLnPosTag) reachedUnit.getTag("SourceLnPosTag");
-						
+
 						messageBuilder.append(colorsOnReachedUnit.toString() + "(line " + lineTag.startLn() + ")\n");
 					}
-					
-//					System.out.println("==================");
-//					System.out.println(entry.getKey());
-//					System.out.println("------------------");
-//					String format = "|%1$-50s|%2$-50s|\n";
-//					System.out.format(format, unit, reachedUsesUnits);
-//					System.out.println("==================");
-//					System.out.println();
+
+					// System.out.println("==================");
+					// System.out.println(entry.getKey());
+					// System.out.println("------------------");
+					// String format = "|%1$-50s|%2$-50s|\n";
+					// System.out.format(format, unit, reachedUsesUnits);
+					// System.out.println("==================");
+					// System.out.println();
 
 				}
 			}
-			
-			
-			InfoPopup.pop(shell, messageBuilder.toString());
 
+			InfoPopup.pop(shell, messageBuilder.toString());
 
 			//
 			// if (!PackManager.v().hasPack("wjtp.rd")) {
@@ -298,7 +303,7 @@ public class DoComputeHandler extends AbstractHandler implements IHandler {
 			// }
 			// System.out.println("===");
 			// }
-			
+
 			/*
 			 * Reset SOOT states and free resources
 			 */
@@ -309,5 +314,16 @@ public class DoComputeHandler extends AbstractHandler implements IHandler {
 		}
 
 		return null;
+	}
+
+	public void runTestReachingDefs(BriefUnitGraph bodyGraph) {
+		TestReachingDefinitions tst = new TestReachingDefinitions(bodyGraph);
+		Iterator<Unit> iterator = bodyGraph.iterator();
+		String format = "|%1$-35s|%2$-30s|%3$-40s|\n";
+		while (iterator.hasNext()) {
+			Unit unit = (Unit) iterator.next();
+			LiftedFlowSet flowAfter = tst.getFlowAfter(unit);
+			System.out.format(format, unit, unit.getTag("FeatureTag"), flowAfter);
+		}
 	}
 }

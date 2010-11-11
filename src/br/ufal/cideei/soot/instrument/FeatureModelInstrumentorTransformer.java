@@ -77,12 +77,11 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 	 */
 	@Override
 	protected void internalTransform(Body body, String phase, Map opt) {
-		System.out.println("!");
 		preTransform(body);
 
 		/*
 		 * The feature set and its power set will be computed during the first
-		 * iteration and after the first iteration respectivelly
+		 * iteration and after the second iteration respectivelly
 		 */
 		Set<String> featureSet = new HashSet<String>();
 		Set<Set<String>> featurePowerSet = null;
@@ -93,8 +92,12 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 		 * set. In order to optimize the code, we will also keep record of all
 		 * the nodes and features of units that has at least one feature.
 		 * 
-		 * This triple is stored as and array of objects in this order: {Unit,
-		 * ASTNodes, Features}
+		 * This triple is stored as an array of objects in this order: {Unit,
+		 * ASTNodes, Features}.
+		 * 
+		 * The first object can be seen as the "key" of the triple. The second
+		 * one is the ASTNodes reated to the Unit. The third is the features
+		 * they have been marked with
 		 */
 		Iterator<Unit> unitIt = body.getUnits().snapshotIterator();
 
