@@ -1,5 +1,6 @@
 package br.ufal.cideei.soot.analyses;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -7,19 +8,32 @@ import br.ufal.cideei.soot.instrument.FeatureTag;
 
 import soot.Unit;
 import soot.jimple.AssignStmt;
+import soot.tagkit.Tag;
 import soot.toolkits.graph.DirectedGraph;
 import soot.toolkits.scalar.FlowSet;
 import soot.toolkits.scalar.ForwardFlowAnalysis;
 
+// TODO: Auto-generated Javadoc
+/**
+ * This implementation of the Reaching Definitions analysis uses a LiftedFlowSet
+ * as a lattice element. The only major change is how it's KILL method is
+ * implemented. Everything else is quite similar to a 'regular' FlowSet-based
+ * analysis.
+ */
 public class TestReachingDefinitions extends ForwardFlowAnalysis<Unit, LiftedFlowSet> {
 
 	/** The empty set. */
+	/*
+	 * FIXME: the clone method of LiftedFlowSet is not working properly right
+	 * now.
+	 */
 	private LiftedFlowSet emptySet;
 
 	/**
-	 * Instantiates a new simple reaching definitions.
-	 *
-	 * @param graph the graph
+	 * Instantiates a new TestReachingDefinitions.
+	 * 
+	 * @param graph
+	 *            the graph
 	 */
 	public TestReachingDefinitions(DirectedGraph<Unit> graph) {
 		super(graph);
@@ -27,23 +41,31 @@ public class TestReachingDefinitions extends ForwardFlowAnalysis<Unit, LiftedFlo
 		super.doAnalysis();
 	}
 
-	/* (non-Javadoc)
-	 * @see soot.toolkits.scalar.AbstractFlowAnalysis#copy(java.lang.Object, java.lang.Object)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see soot.toolkits.scalar.AbstractFlowAnalysis#copy(java.lang.Object,
+	 * java.lang.Object)
 	 */
 	@Override
 	protected void copy(LiftedFlowSet source, LiftedFlowSet dest) {
 		source.copy(dest);
 	}
 
-	/* (non-Javadoc)
-	 * @see soot.toolkits.scalar.AbstractFlowAnalysis#merge(java.lang.Object, java.lang.Object, java.lang.Object)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see soot.toolkits.scalar.AbstractFlowAnalysis#merge(java.lang.Object,
+	 * java.lang.Object, java.lang.Object)
 	 */
 	@Override
 	protected void merge(LiftedFlowSet source1, LiftedFlowSet source2, LiftedFlowSet dest) {
 		source1.union(source2, dest);
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see soot.toolkits.scalar.AbstractFlowAnalysis#entryInitialFlow()
 	 */
 	@Override
@@ -51,7 +73,9 @@ public class TestReachingDefinitions extends ForwardFlowAnalysis<Unit, LiftedFlo
 		return this.emptySet.clone();
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see soot.toolkits.scalar.AbstractFlowAnalysis#newInitialFlow()
 	 */
 	@Override
@@ -59,8 +83,11 @@ public class TestReachingDefinitions extends ForwardFlowAnalysis<Unit, LiftedFlo
 		return this.emptySet.clone();
 	}
 
-	/* (non-Javadoc)
-	 * @see soot.toolkits.scalar.FlowAnalysis#flowThrough(java.lang.Object, java.lang.Object, java.lang.Object)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see soot.toolkits.scalar.FlowAnalysis#flowThrough(java.lang.Object,
+	 * java.lang.Object, java.lang.Object)
 	 */
 	@Override
 	protected void flowThrough(LiftedFlowSet source, Unit unit, LiftedFlowSet dest) {
@@ -73,24 +100,47 @@ public class TestReachingDefinitions extends ForwardFlowAnalysis<Unit, LiftedFlo
 	 * case, our KILL set are the Assignments made to the same Value that this
 	 * Unit assigns to.
 	 * 
-	 * @param src
-	 *            the src
+	 * @param source
+	 *            the source
 	 * @param unit
 	 *            the unit
 	 * @param dest
 	 *            the dest
 	 */
 	private void kill(LiftedFlowSet source, Unit unit, LiftedFlowSet dest) {
-		
-		LiftedFlowSet kills = emptySet.clone();
+
+		LiftedFlowSet kills = new LiftedFlowSet();
+		// FIXME: clone not working correctly!
+		// LiftedFlowSet kills = this.emptySet.clone();
+
+		/*
+		 * For the kill set, we are only interested on Assignments.
+		 */
 		if (unit instanceof AssignStmt) {
+			Map<Set<String>, FlowSet> liftedMap = source.getMap();
+			Set<Set<String>> configurations = liftedMap.keySet();
+
+			FeatureTag<Set<String>> tag = (FeatureTag<Set<String>>) unit.getTag("FeatureTag");
+			List<Set<String>> features = tag.getFeatures();
+
 			AssignStmt assignStmt = (AssignStmt) unit;
-			
-			for (Object earlierAssignment : source.toList()) {
-				if (earlierAssignment instanceof AssignStmt) {
-					AssignStmt stmt = (AssignStmt) earlierAssignment;
-					if (stmt.getLeftOp().equivTo(assignStmt.getLeftOp())) {
-						kills.add(earlierAssignment);
+
+			/*
+			 * Iterate through all valid configurations as intrumented in the
+			 * FeatureTag. If for every configuration C, C contains an earlier
+			 * assignment made to the same Local we are looking at now (unit),
+			 * then it must be killed.
+			 */
+			for (Set<String> validConfig : features) {
+				if (configurations.contains(validConfig)) {
+					List flowSetList = liftedMap.get(validConfig).toList();
+					for (Object earlierAssignment : flowSetList) {
+						if (earlierAssignment instanceof AssignStmt) {
+							AssignStmt stmt = (AssignStmt) earlierAssignment;
+							if (stmt.getLeftOp().equivTo(assignStmt.getLeftOp())) {
+								kills.add(validConfig, earlierAssignment);
+							}
+						}
 					}
 				}
 			}
@@ -98,45 +148,6 @@ public class TestReachingDefinitions extends ForwardFlowAnalysis<Unit, LiftedFlo
 		source.difference(kills, dest);
 	}
 
-	
-//	private void kill(LiftedFlowSet source, Unit unit, LiftedFlowSet dest) {
-//		
-//		LiftedFlowSet kills = emptySet.clone();
-//		
-//		Map<Set<String>, FlowSet> liftedMap = source.getMap();
-//		Set<Set<String>> configurations = liftedMap.keySet();
-//		
-//		for (Set<String> configuration : configurations) {
-//			if (unit instanceof AssignStmt) {
-//				AssignStmt assignStmt = (AssignStmt) unit;
-//				if (unit.hasTag("FeatureTag")) {
-//					FeatureTag tag = (FeatureTag) unit.getTag("FeatureTag");
-//					
-//				}
-//			}
-//		}
-//		
-//		
-//		
-//		
-//		
-//		if (unit instanceof AssignStmt) {
-//			AssignStmt assignStmt = (AssignStmt) unit;
-//			
-//			
-//			
-//			for (Object earlierAssignment : source.toList()) {
-//				if (earlierAssignment instanceof AssignStmt) {
-//					AssignStmt stmt = (AssignStmt) earlierAssignment;
-//					if (stmt.getLeftOp().equivTo(assignStmt.getLeftOp())) {
-//						kills.add(earlierAssignment);
-//					}
-//				}
-//			}
-//		}
-//		source.difference(kills, dest);
-//	}
-	
 	/**
 	 * Creates a GEN set for a given Unit and it to the FlowSet dest. In this
 	 * case, our GEN set are all the definitions present in the unit.
@@ -146,7 +157,7 @@ public class TestReachingDefinitions extends ForwardFlowAnalysis<Unit, LiftedFlo
 	 * @param unit
 	 *            the unit
 	 */
-	// TODO: MUST ITERATOR THROUGH ALL DEFBOXES!!!
+	// TODO: MUST ITERATE THROUGH ALL DEFBOXES!!!
 	private void gen(LiftedFlowSet dest, Unit unit) {
 		if (unit instanceof AssignStmt) {
 			dest.add(unit);
