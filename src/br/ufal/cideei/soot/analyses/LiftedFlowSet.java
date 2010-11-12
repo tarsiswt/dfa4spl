@@ -1,5 +1,6 @@
 package br.ufal.cideei.soot.analyses;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -33,40 +34,20 @@ public class LiftedFlowSet<T> extends AbstractFlowSet {
 	/**
 	 * Getter for the map attribute.
 	 * 
-	 * TODO: Deveria retornar um UnmodifiableMap?
-	 * 
 	 * @return the map
 	 */
 	public HashMap<Set<String>, FlowSet> getMap() {
 		return map;
 	}
 
-	/** The actual configuration. */
-	// TODO: Este atributo provavelmente será removido mais tarde.
-	private Set<String> actualConfiguration;
-
 	/**
 	 * Instantiates a new LiftedFlowSet.
 	 */
-	/*
-	 * TODO: esta classe necessita que um keySet para o map interno seja
-	 * injetado. Ela não funcionará corretamente sem isso. KeySet que está
-	 * hardcoded abaixo é o seguinte: [{A},{B} e {A,B}].
-	 */
-	public LiftedFlowSet() {
+	public LiftedFlowSet(Collection<Set<String>> configs) {
 		this.map = new HashMap<Set<String>, FlowSet>();
-
-		Set<String> ASet = new HashSet<String>();
-		Set<String> BSet = new HashSet<String>();
-		Set<String> ABSet = new HashSet<String>();
-		ASet.add("A");
-		BSet.add("B");
-		ABSet.add("A");
-		ABSet.add("B");
-
-		this.map.put(ASet, new ArraySparseSet());
-		this.map.put(BSet, new ArraySparseSet());
-		this.map.put(ABSet, new ArraySparseSet());
+		for (Set<String> config : configs) {
+			this.map.put(config, new ArraySparseSet());
+		}
 	}
 
 	/**
@@ -86,8 +67,6 @@ public class LiftedFlowSet<T> extends AbstractFlowSet {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * TODO: explicar semântica da função
-	 * 
 	 * @see soot.toolkits.scalar.AbstractFlowSet#clone()
 	 */
 	// FIXME: não está funcionando como esperado. É preciso rever esta
@@ -99,8 +78,6 @@ public class LiftedFlowSet<T> extends AbstractFlowSet {
 
 	/*
 	 * (non-Javadoc)
-	 * 
-	 * TODO: explicar semântica da função
 	 * 
 	 * @see soot.toolkits.scalar.AbstractFlowSet#equals(java.lang.Object)
 	 */
@@ -131,8 +108,7 @@ public class LiftedFlowSet<T> extends AbstractFlowSet {
 	}
 
 	/**
-	 * Adds obj to it's respective configuration FlowSet if such config exists.
-	 * Does nothing otherwise.
+	 * Adds obj to it's respective configuration FlowSet only if such config exists.
 	 * 
 	 * @param config
 	 *            the config
@@ -190,7 +166,6 @@ public class LiftedFlowSet<T> extends AbstractFlowSet {
 	 * @see soot.toolkits.scalar.AbstractFlowSet#contains(java.lang.Object)
 	 */
 	@Override
-	// FIXME: lança exceção quando o actual configuration não está setado.
 	/*
 	 * TODO: SUGESTÃO: mudar a semântica deste método. Retornar true se existe o
 	 * objecto existe em QUALQUER um dos FlowSets, false caso contrário. Criar
@@ -199,8 +174,7 @@ public class LiftedFlowSet<T> extends AbstractFlowSet {
 	 * deve ser óbvia.
 	 */
 	public boolean contains(Object object) {
-		FlowSet configurationFlowSet = map.get(actualConfiguration);
-		return configurationFlowSet.contains(object);
+		throw new UnsupportedOperationException("This method is not defined for a LiftedFlowSet");
 	}
 
 	/*
@@ -211,7 +185,6 @@ public class LiftedFlowSet<T> extends AbstractFlowSet {
 	 * @see soot.toolkits.scalar.AbstractFlowSet#isEmpty()
 	 */
 	@Override
-	// FIXME: lança exceção quando o actual configuration não está setado
 	/*
 	 * TODO: SUGESTÃO: retornar true caso o map esteja vazio, false caso
 	 * contrário. Criar um novo método com a seguinte assinatura:
@@ -219,8 +192,7 @@ public class LiftedFlowSet<T> extends AbstractFlowSet {
 	 * ser óbvia.
 	 */
 	public boolean isEmpty() {
-		FlowSet configurationFlowSet = map.get(actualConfiguration);
-		return configurationFlowSet.isEmpty();
+		return map.isEmpty();
 	}
 
 	/*
@@ -252,13 +224,8 @@ public class LiftedFlowSet<T> extends AbstractFlowSet {
 	 * @see soot.toolkits.scalar.AbstractFlowSet#size()
 	 */
 	@Override
-	// FIXME: lança exceção quando o actual configuration não está setado
-	/*
-	 * TODO: SUGESTÃO: retornar o size do map.
-	 */
 	public int size() {
-		FlowSet configurationFlowSet = map.get(actualConfiguration);
-		return configurationFlowSet.size();
+		return map.size();
 	}
 
 	/*
@@ -267,15 +234,8 @@ public class LiftedFlowSet<T> extends AbstractFlowSet {
 	 * @see soot.toolkits.scalar.AbstractFlowSet#toList()
 	 */
 	@Override
-	// FIXME: lança exceção quando o actual configuration não está setado
-	/*
-	 * TODO: Não tenho nenhuma sugestão para o refatoramento deste método.
-	 * 
-	 * Lançar um UnsupportedOperationException?
-	 */
 	public List toList() {
-		FlowSet configurationFlowSet = map.get(actualConfiguration);
-		return configurationFlowSet.toList();
+		throw new UnsupportedOperationException("This method is not defined for a LiftedFlowSet");
 	}
 
 	/*
@@ -286,68 +246,56 @@ public class LiftedFlowSet<T> extends AbstractFlowSet {
 	 * public Iterator iterator() { return map. }
 	 */
 
-	/*
-	 * (non-Javadoc)
+	/**
+	 * Copies this Config-FlowSet mapping into dest.
 	 * 
-	 * TODO: explicar semântica da função
-	 * 
-	 * @see
-	 * soot.toolkits.scalar.AbstractFlowSet#copy(soot.toolkits.scalar.FlowSet)
+	 * @see soot.toolkits.scalar.AbstractFlowSet#copy(soot.toolkits.scalar.FlowSet)
 	 */
 	@Override
 	/*
-	 * NOTA: A semântica deste método permanece.
+	 * TODO: O copy como implementado no AbstracFlowSet limpa o dest antes de
+	 * realizar a cópia. Talvez devessémos fazer o mesmo, só que no nosso nível.
+	 * Ou seja, limpar o map do dest, antes de realizar a cópia? Deve ser o
+	 * clear() ou o clearFlowSets()?
 	 */
 	public void copy(FlowSet dest) {
-		LiftedFlowSet otherLifted = (LiftedFlowSet) dest;
+		LiftedFlowSet destLifted = (LiftedFlowSet) dest;
 
 		Set<Set<String>> configurations = map.keySet();
 
-		/*
-		 * TODO: Checar se o otherLifted realmente contém configuration antes de
-		 * realizar um get para evitar nullpointerexceptions
-		 */
 		for (Set<String> configuration : configurations) {
-			actualConfiguration = configuration;
+			if (destLifted.map.containsKey(configuration)) {
+				FlowSet otherNormal = (FlowSet) destLifted.map.get(configuration);
+				FlowSet thisNormal = (FlowSet) map.get(configuration);
 
-			FlowSet otherNormal = (FlowSet) otherLifted.map.get(configuration);
-			FlowSet thisNormal = (FlowSet) map.get(configuration);
-
-			thisNormal.copy(otherNormal);
+				thisNormal.copy(otherNormal);
+			}
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
+	/**
+	 * The difference between LiftedFlowSets is defined as the difference
+	 * between every FlowSets in @code{this} and the FlowSets in @code{other}
+	 * with the same configuration.
 	 * 
-	 * @see
-	 * soot.toolkits.scalar.AbstractFlowSet#difference(soot.toolkits.scalar.
-	 * FlowSet)
-	 */
-	// @Override
-	// public void difference(FlowSet other) {
-	// difference(other, this);
-	// }
-
-	/*
-	 * (non-Javadoc)
+	 * The result is placed on @code{dest}. It`s keys are preserverd, but its
+	 * flowsets are cleared.
 	 * 
-	 * TODO: explicar semântica da função
-	 * 
-	 * @see
-	 * soot.toolkits.scalar.AbstractFlowSet#difference(soot.toolkits.scalar.
-	 * FlowSet, soot.toolkits.scalar.FlowSet)
+	 * @see soot.toolkits.scalar.AbstractFlowSet#difference(soot.toolkits.scalar.
+	 *      FlowSet, soot.toolkits.scalar.FlowSet)
 	 */
 	@Override
 	public void difference(FlowSet other, FlowSet dest) {
 		LiftedFlowSet otherLifted = (LiftedFlowSet) other;
 		LiftedFlowSet destLifted = (LiftedFlowSet) dest;
 
+		destLifted.clearFlowSets();
+
 		/*
 		 * If they are the same object, or equal, then the resulting difference
 		 * must be empty.
 		 */
-		if (destLifted == this && destLifted == other || other.equals(destLifted)) {
+		if (this.equals(other)) {
 			destLifted.clearFlowSets();
 			return;
 		}
@@ -366,119 +314,68 @@ public class LiftedFlowSet<T> extends AbstractFlowSet {
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
+	/**
+	 * The intersection between LiftedFlowSets is defined as the intersection
+	 * between every FlowSets in @code{this} and the FlowSets in @code{other}
+	 * with the same configuration.
 	 * 
-	 * TODO: explicar semântica da função
+	 * The result is placed on @code{dest}. It`s keys are preserverd, but its
+	 * flowsets are cleared.
 	 * 
-	 * @see
-	 * soot.toolkits.scalar.AbstractFlowSet#intersection(soot.toolkits.scalar
-	 * .FlowSet)
-	 */
-	// @Override
-	// public void intersection(FlowSet other) {
-	// LiftedFlowSet otherLifted = (LiftedFlowSet) other;
-	//
-	// Set<Set<String>> configurations = map.keySet();
-	//
-	// /*
-	// * TODO: Checar se o otherLifted realmente contém configuration antes de
-	// * realizar um get para evitar nullpointerexceptions
-	// */
-	// for (Set<String> configuration : configurations) {
-	// actualConfiguration = configuration;
-	//
-	// FlowSet otherNormal = (FlowSet) otherLifted.map.get(configuration);
-	// FlowSet thisNormal = (FlowSet) map.get(configuration);
-	//
-	// thisNormal.intersection(otherNormal);
-	// }
-	// }
-
-	/*
-	 * (non-Javadoc)
 	 * 
-	 * TODO: explicar semântica da função
-	 * 
-	 * @see
-	 * soot.toolkits.scalar.AbstractFlowSet#intersection(soot.toolkits.scalar
-	 * .FlowSet, soot.toolkits.scalar.FlowSet)
+	 * @see soot.toolkits.scalar.AbstractFlowSet#intersection(soot.toolkits.scalar
+	 *      .FlowSet, soot.toolkits.scalar.FlowSet)
 	 */
 	@Override
 	public void intersection(FlowSet other, FlowSet dest) {
 		LiftedFlowSet otherLifted = (LiftedFlowSet) other;
 		LiftedFlowSet destLifted = (LiftedFlowSet) dest;
 
+		destLifted.clearFlowSets();
+
 		Set<Set<String>> configurations = map.keySet();
 
-		/*
-		 * TODO: Checar se o otherLifted realmente contém configuration antes de
-		 * realizar um get para evitar nullpointerexceptions
-		 */
 		for (Set<String> configuration : configurations) {
-			actualConfiguration = configuration;
+			if (otherLifted.map.containsKey(configuration)) {
+				FlowSet otherNormal = (FlowSet) otherLifted.map.get(configuration);
+				FlowSet thisNormal = (FlowSet) map.get(configuration);
 
-			FlowSet otherNormal = (FlowSet) otherLifted.map.get(configuration);
-			FlowSet thisNormal = (FlowSet) map.get(configuration);
-			FlowSet destNormal = (FlowSet) destLifted.map.get(configuration);
-
-			thisNormal.intersection(otherNormal, destNormal);
+				FlowSet destNewFlowSet = new ArraySparseSet();
+				destLifted.map.put(configuration, destNewFlowSet);
+				thisNormal.intersection(otherNormal, destNewFlowSet);
+			}
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
+	/**
+	 * The union between LiftedFlowSets is defined as the union between every
+	 * FlowSets in @code{this} and the FlowSets in @code{other} with the same
+	 * configuration.
 	 * 
-	 * TODO: explicar semântica da função
+	 * The result is placed on @code{dest}. It`s keys are preserverd, but its
+	 * flowsets are cleared.
 	 * 
-	 * @see
-	 * soot.toolkits.scalar.AbstractFlowSet#union(soot.toolkits.scalar.FlowSet)
-	 */
-	// @Override
-	// public void union(FlowSet other) {
-	// LiftedFlowSet otherLifted = (LiftedFlowSet) other;
-	//
-	// Set<Set<String>> configurations = map.keySet();
-	//
-	//		
-	// for (Set<String> configuration : configurations) {
-	// actualConfiguration = configuration;
-	//
-	// FlowSet otherNormal = (FlowSet) otherLifted.map.get(configuration);
-	// FlowSet thisNormal = (FlowSet) map.get(configuration);
-	//
-	// thisNormal.union(otherNormal);
-	// }
-	// }
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * TODO: explicar semântica da função
-	 * 
-	 * @see
-	 * soot.toolkits.scalar.AbstractFlowSet#union(soot.toolkits.scalar.FlowSet,
-	 * soot.toolkits.scalar.FlowSet)
+	 * @see soot.toolkits.scalar.AbstractFlowSet#union(soot.toolkits.scalar.FlowSet,
+	 *      soot.toolkits.scalar.FlowSet)
 	 */
 	@Override
 	public void union(FlowSet other, FlowSet dest) {
 		LiftedFlowSet otherLifted = (LiftedFlowSet) other;
 		LiftedFlowSet destLifted = (LiftedFlowSet) dest;
 
+		destLifted.clearFlowSets();
+
 		Set<Set<String>> configurations = map.keySet();
 
-		/*
-		 * TODO: Checar se o otherLifted realmente contém configuration antes de
-		 * realizar um get para evitar nullpointerexceptions
-		 */
 		for (Set<String> configuration : configurations) {
-			actualConfiguration = configuration;
+			if (otherLifted.map.containsKey(configuration)) {
+				FlowSet otherNormal = (FlowSet) otherLifted.map.get(configuration);
+				FlowSet thisNormal = (FlowSet) map.get(configuration);
 
-			FlowSet otherNormal = (FlowSet) otherLifted.map.get(configuration);
-			FlowSet thisNormal = (FlowSet) map.get(configuration);
-			FlowSet destNormal = (FlowSet) destLifted.map.get(configuration);
-
-			thisNormal.union(otherNormal, destNormal);
+				FlowSet destNewFlowSet = new ArraySparseSet();
+				destLifted.map.put(configuration, destNewFlowSet);
+				thisNormal.union(otherNormal, destNewFlowSet);
+			}
 		}
 	}
 
@@ -510,10 +407,11 @@ public class LiftedFlowSet<T> extends AbstractFlowSet {
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
+	/**
+	 * Returns a String representation of this object.
 	 * 
-	 * @see soot.toolkits.scalar.AbstractFlowSet#toString()
+	 * @return String representation
+	 * 
 	 */
 	@Override
 	public String toString() {

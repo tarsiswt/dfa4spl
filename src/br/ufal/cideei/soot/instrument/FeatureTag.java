@@ -1,7 +1,10 @@
 package br.ufal.cideei.soot.instrument;
 
+import java.util.AbstractCollection;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 import soot.tagkit.AttributeValueException;
@@ -15,7 +18,7 @@ import soot.tagkit.Tag;
  * @param <E>
  *            the element type
  */
-public class FeatureTag<E> implements Tag {
+public class FeatureTag<E> extends AbstractCollection<E> implements Tag {
 
 	/** The Constant FEAT_TAG_NAME. */
 	private static final String FEAT_TAG_NAME = "FeatureTag";
@@ -29,8 +32,8 @@ public class FeatureTag<E> implements Tag {
 	 * @param ft
 	 *            the feature to be added.
 	 */
-	public void add(E ft) {
-		features.add(ft);
+	public boolean add(E ft) {
+		return features.add(ft);
 	}
 
 	/**
@@ -59,7 +62,7 @@ public class FeatureTag<E> implements Tag {
 	 * 
 	 * @return the features
 	 */
-	public List<E> getFeatures() {
+	public Collection<E> getFeatures() {
 		return Collections.unmodifiableList(this.features);
 	}
 
@@ -86,6 +89,16 @@ public class FeatureTag<E> implements Tag {
 	@Override
 	public String toString() {
 		return features.toString();
+	}
+
+	@Override
+	public Iterator<E> iterator() {
+		return features.iterator();
+	}
+
+	@Override
+	public int size() {
+		return features.size();
 	}
 
 }

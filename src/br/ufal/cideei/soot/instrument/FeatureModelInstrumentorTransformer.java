@@ -43,12 +43,15 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 
 	/** The singleton instance. */
 	private static FeatureModelInstrumentorTransformer instance = new FeatureModelInstrumentorTransformer();
+	/** Feature extracter. */
 	private static IFeatureExtracter extracter;
+	/** Current compilation unit the transformation is working on */
 	private CompilationUnit currentCompilationUnit;
 	private IFile iFile;
+	private Collection<Set<String>> configurationPowerSet;
 
 	/**
-	 * Instantiates a new feature model instrumentor.
+	 * Disable default constructor. This class is a singleton.
 	 */
 	private FeatureModelInstrumentorTransformer() {
 	}
@@ -158,6 +161,7 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 		}
 
 		featurePowerSet = SetUtil.powerSet(featureSet);
+		this.configurationPowerSet = featurePowerSet;
 
 		/*
 		 * Now, in this second iteration, the units will be tagged with their
@@ -171,11 +175,12 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 		 * no color. This object should not be modified.
 		 */
 		FeatureTag<Set<String>> powerSetTag = new FeatureTag<Set<String>>();
-		Iterator<Set<String>> featurePowerSetIterator = featurePowerSet.iterator();
-		while (featurePowerSetIterator.hasNext()) {
-			Set<String> set = (Set<String>) featurePowerSetIterator.next();
-			powerSetTag.add(set);
-		}
+		powerSetTag.addAll(featurePowerSet);
+//		Iterator<Set<String>> featurePowerSetIterator = featurePowerSet.iterator();
+//		while (featurePowerSetIterator.hasNext()) {
+//			Set<String> set = (Set<String>) featurePowerSetIterator.next();
+//			powerSetTag.add(set);
+//		}
 
 		/*
 		 * All colorless units will have a full feature power set tag, meaning
@@ -245,5 +250,9 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 		CompilationUnit jdtCompilationUnit = (CompilationUnit) parser.createAST(null);
 
 		this.currentCompilationUnit = jdtCompilationUnit;
+	}
+
+	public Collection<Set<String>> getPowerSet() {
+		return this.configurationPowerSet;
 	}
 }

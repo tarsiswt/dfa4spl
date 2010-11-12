@@ -1,5 +1,6 @@
 package br.ufal.cideei.soot.analyses;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -28,6 +29,7 @@ public class TestReachingDefinitions extends ForwardFlowAnalysis<Unit, LiftedFlo
 	 * now.
 	 */
 	private LiftedFlowSet emptySet;
+	private Collection<Set<String>> configurations;
 
 	/**
 	 * Instantiates a new TestReachingDefinitions.
@@ -35,9 +37,10 @@ public class TestReachingDefinitions extends ForwardFlowAnalysis<Unit, LiftedFlo
 	 * @param graph
 	 *            the graph
 	 */
-	public TestReachingDefinitions(DirectedGraph<Unit> graph) {
+	public TestReachingDefinitions(DirectedGraph<Unit> graph, Collection<Set<String>> configs) {
 		super(graph);
-		this.emptySet = new LiftedFlowSet();
+		this.configurations = configs;
+		this.emptySet = new LiftedFlowSet(configs);
 		super.doAnalysis();
 	}
 
@@ -109,7 +112,7 @@ public class TestReachingDefinitions extends ForwardFlowAnalysis<Unit, LiftedFlo
 	 */
 	private void kill(LiftedFlowSet source, Unit unit, LiftedFlowSet dest) {
 
-		LiftedFlowSet kills = new LiftedFlowSet();
+		LiftedFlowSet kills = new LiftedFlowSet(this.configurations);
 		// FIXME: clone not working correctly!
 		// LiftedFlowSet kills = this.emptySet.clone();
 
@@ -121,7 +124,7 @@ public class TestReachingDefinitions extends ForwardFlowAnalysis<Unit, LiftedFlo
 			Set<Set<String>> configurations = liftedMap.keySet();
 
 			FeatureTag<Set<String>> tag = (FeatureTag<Set<String>>) unit.getTag("FeatureTag");
-			List<Set<String>> features = tag.getFeatures();
+			Collection<Set<String>> features = tag.getFeatures();
 
 			AssignStmt assignStmt = (AssignStmt) unit;
 

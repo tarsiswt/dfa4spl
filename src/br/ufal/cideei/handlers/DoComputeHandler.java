@@ -49,6 +49,8 @@ import br.ufal.cideei.algorithms.unique.UniqueUsesAlgorithm;
 import br.ufal.cideei.features.CIDEFeatureExtracterFactory;
 import br.ufal.cideei.features.IFeatureExtracter;
 import br.ufal.cideei.soot.SootManager;
+import br.ufal.cideei.soot.SootUnitGraphSerializer;
+import br.ufal.cideei.soot.UnitUtil;
 import br.ufal.cideei.soot.analyses.FeatureSensitiveAnalysisRunner;
 import br.ufal.cideei.soot.analyses.FeatureSensitiviteFowardFlowAnalysis;
 import br.ufal.cideei.soot.analyses.LiftedFlowSet;
@@ -149,17 +151,16 @@ public class DoComputeHandler extends AbstractHandler implements IHandler {
 			SootMethod sootMethod = SootManager.getMethodBySignature(declaringMethodClass, mdsm.getSootMethodSubSignature());
 			Body body = sootMethod.retrieveActiveBody();
 
+			
 			/*
-			 * Do Jimple code instrumentation with feature model.
+			 * Add transformation to pack. Will transform/instrument all classes.
 			 */
-			FeatureModelInstrumentorTransformer.v(extracter).transform2(body);
 			if (!PackManager.v().hasPack("jtp.featmodelinst")) {
-				Transform t = new Transform("jtp.featmodelinst", FeatureModelInstrumentorTransformer.v(extracter));
-				PackManager.v().getPack("jtp").add(t);
+				Transform featureModelTransform = new Transform("jtp.featmodelinst", FeatureModelInstrumentorTransformer.v(extracter));
+				PackManager.v().getPack("jtp").add(featureModelTransform);
 			}
 
 			BriefUnitGraph bodyGraph = new BriefUnitGraph(body);
-			this.runTestReachingDefs(bodyGraph);
 
 			/*
 			 * Instantiate and execute a runner for the FSRD analysis.
@@ -314,16 +315,5 @@ public class DoComputeHandler extends AbstractHandler implements IHandler {
 		}
 
 		return null;
-	}
-
-	public void runTestReachingDefs(BriefUnitGraph bodyGraph) {
-		TestReachingDefinitions tst = new TestReachingDefinitions(bodyGraph);
-		Iterator<Unit> iterator = bodyGraph.iterator();
-		String format = "|%1$-35s|%2$-30s|%3$-40s|\n";
-		while (iterator.hasNext()) {
-			Unit unit = (Unit) iterator.next();
-			LiftedFlowSet flowAfter = tst.getFlowAfter(unit);
-			System.out.format(format, unit, unit.getTag("FeatureTag"), flowAfter);
-		}
 	}
 }

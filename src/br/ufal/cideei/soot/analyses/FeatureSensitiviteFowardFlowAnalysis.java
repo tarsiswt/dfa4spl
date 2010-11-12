@@ -76,7 +76,7 @@ public abstract class FeatureSensitiviteFowardFlowAnalysis<A extends Unit, N ext
 	protected boolean beforeFilter(FlowSet source, Unit unit, FlowSet dest) {
 		if (unit.hasTag("FeatureTag")) {
 			FeatureTag<T> tag = (FeatureTag<T>) unit.getTag("FeatureTag");
-			List<T> annotatedConfigs = tag.getFeatures();
+			Collection<T> annotatedConfigs = (Collection<T>) tag.getFeatures();
 
 			Iterator<T> annotatedconfigsIterator = annotatedConfigs.iterator();
 			while (annotatedconfigsIterator.hasNext()) {

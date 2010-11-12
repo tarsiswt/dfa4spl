@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.2"?>
 <plugin>
+
    <extension
          point="org.eclipse.ui.commands">
       <category
@@ -12,7 +13,7 @@
             categoryId="br.ufal.cideei.categories.ComputeEI"
             description="Computes emergent interface"
             id="br.ufal.cideei.commands.DoCompute"
-            name="Compute EI">
+            name="RD com Runner">
       </command>
    </extension>
    <extension
@@ -29,7 +30,40 @@
          <command
                commandId="br.ufal.cideei.commands.DoCompute">
          </command>
-      </menuContribution>
+      </menuContribution>      
    </extension>
+   
+   <extension
+         point="org.eclipse.ui.commands">
+     <category
+            description=""
+            id="br.ufal.cideei.categories.ComputeEI"
+            name="EI Commands">
+      </category>
+      <command
+            categoryId="br.ufal.cideei.categories.ComputeEI"
+            description="Runs an interprocedural feature-sensitive reaching definitions analysis"
+            id="br.ufal.cideei.commands.DoIFSRD"
+            name="RD com Lifted">
+       </command>
+   </extension>
+   <extension
+         point="org.eclipse.ui.handlers">
+      <handler
+            class="br.ufal.cideei.handlers.DoIFSRDHandler"
+            commandId="br.ufal.cideei.commands.DoIFSRD">
+      </handler>
+   </extension>  
+   <extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            locationURI="popup:#CompilationUnitEditorContext">
+         <command
+               commandId="br.ufal.cideei.commands.DoIFSRD">
+         </command>
+      </menuContribution>      
+   </extension>
+   
+   
 
 </plugin>

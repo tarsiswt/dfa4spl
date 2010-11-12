@@ -70,23 +70,22 @@ public class UnitUtil {
 	 * @param fileName the file name, or null to use the default Soot output folder.
 	 */
 	public static void serializeGraph(Body body, String fileName) {
-		CFGGraphType graphtype = CFGGraphType.BRIEF_UNIT_GRAPH;
-		DirectedGraph<Unit> graph = graphtype.buildGraph(body);
+		CFGGraphType graphType = CFGGraphType.BRIEF_UNIT_GRAPH;
+		DirectedGraph<Unit> graph = graphType.buildGraph(body);
 		SootUnitGraphSerializer drawer = new SootUnitGraphSerializer();
-		DotGraph canvas = graphtype.drawGraph(drawer, graph, body);
-
-		String methodname = body.getMethod().getSubSignature();
+		DotGraph canvas = graphType.drawGraph(drawer, graph, body);
+		String methodName = body.getMethod().getSubSignature();
 
 		if (fileName == null) {
 			fileName = soot.SourceLocator.v().getOutputDir();
 			if (fileName.length() > 0) {
 				fileName = fileName + java.io.File.separator;
 			}
-			fileName = fileName + methodname.replace(java.io.File.separatorChar, '.') + DotGraph.DOT_EXTENSION;
+			fileName = fileName + methodName.replace(java.io.File.separatorChar, '.') + DotGraph.DOT_EXTENSION;
 		}
 
 		canvas.plot(fileName);
-
+		System.out.println(methodName + " graph output: " + fileName);
 	}
 
 }
