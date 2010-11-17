@@ -23,10 +23,10 @@ import soot.options.Options;
 public class SootManager {
 	public static void configure(String classpath){		
 		
-		Options.v().set_allow_phantom_refs(true);
-//		Options.v().set_whole_program(true);
+//		Options.v().set_allow_phantom_refs(true);
+		Options.v().set_whole_program(true);
 		
-//		Options.v().set_verbose(true);
+		Options.v().set_verbose(true);
 		Options.v().set_keep_line_number(true);
 		Options.v().set_src_prec(Options.src_prec_java);
 		Options.v().set_soot_classpath(classpath);
@@ -42,16 +42,16 @@ public class SootManager {
 //		PhaseOptions.v().setPhaseOption("jj", "on");
 		
 		PhaseOptions.v().setPhaseOption("tag.ln", "on");
-		PhaseOptions.v().setPhaseOption("cg.cha", "off");
-		PhaseOptions.v().setPhaseOption("cg.spark", "on");
+//		PhaseOptions.v().setPhaseOption("cg.cha", "off");
+//		PhaseOptions.v().setPhaseOption("cg.spark", "on");
 //		PhaseOptions.v().setPhaseOption("gb", "off");
 //		PhaseOptions.v().setPhaseOption("bb", "off");
 //		PhaseOptions.v().setPhaseOption("db", "off");
 	}
 	
 	public static void runPacks(IFeatureExtracter extracter){
-		Transform t = new Transform("jtp.featmodelinst", FeatureModelInstrumentorTransformer.v(extracter));
-		PackManager.v().getPack("jtp").add(t);
+//		Transform t = new Transform("jtp.featmodelinst", FeatureModelInstrumentorTransformer.v(extracter));
+//		PackManager.v().getPack("jtp").add(t);
 		PackManager.v().runBodyPacks();
 	}
 	

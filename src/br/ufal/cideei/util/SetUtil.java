@@ -1,6 +1,7 @@
 package br.ufal.cideei.util;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -97,19 +98,20 @@ public class SetUtil {
 	}
 	
 	//TODO: FOR TESTING ONLY. REMOVE LATER.
-	public static Set<Set<Object>> tstconfig() {
-		Set<Object> configuration1 = new HashSet<Object>();
-		configuration1.add("A");
-		Set<Object> configuration2 = new HashSet<Object>();
-		configuration2.add("B");
-		Set<Object> configuration3 = new HashSet<Object>();
-		configuration3.add("A");
-		configuration3.add("B");
-		Set<Set<Object>> configurations = new HashSet<Set<Object>>();
-		configurations.add(configuration1);
-		configurations.add(configuration2);
-		configurations.add(configuration3);
-		return configurations;
+	public static Collection<Set<String>> tstconfig() {
+//		Set<Object> configuration1 = new HashSet<Object>();
+//		configuration1.add("A");
+//		Set<Object> configuration2 = new HashSet<Object>();
+//		configuration2.add("B");
+//		Set<Object> configuration3 = new HashSet<Object>();
+//		configuration3.add("A");
+//		configuration3.add("B");
+//		Collection<Set<String>> configurations = new HashSet<Set<String>>();
+//		configurations.add(configuration1);
+//		configurations.add(configuration2);
+//		configurations.add(configuration3);
+//		return configurations;
+		return null;
 	}
 	
 }

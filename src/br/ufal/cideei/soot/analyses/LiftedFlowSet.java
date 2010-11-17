@@ -296,7 +296,6 @@ public class LiftedFlowSet<T> extends AbstractFlowSet {
 		 * must be empty.
 		 */
 		if (this.equals(other)) {
-			destLifted.clearFlowSets();
 			return;
 		}
 

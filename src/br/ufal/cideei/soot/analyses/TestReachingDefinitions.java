@@ -5,14 +5,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import br.ufal.cideei.soot.instrument.FeatureTag;
-
 import soot.Unit;
 import soot.jimple.AssignStmt;
-import soot.tagkit.Tag;
 import soot.toolkits.graph.DirectedGraph;
 import soot.toolkits.scalar.FlowSet;
 import soot.toolkits.scalar.ForwardFlowAnalysis;
+import br.ufal.cideei.soot.instrument.FeatureTag;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -21,14 +19,14 @@ import soot.toolkits.scalar.ForwardFlowAnalysis;
  * implemented. Everything else is quite similar to a 'regular' FlowSet-based
  * analysis.
  */
-public class TestReachingDefinitions extends ForwardFlowAnalysis<Unit, LiftedFlowSet> {
+public class TestReachingDefinitions extends ForwardFlowAnalysis<Unit, LiftedFlowSet<Collection<Set<String>>>> {
 
 	/** The empty set. */
 	/*
 	 * FIXME: the clone method of LiftedFlowSet is not working properly right
 	 * now.
 	 */
-	private LiftedFlowSet emptySet;
+	private LiftedFlowSet<Collection<Set<String>>> emptySet;
 	private Collection<Set<String>> configurations;
 
 	/**
@@ -40,7 +38,7 @@ public class TestReachingDefinitions extends ForwardFlowAnalysis<Unit, LiftedFlo
 	public TestReachingDefinitions(DirectedGraph<Unit> graph, Collection<Set<String>> configs) {
 		super(graph);
 		this.configurations = configs;
-		this.emptySet = new LiftedFlowSet(configs);
+		this.emptySet = new LiftedFlowSet<Collection<Set<String>>>(configs);
 		super.doAnalysis();
 	}
 
@@ -112,7 +110,7 @@ public class TestReachingDefinitions extends ForwardFlowAnalysis<Unit, LiftedFlo
 	 */
 	private void kill(LiftedFlowSet source, Unit unit, LiftedFlowSet dest) {
 
-		LiftedFlowSet kills = new LiftedFlowSet(this.configurations);
+		LiftedFlowSet<Collection<Set<String>>> kills = new LiftedFlowSet(this.configurations);
 		// FIXME: clone not working correctly!
 		// LiftedFlowSet kills = this.emptySet.clone();
 

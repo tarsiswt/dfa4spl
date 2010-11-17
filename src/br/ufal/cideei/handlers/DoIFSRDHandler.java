@@ -151,17 +151,23 @@ public class DoIFSRDHandler extends AbstractHandler implements IHandler {
 			Body body = sootMethod.retrieveActiveBody();
 
 			/*
-			 * Do Jimple code instrumentation with feature model on the single body.
+			 * Do Jimple code instrumentation with feature model on the single
+			 * body.
 			 * 
 			 * TODO: only used to test TestReachingDef. Remove later.
 			 */
+			System.out.println("LIFTED RESULTS:");
+			
+			long instrStart = System.currentTimeMillis();
 			FeatureModelInstrumentorTransformer instrumentorTransformer = FeatureModelInstrumentorTransformer.v(extracter);
 			instrumentorTransformer.transform2(body);
-			
+			long instrEnd = System.currentTimeMillis();
+			System.out.println("instrumentation took: " + (instrEnd - instrStart));
+
 			BriefUnitGraph bodyGraph = new BriefUnitGraph(body);
-			
+
 			this.runTestReachingDefs(bodyGraph, instrumentorTransformer.getPowerSet());
-			
+
 			G.v().reset();
 
 		} catch (Exception ex) {
@@ -172,15 +178,21 @@ public class DoIFSRDHandler extends AbstractHandler implements IHandler {
 	}
 
 	public void runTestReachingDefs(BriefUnitGraph bodyGraph, Collection<Set<String>> configs) {
+		long liftedStart = System.currentTimeMillis();
 		TestReachingDefinitions tst = new TestReachingDefinitions(bodyGraph, configs);
+		long liftedEnd = System.currentTimeMillis();
+		System.out.println("Lifted time: " + (liftedEnd - liftedStart));
 		Iterator<Unit> iterator = bodyGraph.iterator();
 		String format = "|%1$-35s|%2$-30s|%3$-40s|\n";
 		while (iterator.hasNext()) {
 			Unit unit = (Unit) iterator.next();
 			LiftedFlowSet flowAfter = tst.getFlowAfter(unit);
+
 			System.out.format(format, unit, unit.getTag("FeatureTag"), flowAfter);
+
 		}
-		UnitUtil.serializeGraph(bodyGraph.getBody(), null);
-		
+		/*
+		 * UnitUtil.serializeGraph(bodyGraph.getBody(), null);
+		 */
 	}
 }

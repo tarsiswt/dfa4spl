@@ -26,6 +26,8 @@ import soot.BodyTransformer;
 import soot.SootClass;
 import soot.SourceLocator;
 import soot.Unit;
+import soot.javaToJimple.InitialResolver;
+import soot.options.Options;
 import soot.tagkit.SourceFileTag;
 import br.ufal.cideei.features.IFeatureExtracter;
 import br.ufal.cideei.soot.UnitUtil;
@@ -80,7 +82,13 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 	 */
 	@Override
 	protected void internalTransform(Body body, String phase, Map opt) {
-		preTransform(body);
+		try {
+			preTransform(body);
+		} catch (IllegalStateException ex) {
+			System.out.println("Skipping " + body.getMethod() + " :" + ex.getMessage());
+			return;
+		}
+		System.out.println("Instrumenting body of " + body.getMethod());
 
 		/*
 		 * The feature set and its power set will be computed during the first
@@ -172,20 +180,24 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 
 		/*
 		 * Create a single FeatureTag that will be added to all units that have
-		 * no color. This object should not be modified.
+		 * no color and the Body. This object should not be modified.
 		 */
 		FeatureTag<Set<String>> powerSetTag = new FeatureTag<Set<String>>();
 		powerSetTag.addAll(featurePowerSet);
-//		Iterator<Set<String>> featurePowerSetIterator = featurePowerSet.iterator();
-//		while (featurePowerSetIterator.hasNext()) {
-//			Set<String> set = (Set<String>) featurePowerSetIterator.next();
-//			powerSetTag.add(set);
-//		}
+		// Iterator<Set<String>> featurePowerSetIterator =
+		// featurePowerSet.iterator();
+		// while (featurePowerSetIterator.hasNext()) {
+		// Set<String> set = (Set<String>) featurePowerSetIterator.next();
+		// powerSetTag.add(set);
+		// }
 
 		/*
 		 * All colorless units will have a full feature power set tag, meaning
-		 * that all configurations are valid.
+		 * that all configurations are valid. Additionally, the Body will have
+		 * this same object, so that the powerset of a given body is easily
+		 * retrieved.
 		 */
+		body.addTag(powerSetTag);
 		Iterator<Unit> iterator = colorlessUnits.iterator();
 		while (iterator.hasNext()) {
 			Unit colorlessUnit = (Unit) iterator.next();
@@ -237,9 +249,8 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 			throw new IllegalArgumentException("the body cannot be traced to its source file");
 		}
 		SourceFileTag tag = (SourceFileTag) body.getMethod().getDeclaringClass().getTag("SourceFileTag");
-
 		IPath path = new Path(tag.getAbsolutePath());
-
+		System.out.print("File: " + tag.getAbsolutePath() + " ... ");
 		this.iFile = org.eclipse.core.resources.ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(path);
 
 		ICompilationUnit compilationUnit = JavaCore.createCompilationUnitFrom(iFile);

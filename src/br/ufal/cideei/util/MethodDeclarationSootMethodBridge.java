@@ -69,7 +69,6 @@ public class MethodDeclarationSootMethodBridge {
 		}
 
 		stringMethodBuilder.append(")");
-		// System.out.println(stringMethodBuilder.toString());
 		return stringMethodBuilder.toString();
 	}
 
@@ -102,7 +101,7 @@ public class MethodDeclarationSootMethodBridge {
 		stringMethodBuilder.append(")>");
 		return stringMethodBuilder.toString();
 	}
-	
+
 	/**
 	 * Gets the correspondent classpath.
 	 * 
@@ -133,7 +132,8 @@ public class MethodDeclarationSootMethodBridge {
 		/*
 		 * When using the Soot framework, we need the path to the package root
 		 * in which the file is located. There may be other ways to acomplish
-		 * this. TODO look for optimal way of finding it.
+		 * this.
+		 * 
 		 */
 
 		String pathToSourceClasspathEntry = null;
@@ -141,16 +141,17 @@ public class MethodDeclarationSootMethodBridge {
 		IClasspathEntry[] classPathEntries = null;
 		try {
 			classPathEntries = javaProject.getResolvedClasspath(true);
-			for (IClasspathEntry entry : classPathEntries) {
-				if (entry.getEntryKind() == IClasspathEntry.CPE_SOURCE) {
-					pathToSourceClasspathEntry = ResourcesPlugin.getWorkspace().getRoot().getFile(entry.getPath()).getLocation().toOSString();
-					break;
-				}
-			}
 		} catch (JavaModelException e) {
 			e.printStackTrace();
 			throw new ExecutionException("No source classpath identified");
 		}
+		for (IClasspathEntry entry : classPathEntries) {
+			if (entry.getEntryKind() == IClasspathEntry.CPE_SOURCE) {
+				pathToSourceClasspathEntry = ResourcesPlugin.getWorkspace().getRoot().getFile(entry.getPath()).getLocation().toOSString();
+				break;
+			}
+		}
+
 		return pathToSourceClasspathEntry;
 	}
 

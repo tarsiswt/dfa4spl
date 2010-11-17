@@ -88,10 +88,15 @@ public class DoComputeHandler extends AbstractHandler implements IHandler {
 		/*
 		 * In order to perform analyses on the selected code, there are few
 		 * thing we need to collect first in order to configure the Soot
-		 * framework environment. They are: - Which ASTNodes are in the text
-		 * selection - The casspath entry to the package root of the text
-		 * selection - The method name which contains the text selection - The
-		 * ColoredSourceFile object of the text selection
+		 * framework environment.They are:
+		 * 
+		 * - Which ASTNodes are in the text selection
+		 * 
+		 * - The casspath entry to the package root of the text selection
+		 * 
+		 * - The method name which contains the text selection
+		 * 
+		 * - The ColoredSourceFile object of the text selection
 		 */
 		ISelection selection = HandlerUtil.getCurrentSelectionChecked(event);
 		Shell shell = HandlerUtil.getActiveShellChecked(event);
@@ -111,6 +116,7 @@ public class DoComputeHandler extends AbstractHandler implements IHandler {
 
 		// this visitor will compute the ASTNodes that were selected by the user
 		SelectionNodesVisitor selectionNodesVisitor = new SelectionNodesVisitor(textSelection);
+		
 		/*
 		 * Now we need to create a compilation unit for the file, and then parse
 		 * it to generate an AST in which we will perform our analyses.
@@ -151,24 +157,37 @@ public class DoComputeHandler extends AbstractHandler implements IHandler {
 			SootMethod sootMethod = SootManager.getMethodBySignature(declaringMethodClass, mdsm.getSootMethodSubSignature());
 			Body body = sootMethod.retrieveActiveBody();
 
-			
 			/*
-			 * Add transformation to pack. Will transform/instrument all classes.
+			 * Add transformation to pack. Will transform/instrument all
+			 * classes.
 			 */
-			if (!PackManager.v().hasPack("jtp.featmodelinst")) {
-				Transform featureModelTransform = new Transform("jtp.featmodelinst", FeatureModelInstrumentorTransformer.v(extracter));
-				PackManager.v().getPack("jtp").add(featureModelTransform);
-			}
+			// if (!PackManager.v().hasPack("jtp.featmodelinst")) {
+			// Transform featureModelTransform = new
+			// Transform("jtp.featmodelinst",
+			// FeatureModelInstrumentorTransformer.v(extracter));
+			// PackManager.v().getPack("jtp").add(featureModelTransform);
+			// }
+
+			long instrStart = System.currentTimeMillis();
+			FeatureModelInstrumentorTransformer instrumentorTransformer = FeatureModelInstrumentorTransformer.v(extracter);
+			instrumentorTransformer.transform2(body);
+			long instrEnd = System.currentTimeMillis();
 
 			BriefUnitGraph bodyGraph = new BriefUnitGraph(body);
 
 			/*
 			 * Instantiate and execute a runner for the FSRD analysis.
 			 */
-			FeatureSensitiveAnalysisRunner runner = new FeatureSensitiveAnalysisRunner(bodyGraph, SetUtil.tstconfig(),
+			long runnerStart = System.currentTimeMillis();
+			FeatureSensitiveAnalysisRunner runner = new FeatureSensitiveAnalysisRunner(bodyGraph, instrumentorTransformer.getPowerSet(),
 					FeatureSensitiveReachingDefinitions.class, new HashMap<Object, Object>());
 			runner.execute();
-			Map<Set<Object>, FeatureSensitiviteFowardFlowAnalysis> results = runner.getResults();
+			long runnerEnd = System.currentTimeMillis();
+			Map<Set<String>, FeatureSensitiviteFowardFlowAnalysis> results = runner.getResults();
+
+			System.out.println("RUNNER RESULTS:");
+			System.out.println("instrumentation took: " + (instrEnd - instrStart));
+			System.out.println("time: " + (runnerEnd - runnerStart));
 
 			/*
 			 * Bridges from the ASTNodes from the selection to Soot Units using
@@ -184,11 +203,12 @@ public class DoComputeHandler extends AbstractHandler implements IHandler {
 				Unit unit = (Unit) unitsInSelectionIterator.next();
 				messageBuilder.append("Provides " + unit + " to ");
 
-				Set<Entry<Set<Object>, FeatureSensitiviteFowardFlowAnalysis>> entrySet = results.entrySet();
-				Iterator<Entry<Set<Object>, FeatureSensitiviteFowardFlowAnalysis>> iterator = entrySet.iterator();
+				Set<Entry<Set<String>, FeatureSensitiviteFowardFlowAnalysis>> entrySet = results.entrySet();
+
+				Iterator<Entry<Set<String>, FeatureSensitiviteFowardFlowAnalysis>> iterator = entrySet.iterator();
 				Set<IFeature> tmpFeatureSet = new HashSet<IFeature>();
 				while (iterator.hasNext()) {
-					Map.Entry<Set<java.lang.Object>, FeatureSensitiviteFowardFlowAnalysis> entry = (Map.Entry<Set<Object>, FeatureSensitiviteFowardFlowAnalysis>) iterator
+					Map.Entry<Set<String>, FeatureSensitiviteFowardFlowAnalysis> entry = (Map.Entry<Set<String>, FeatureSensitiviteFowardFlowAnalysis>) iterator
 							.next();
 
 					FeatureSensitiviteFowardFlowAnalysis value = entry.getValue();
@@ -204,17 +224,34 @@ public class DoComputeHandler extends AbstractHandler implements IHandler {
 
 						messageBuilder.append(colorsOnReachedUnit.toString() + "(line " + lineTag.startLn() + ")\n");
 					}
-
-					// System.out.println("==================");
-					// System.out.println(entry.getKey());
-					// System.out.println("------------------");
-					// String format = "|%1$-50s|%2$-50s|\n";
-					// System.out.format(format, unit, reachedUsesUnits);
-					// System.out.println("==================");
-					// System.out.println();
-
 				}
 			}
+
+			/*
+			 * TODO: apenas para imprimir o resultado. Remover depois.
+			 */
+			Collection<Set<String>> keySet = results.keySet();
+			String format = "|%1$-50s|%2$-50s|%3$-50s|\n";
+			for (Set<String> key : keySet) {
+				System.out.println(key);
+				FeatureSensitiviteFowardFlowAnalysis featureSensitiviteFowardFlowAnalysis = results.get(key);
+
+				Iterator<Unit> iterator = bodyGraph.iterator();
+				while (iterator.hasNext()) {
+					Unit unit = (Unit) iterator.next();
+					System.out.format(format, unit, unit.getTag("FeatureTag"), featureSensitiviteFowardFlowAnalysis.getFlowAfter(unit));
+				}
+
+				System.out.println();
+			}
+
+			// System.out.println("==================");
+			// System.out.println(entry.getKey());
+			// System.out.println("------------------");
+			// String format = "|%1$-50s|%2$-50s|\n";
+			// System.out.format(format, unit, reachedUsesUnits);
+			// System.out.println("==================");
+			// System.out.println();
 
 			InfoPopup.pop(shell, messageBuilder.toString());
 
