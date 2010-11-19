@@ -23,14 +23,15 @@ import soot.options.Options;
 public class SootManager {
 	public static void configure(String classpath){		
 		
-//		Options.v().set_allow_phantom_refs(true);
-		Options.v().set_whole_program(true);
+		Options.v().set_allow_phantom_refs(true);
+//		Options.v().set_whole_program(true);
 		
-		Options.v().set_verbose(true);
+//		Options.v().set_verbose(true);
 		Options.v().set_keep_line_number(true);
 		Options.v().set_src_prec(Options.src_prec_java);
 		Options.v().set_soot_classpath(classpath);
 		Options.v().set_prepend_classpath(true);
+//		Options.v().set
 		
 //		PhaseOptions.v().setPhaseOption("bb", "off");
 //		PhaseOptions.v().setPhaseOption("ALL", "off");
@@ -66,7 +67,7 @@ public class SootManager {
 	public static SootClass loadAndSupport(String className){
 		SootClass sootClass = Scene.v().loadClassAndSupport(className);
 		sootClass.setApplicationClass();	
-		Scene.v().loadNecessaryClasses();
+//		Scene.v().loadNecessaryClasses();
 		return sootClass;
 	}
 	

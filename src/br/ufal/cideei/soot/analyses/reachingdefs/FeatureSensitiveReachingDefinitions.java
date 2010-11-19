@@ -35,7 +35,7 @@ public class FeatureSensitiveReachingDefinitions extends FeatureSensitiviteFowar
 	 * @param configuration
 	 *            the configuration
 	 */
-	public FeatureSensitiveReachingDefinitions(DirectedGraph graph, Set<Object> configuration, Map options) {
+	public FeatureSensitiveReachingDefinitions(DirectedGraph graph, Set<String> configuration, Map options) {
 		super(graph, configuration);
 		if (options.containsKey("initialFlow")) {
 			Collection<? extends Unit> initialFlow = (Collection<? extends Unit>) options.get("initialFlow");

@@ -12,6 +12,8 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.jdt.core.Flags;
 import org.eclipse.jdt.core.IClasspathEntry;
@@ -23,6 +25,8 @@ import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.core.dom.CompilationUnit;
+import org.eclipse.jdt.internal.core.JavaModel;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.widgets.DirectoryDialog;
@@ -31,6 +35,8 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import br.ufal.cideei.features.CIDEFeatureExtracterFactory;
 import br.ufal.cideei.features.IFeatureExtracter;
 import br.ufal.cideei.soot.SootManager;
+import br.ufal.cideei.soot.analyses.wholeline.WholeLineLiftedReachingDefinitions;
+import br.ufal.cideei.soot.analyses.wholeline.WholeLineRunnerReachingDefinitions;
 import br.ufal.cideei.soot.instrument.FeatureModelInstrumentorTransformer;
 import br.ufal.cideei.util.MethodDeclarationSootMethodBridge;
 
@@ -58,59 +64,24 @@ public class DoAnalysisOnClassPath extends AbstractHandler {
 					throw new ExecutionException("No source classpath identified");
 				}
 
-				IFeatureExtracter extracter = CIDEFeatureExtracterFactory.getInstance().newExtracter();
+				StringBuilder libsPaths = new StringBuilder();
 				for (IClasspathEntry entry : classPathEntries) {
-					if (entry.getEntryKind() != IClasspathEntry.CPE_SOURCE) {
-						continue;
-					}
-
-					String classPath = ResourcesPlugin.getWorkspace().getRoot().getFile(entry.getPath()).getLocation().toOSString();
-					SootManager.configure(classPath);
-
-					IPackageFragmentRoot[] packageFragmentRoots = javaProject.findPackageFragmentRoots(entry);
-					for (IPackageFragmentRoot packageFragmentRoot : packageFragmentRoots) {
-						IJavaElement[] children = null;
-						try {
-							children = packageFragmentRoot.getChildren();
-						} catch (JavaModelException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-						for (IJavaElement child : children) {
-							IPackageFragment packageFragment = (IPackageFragment) child;
-							ICompilationUnit[] compilationUnits = null;
-							try {
-								compilationUnits = packageFragment.getCompilationUnits();
-							} catch (JavaModelException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							}
-
-							for (ICompilationUnit compilationUnit : compilationUnits) {
-								String fragmentName = packageFragment.getElementName();
-								String compilationName = compilationUnit.getElementName();
-								StringBuilder qualifiedNameStrBuilder = new StringBuilder(fragmentName);
-								// If it's the default package:
-								if (qualifiedNameStrBuilder.length() == 0) {
-									// Remove ".java" suffix
-									qualifiedNameStrBuilder.append(compilationName.substring(0, compilationName.length() - 5));
-								} else {
-									// Remove ".java" suffix
-									qualifiedNameStrBuilder.append(".").append(compilationName.substring(0, compilationName.length() - 5));
-								}
-
-								// This goes into Soot loadAndSupport
-								SootClass sootClass = SootManager.loadAndSupport(qualifiedNameStrBuilder.toString());
-								System.out.println("Compilation unit:" + classPath + File.separator + qualifiedNameStrBuilder.toString() + " RLEVEL: "
-										+ sootClass.resolvingLevel());
-							}
+					if (entry.getEntryKind() == IClasspathEntry.CPE_LIBRARY) {
+						File file = entry.getPath().makeAbsolute().toFile();
+						if (file.isAbsolute()) {
+//							System.out.println(file.getAbsolutePath());
+							libsPaths.append(file.getAbsolutePath() + File.pathSeparator);
+						} else {
+//							System.out.println(ResourcesPlugin.getWorkspace().getRoot().getFile(entry.getPath()).getLocation().toOSString());
+							libsPaths.append(ResourcesPlugin.getWorkspace().getRoot().getFile(entry.getPath()).getLocation().toOSString() + File.pathSeparator);
 						}
 					}
-					Scene.v().loadNecessaryClasses();
-					Transform t = new Transform("tag.fminst", FeatureModelInstrumentorTransformer.v(extracter));
-					PackManager.v().getPack("tag").add(t);
-					SootManager.runPacks(extracter);
-					break;
+				}
+				System.out.println(libsPaths.toString());
+				for (IClasspathEntry entry : classPathEntries) {
+					if (entry.getEntryKind() == IClasspathEntry.CPE_SOURCE) {
+						this.addPacks(javaProject, entry, libsPaths.toString());
+					}
 				}
 			}
 			return null;
@@ -120,5 +91,78 @@ public class DoAnalysisOnClassPath extends AbstractHandler {
 		} finally {
 			G.v().reset();
 		}
+	}
+
+	private void addPacks(IJavaProject javaProject, IClasspathEntry entry, String libs) {
+		/*
+		 * if the classpath entry is "", then JDT will complain about it.
+		 */
+		String classPath;
+		if (entry.getPath().toOSString().equals(File.separator + javaProject.getElementName())) {
+			classPath = javaProject.getResource().getLocation().toFile().getAbsolutePath();
+		} else {
+			classPath = ResourcesPlugin.getWorkspace().getRoot().getFolder(entry.getPath()).getLocation().toOSString();
+		}
+
+		SootManager.configure(classPath + File.pathSeparator + libs);
+
+		IFeatureExtracter extracter = CIDEFeatureExtracterFactory.getInstance().newExtracter();
+		IPackageFragmentRoot[] packageFragmentRoots = javaProject.findPackageFragmentRoots(entry);
+		for (IPackageFragmentRoot packageFragmentRoot : packageFragmentRoots) {
+			IJavaElement[] children = null;
+			try {
+				children = packageFragmentRoot.getChildren();
+			} catch (JavaModelException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			for (IJavaElement child : children) {
+				IPackageFragment packageFragment = (IPackageFragment) child;
+				ICompilationUnit[] compilationUnits = null;
+				try {
+					compilationUnits = packageFragment.getCompilationUnits();
+				} catch (JavaModelException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+
+				for (ICompilationUnit compilationUnit : compilationUnits) {
+					// CompilationUnit a = compilationUnit.
+					String fragmentName = packageFragment.getElementName();
+					String compilationName = compilationUnit.getElementName();
+					StringBuilder qualifiedNameStrBuilder = new StringBuilder(fragmentName);
+					// If it's the default package:
+					if (qualifiedNameStrBuilder.length() == 0) {
+						// Remove ".java" suffix
+						qualifiedNameStrBuilder.append(compilationName.substring(0, compilationName.length() - 5));
+					} else {
+						// Remove ".java" suffix
+						qualifiedNameStrBuilder.append(".").append(compilationName.substring(0, compilationName.length() - 5));
+					}
+
+					// This goes into Soot loadAndSupport
+					SootClass sootClass = SootManager.loadAndSupport(qualifiedNameStrBuilder.toString());
+					// System.out.println("Compilation unit:" + classPath +
+					// File.separator + qualifiedNameStrBuilder.toString() +
+					// " RLEVEL: "
+					// + sootClass.resolvingLevel());
+				}
+			}
+		}
+		Scene.v().loadNecessaryClasses();
+
+		Transform t = new Transform("jap.fminst", FeatureModelInstrumentorTransformer.v(extracter, classPath));
+		PackManager.v().getPack("jap").add(t);
+
+		Transform t2 = new Transform("jap.rdrunner", WholeLineRunnerReachingDefinitions.v());
+		PackManager.v().getPack("jap").add(t2);
+
+		Transform t3 = new Transform("jap.rdlifted", WholeLineLiftedReachingDefinitions.v());
+		PackManager.v().getPack("jap").add(t3);
+
+		SootManager.runPacks(extracter);
+
+		System.out.println("runner took:" + WholeLineRunnerReachingDefinitions.v().getAnalysesTime());
+		System.out.println("lifted took:" + WholeLineLiftedReachingDefinitions.v().getAnalysesTime());
 	}
 }

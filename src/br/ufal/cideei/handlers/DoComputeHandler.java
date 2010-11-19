@@ -55,6 +55,7 @@ import br.ufal.cideei.soot.analyses.FeatureSensitiveAnalysisRunner;
 import br.ufal.cideei.soot.analyses.FeatureSensitiviteFowardFlowAnalysis;
 import br.ufal.cideei.soot.analyses.LiftedFlowSet;
 import br.ufal.cideei.soot.analyses.TestReachingDefinitions;
+import br.ufal.cideei.soot.analyses.reachingdefs.FeatureSensitiveReachedDefinitionsFactory;
 import br.ufal.cideei.soot.analyses.reachingdefs.FeatureSensitiveReachingDefinitions;
 import br.ufal.cideei.soot.instrument.FeatureModelInstrumentorTransformer;
 import br.ufal.cideei.soot.instrument.FeatureTag;
@@ -109,14 +110,13 @@ public class DoComputeHandler extends AbstractHandler implements IHandler {
 		 * unit from it
 		 */
 		IFile textSelectionFile = (IFile) HandlerUtil.getActiveEditorChecked(event).getEditorInput().getAdapter(IFile.class);
-		System.out.println("from handler: " + textSelectionFile);
 
 		// used to compute the ASTNodes corresponding to the text selection
 		ITextSelection textSelection = (ITextSelection) selection;
 
 		// this visitor will compute the ASTNodes that were selected by the user
 		SelectionNodesVisitor selectionNodesVisitor = new SelectionNodesVisitor(textSelection);
-		
+
 		/*
 		 * Now we need to create a compilation unit for the file, and then parse
 		 * it to generate an AST in which we will perform our analyses.
@@ -150,7 +150,8 @@ public class DoComputeHandler extends AbstractHandler implements IHandler {
 			 * Initialize and configure Soot's options and find out which method
 			 * contains the selection
 			 */
-			SootManager.configure(MethodDeclarationSootMethodBridge.getCorrespondentClasspath(textSelectionFile));
+			String correspondentClasspath = MethodDeclarationSootMethodBridge.getCorrespondentClasspath(textSelectionFile);
+			SootManager.configure(correspondentClasspath);
 			MethodDeclaration methodDeclaration = MethodDeclarationSootMethodBridge.getParentMethod(selectionNodes.iterator().next());
 			String declaringMethodClass = methodDeclaration.resolveBinding().getDeclaringClass().getQualifiedName();
 			MethodDeclarationSootMethodBridge mdsm = new MethodDeclarationSootMethodBridge(methodDeclaration);
@@ -169,8 +170,8 @@ public class DoComputeHandler extends AbstractHandler implements IHandler {
 			// }
 
 			long instrStart = System.currentTimeMillis();
-			FeatureModelInstrumentorTransformer instrumentorTransformer = FeatureModelInstrumentorTransformer.v(extracter);
-			instrumentorTransformer.transform2(body);
+			FeatureModelInstrumentorTransformer instrumentorTransformer = FeatureModelInstrumentorTransformer.v(extracter, correspondentClasspath);
+			instrumentorTransformer.transform2(body, correspondentClasspath);
 			long instrEnd = System.currentTimeMillis();
 
 			BriefUnitGraph bodyGraph = new BriefUnitGraph(body);
@@ -180,8 +181,8 @@ public class DoComputeHandler extends AbstractHandler implements IHandler {
 			 */
 			long runnerStart = System.currentTimeMillis();
 			FeatureSensitiveAnalysisRunner runner = new FeatureSensitiveAnalysisRunner(bodyGraph, instrumentorTransformer.getPowerSet(),
-					FeatureSensitiveReachingDefinitions.class, new HashMap<Object, Object>());
-			runner.execute();
+					new FeatureSensitiveReachedDefinitionsFactory(), new HashMap<Object, Object>());
+			runner.execute2();
 			long runnerEnd = System.currentTimeMillis();
 			Map<Set<String>, FeatureSensitiviteFowardFlowAnalysis> results = runner.getResults();
 

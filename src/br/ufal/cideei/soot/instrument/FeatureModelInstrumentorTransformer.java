@@ -8,6 +8,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
@@ -32,6 +34,7 @@ import soot.tagkit.SourceFileTag;
 import br.ufal.cideei.features.IFeatureExtracter;
 import br.ufal.cideei.soot.UnitUtil;
 import br.ufal.cideei.soot.instrument.asttounit.ASTNodeUnitBridge;
+import br.ufal.cideei.util.CachedICompilationUnitParser;
 import br.ufal.cideei.util.SetUtil;
 
 // TODO: Auto-generated Javadoc
@@ -51,6 +54,11 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 	private CompilationUnit currentCompilationUnit;
 	private IFile iFile;
 	private Collection<Set<String>> configurationPowerSet;
+	/*
+	 * Workaround for the preTransform method. See comments.
+	 */
+	private static String classPath;
+	private CachedICompilationUnitParser cachedParser = new CachedICompilationUnitParser();
 
 	/**
 	 * Disable default constructor. This class is a singleton.
@@ -65,7 +73,8 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 	 * 
 	 * @return the feature model instrumentor
 	 */
-	public static FeatureModelInstrumentorTransformer v(IFeatureExtracter extracter) {
+	public static FeatureModelInstrumentorTransformer v(IFeatureExtracter extracter, String classPath) {
+		FeatureModelInstrumentorTransformer.classPath = classPath;
 		FeatureModelInstrumentorTransformer.extracter = extracter;
 		return instance;
 	}
@@ -81,14 +90,14 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 	 * java.util.Map)
 	 */
 	@Override
-	protected void internalTransform(Body body, String phase, Map opt) {
+	protected void internalTransform(Body body, String phase, Map options) {
 		try {
 			preTransform(body);
 		} catch (IllegalStateException ex) {
 			System.out.println("Skipping " + body.getMethod() + " :" + ex.getMessage());
 			return;
 		}
-		System.out.println("Instrumenting body of " + body.getMethod());
+		// System.out.println("Instrumenting body of " + body.getMethod());
 
 		/*
 		 * The feature set and its power set will be computed during the first
@@ -169,7 +178,7 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 		}
 
 		featurePowerSet = SetUtil.powerSet(featureSet);
-		this.configurationPowerSet = featurePowerSet;
+		// this.configurationPowerSet = featurePowerSet;
 
 		/*
 		 * Now, in this second iteration, the units will be tagged with their
@@ -227,6 +236,8 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 			unitInUaf.addTag(validConfigurationsTag);
 
 		}
+		
+		System.out.println(body.getMethod() + ":" + body.getTag("FeatureTag"));
 	}
 
 	/**
@@ -238,7 +249,8 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 	 * @param compilationUnit
 	 *            the compilation unit
 	 */
-	public void transform2(Body body) {
+	public void transform2(Body body, String classPath) {
+		FeatureModelInstrumentorTransformer.classPath = classPath;
 		preTransform(body);
 		this.transform(body);
 	}
@@ -248,18 +260,52 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 		if (!sootClass.hasTag("SourceFileTag")) {
 			throw new IllegalArgumentException("the body cannot be traced to its source file");
 		}
+		/*
+		 * FIXME: WARNING! tag.getAbsolutePath() returns an INCORRECT value for
+		 * the absolute path AFTER the first body transformation. In order to
+		 * work around this, we must inject the classpath we are working on
+		 * through a parameter in this method. We will use tag.getSourceFile()
+		 * in order to resolve the file name.
+		 * 
+		 * Yeah, it's ugly.
+		 */
 		SourceFileTag tag = (SourceFileTag) body.getMethod().getDeclaringClass().getTag("SourceFileTag");
+
+		/*
+		 * package name
+		 */
+		String absolutePath = sootClass.getName();
+		int lastIndexOf = absolutePath.lastIndexOf(".");
+		if (lastIndexOf != -1) {
+			absolutePath = absolutePath.substring(0, lastIndexOf);
+		} else {
+			absolutePath = "";
+		}
+		absolutePath = absolutePath.replaceAll(Pattern.quote("."), Matcher.quoteReplacement(File.separator));
+		absolutePath = classPath + File.separator + absolutePath + File.separator + tag.getSourceFile();
+		// System.out.println(absolutePath);
+		tag.setAbsolutePath(absolutePath);
+
 		IPath path = new Path(tag.getAbsolutePath());
-		System.out.print("File: " + tag.getAbsolutePath() + " ... ");
 		this.iFile = org.eclipse.core.resources.ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(path);
 
-		ICompilationUnit compilationUnit = JavaCore.createCompilationUnitFrom(iFile);
-		ASTParser parser = ASTParser.newParser(AST.JLS3);
-		parser.setSource(compilationUnit);
-		parser.setKind(ASTParser.K_COMPILATION_UNIT);
-		parser.setResolveBindings(true);
-		CompilationUnit jdtCompilationUnit = (CompilationUnit) parser.createAST(null);
+		/*
+		 * TODO: the following lines are very expensive. Perhaps there is a
+		 * ligther way of doing this,instead of building so many objects?
+		 */
+		CompilationUnit jdtCompilationUnit = cachedParser.parse(iFile);
+//		long t1 = System.currentTimeMillis();
+//		ICompilationUnit compilationUnit = JavaCore.createCompilationUnitFrom(iFile);
+//		ASTParser parser = ASTParser.newParser(AST.JLS3);
+//		parser.setSource(compilationUnit);
+//		parser.setKind(ASTParser.K_COMPILATION_UNIT);
+//		parser.setResolveBindings(true);
+//		CompilationUnit jdtCompilationUnit = (CompilationUnit) parser.createAST(null);
+//		System.out.println(System.currentTimeMillis() - t1);
 
+		/*
+		 * The CIDE feature extractor depends on this object.
+		 */
 		this.currentCompilationUnit = jdtCompilationUnit;
 	}
 

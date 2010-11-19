@@ -35,7 +35,7 @@ public class FeatureSensitiveReachedDefinitionsAnalysis extends AbstractReachedD
 	 * @param configuration
 	 *            the configuration for which this analysis should be run
 	 */
-	private FeatureSensitiveReachedDefinitionsAnalysis(DirectedGraph<Unit> graph, Set<Object> configuration,Map<Object,Object> options) {
+	public FeatureSensitiveReachedDefinitionsAnalysis(DirectedGraph<Unit> graph, Set<String> configuration,Map<Object,Object> options) {
 		super(graph);
 		this.reachingDefinitions = new FeatureSensitiveReachingDefinitions(graph, configuration, options);
 	}

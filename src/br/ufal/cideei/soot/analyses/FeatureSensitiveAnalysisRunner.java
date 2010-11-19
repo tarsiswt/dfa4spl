@@ -9,9 +9,12 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import soot.Unit;
+import soot.toolkits.graph.BriefUnitGraph;
 import soot.toolkits.graph.DirectedGraph;
 
 import br.ufal.cideei.soot.analyses.reachingdefs.FeatureSensitiveReachedDefinitionsAnalysis;
+import br.ufal.cideei.soot.analyses.reachingdefs.FeatureSensitiveReachedDefinitionsFactory;
 import br.ufal.cideei.soot.analyses.reachingdefs.FeatureSensitiveReachingDefinitions;
 
 public class FeatureSensitiveAnalysisRunner {
@@ -21,6 +24,7 @@ public class FeatureSensitiveAnalysisRunner {
 	private Class analysis;
 	private Map<Set<String>, FeatureSensitiviteFowardFlowAnalysis> configurationAnalysisMap;
 	private Map options;
+	private AnalysisFactory<? extends FeatureSensitiviteFowardFlowAnalysis> factory;
 
 	public FeatureSensitiveAnalysisRunner(DirectedGraph graph, Collection<Set<String>> configurations, Class analysis, Map options) {
 		this.graph = graph;
@@ -30,17 +34,20 @@ public class FeatureSensitiveAnalysisRunner {
 		this.configurationAnalysisMap = new HashMap<Set<String>, FeatureSensitiviteFowardFlowAnalysis>(configurations.size());
 	}
 
-	public void execute() throws SecurityException, NoSuchMethodException, IllegalArgumentException, InstantiationException, IllegalAccessException,
-			InvocationTargetException {
+	public FeatureSensitiveAnalysisRunner(DirectedGraph graph, Collection<Set<String>> configurations, AnalysisFactory<? extends FeatureSensitiviteFowardFlowAnalysis> factory , Map options) {
+		this.graph = graph;
+		this.configurations = configurations;
+		this.options = options;
+		this.factory = factory;
+		this.configurationAnalysisMap = new HashMap<Set<String>, FeatureSensitiviteFowardFlowAnalysis>(configurations.size());
+	}
+
+	public void execute2() {
 		Iterator<Set<String>> iterator = configurations.iterator();
 		while (iterator.hasNext()) {
 			Set<String> config = iterator.next();
-			Constructor<? extends FeatureSensitiviteFowardFlowAnalysis> constructor = analysis.getConstructor(DirectedGraph.class, Set.class, Map.class);
-//			long start = System.currentTimeMillis();
-			FeatureSensitiviteFowardFlowAnalysis instance = constructor.newInstance(graph, config, options);
-//			long end = System.currentTimeMillis();
-//			System.out.println("reaching definitions analysis for " + config + ": " + (end - start) + "ms");
-			configurationAnalysisMap.put(config, instance);
+			FeatureSensitiviteFowardFlowAnalysis newAnalysis = factory.newAnalysis(graph, config, options);
+			configurationAnalysisMap.put(config, newAnalysis);
 		}
 	}
 

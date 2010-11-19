@@ -16,40 +16,42 @@ import soot.toolkits.scalar.ForwardFlowAnalysis;
 /**
  * The Class SimpleReachingDefinitionsAnalysis.
  */
-public class SimpleReachedDefinitionsAnalysis extends AbstractReachedDefinitions{
-	
+public class SimpleReachedDefinitionsAnalysis extends AbstractReachedDefinitions {
+
 	/** The reaching definitions. */
 	private SimpleReachingDefinitions reachingDefinitions;
 
 	/**
 	 * Instantiates a new simple reaching definitions analysis.
-	 *
-	 * @param graph the graph
+	 * 
+	 * @param graph
+	 *            the graph
 	 */
 	public SimpleReachedDefinitionsAnalysis(DirectedGraph<Unit> graph) {
 		super(graph);
 		this.reachingDefinitions = new SimpleReachingDefinitions(graph);
 	}
-	
+
 	/**
 	 * Gets the reached uses.
-	 *
-	 * @param target the target
+	 * 
+	 * @param target
+	 *            the target
 	 * @return the reached uses
 	 */
-	public List<Unit> getReachedUses(Unit target){
+	public List<Unit> getReachedUses(Unit target) {
 		Iterator<Unit> unitIterator = graph.iterator();
 		List<Unit> reached = new ArrayList<Unit>();
-		while(unitIterator.hasNext()){
+		while (unitIterator.hasNext()) {
 			Unit nextUnit = unitIterator.next();
-			if (nextUnit instanceof NopStmt){
+			if (nextUnit instanceof NopStmt) {
 				continue;
 			}
 			FlowSet reachingDefSet = this.reachingDefinitions.getFlowAfter(nextUnit);
 			Iterator<? extends Unit> flowIterator = reachingDefSet.toList().iterator();
-			while(flowIterator.hasNext()){
+			while (flowIterator.hasNext()) {
 				Unit nextUnitInFlow = flowIterator.next();
-				if (nextUnitInFlow instanceof NopStmt){
+				if (nextUnitInFlow instanceof NopStmt) {
 					continue;
 				}
 				if (nextUnitInFlow.equals(target)) {
@@ -57,7 +59,7 @@ public class SimpleReachedDefinitionsAnalysis extends AbstractReachedDefinitions
 				}
 			}
 		}
-		return reached;		
+		return reached;
 	}
 
 }
@@ -69,8 +71,9 @@ class SimpleReachingDefinitions extends ForwardFlowAnalysis<Unit, FlowSet> {
 
 	/**
 	 * Instantiates a new simple reaching definitions.
-	 *
-	 * @param graph the graph
+	 * 
+	 * @param graph
+	 *            the graph
 	 */
 	public SimpleReachingDefinitions(DirectedGraph<Unit> graph) {
 		super(graph);
@@ -78,23 +81,31 @@ class SimpleReachingDefinitions extends ForwardFlowAnalysis<Unit, FlowSet> {
 		super.doAnalysis();
 	}
 
-	/* (non-Javadoc)
-	 * @see soot.toolkits.scalar.AbstractFlowAnalysis#copy(java.lang.Object, java.lang.Object)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see soot.toolkits.scalar.AbstractFlowAnalysis#copy(java.lang.Object,
+	 * java.lang.Object)
 	 */
 	@Override
 	protected void copy(FlowSet source, FlowSet dest) {
 		source.copy(dest);
 	}
 
-	/* (non-Javadoc)
-	 * @see soot.toolkits.scalar.AbstractFlowAnalysis#merge(java.lang.Object, java.lang.Object, java.lang.Object)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see soot.toolkits.scalar.AbstractFlowAnalysis#merge(java.lang.Object,
+	 * java.lang.Object, java.lang.Object)
 	 */
 	@Override
 	protected void merge(FlowSet source1, FlowSet source2, FlowSet dest) {
 		source1.union(source2, dest);
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see soot.toolkits.scalar.AbstractFlowAnalysis#entryInitialFlow()
 	 */
 	@Override
@@ -102,7 +113,9 @@ class SimpleReachingDefinitions extends ForwardFlowAnalysis<Unit, FlowSet> {
 		return this.emptySet.clone();
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see soot.toolkits.scalar.AbstractFlowAnalysis#newInitialFlow()
 	 */
 	@Override
@@ -110,8 +123,11 @@ class SimpleReachingDefinitions extends ForwardFlowAnalysis<Unit, FlowSet> {
 		return this.emptySet.clone();
 	}
 
-	/* (non-Javadoc)
-	 * @see soot.toolkits.scalar.FlowAnalysis#flowThrough(java.lang.Object, java.lang.Object, java.lang.Object)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see soot.toolkits.scalar.FlowAnalysis#flowThrough(java.lang.Object,
+	 * java.lang.Object, java.lang.Object)
 	 */
 	@Override
 	protected void flowThrough(FlowSet source, Unit unit, FlowSet dest) {

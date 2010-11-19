@@ -19,7 +19,7 @@ import br.ufal.cideei.soot.instrument.FeatureTag;
  * implemented. Everything else is quite similar to a 'regular' FlowSet-based
  * analysis.
  */
-public class TestReachingDefinitions extends ForwardFlowAnalysis<Unit, LiftedFlowSet<Collection<Set<String>>>> {
+public class TestReachingDefinitions extends ForwardFlowAnalysis<Unit, LiftedFlowSet<Collection<Set<Object>>>> {
 
 	/** The empty set. */
 	/*

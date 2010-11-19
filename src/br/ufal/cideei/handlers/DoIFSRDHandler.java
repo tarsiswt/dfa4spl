@@ -143,7 +143,8 @@ public class DoIFSRDHandler extends AbstractHandler implements IHandler {
 			 * Initialize and configure Soot's options and find out which method
 			 * contains the selection
 			 */
-			SootManager.configure(MethodDeclarationSootMethodBridge.getCorrespondentClasspath(textSelectionFile));
+			String correspondentClasspath = MethodDeclarationSootMethodBridge.getCorrespondentClasspath(textSelectionFile);
+			SootManager.configure(correspondentClasspath);
 			MethodDeclaration methodDeclaration = MethodDeclarationSootMethodBridge.getParentMethod(selectionNodes.iterator().next());
 			String declaringMethodClass = methodDeclaration.resolveBinding().getDeclaringClass().getQualifiedName();
 			MethodDeclarationSootMethodBridge mdsm = new MethodDeclarationSootMethodBridge(methodDeclaration);
@@ -157,10 +158,10 @@ public class DoIFSRDHandler extends AbstractHandler implements IHandler {
 			 * TODO: only used to test TestReachingDef. Remove later.
 			 */
 			System.out.println("LIFTED RESULTS:");
-			
+
 			long instrStart = System.currentTimeMillis();
-			FeatureModelInstrumentorTransformer instrumentorTransformer = FeatureModelInstrumentorTransformer.v(extracter);
-			instrumentorTransformer.transform2(body);
+			FeatureModelInstrumentorTransformer instrumentorTransformer = FeatureModelInstrumentorTransformer.v(extracter, correspondentClasspath);
+			instrumentorTransformer.transform2(body, correspondentClasspath);
 			long instrEnd = System.currentTimeMillis();
 			System.out.println("instrumentation took: " + (instrEnd - instrStart));
 
