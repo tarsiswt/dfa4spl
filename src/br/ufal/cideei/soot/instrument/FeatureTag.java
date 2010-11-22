@@ -41,9 +41,10 @@ public class FeatureTag<E> extends AbstractCollection<E> implements Tag {
 	 * 
 	 * @param ft
 	 *            the feature to be removed.
+	 * @return 
 	 */
-	public void remove(E ft) {
-		features.remove(ft);
+	public boolean remove(Object ft) {
+		return features.remove(ft);
 	}
 
 	/**
