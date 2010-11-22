@@ -34,6 +34,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 
 import br.ufal.cideei.features.CIDEFeatureExtracterFactory;
 import br.ufal.cideei.features.IFeatureExtracter;
+import br.ufal.cideei.soot.AssignmentsCounter;
 import br.ufal.cideei.soot.SootManager;
 import br.ufal.cideei.soot.analyses.wholeline.WholeLineLiftedReachingDefinitions;
 import br.ufal.cideei.soot.analyses.wholeline.WholeLineRunnerReachingDefinitions;
@@ -69,10 +70,10 @@ public class DoAnalysisOnClassPath extends AbstractHandler {
 					if (entry.getEntryKind() == IClasspathEntry.CPE_LIBRARY) {
 						File file = entry.getPath().makeAbsolute().toFile();
 						if (file.isAbsolute()) {
-//							System.out.println(file.getAbsolutePath());
+							// System.out.println(file.getAbsolutePath());
 							libsPaths.append(file.getAbsolutePath() + File.pathSeparator);
 						} else {
-//							System.out.println(ResourcesPlugin.getWorkspace().getRoot().getFile(entry.getPath()).getLocation().toOSString());
+							// System.out.println(ResourcesPlugin.getWorkspace().getRoot().getFile(entry.getPath()).getLocation().toOSString());
 							libsPaths.append(ResourcesPlugin.getWorkspace().getRoot().getFile(entry.getPath()).getLocation().toOSString() + File.pathSeparator);
 						}
 					}
@@ -105,6 +106,7 @@ public class DoAnalysisOnClassPath extends AbstractHandler {
 		}
 
 		SootManager.configure(classPath + File.pathSeparator + libs);
+		System.out.println(classPath + File.pathSeparator + libs);
 
 		IFeatureExtracter extracter = CIDEFeatureExtracterFactory.getInstance().newExtracter();
 		IPackageFragmentRoot[] packageFragmentRoots = javaProject.findPackageFragmentRoots(entry);
@@ -160,9 +162,34 @@ public class DoAnalysisOnClassPath extends AbstractHandler {
 		Transform t3 = new Transform("jap.rdlifted", WholeLineLiftedReachingDefinitions.v());
 		PackManager.v().getPack("jap").add(t3);
 
+		// #ifdef METRICS
+		Transform t4 = new Transform("jap.asgnmc", AssignmentsCounter.v());
+		PackManager.v().getPack("jap").add(t4);
+		// #endif
+
 		SootManager.runPacks(extracter);
 
-		System.out.println("runner took:" + WholeLineRunnerReachingDefinitions.v().getAnalysesTime());
-		System.out.println("lifted took:" + WholeLineLiftedReachingDefinitions.v().getAnalysesTime());
+		// #ifdef METRICS
+		String format = "|%1$-50s|%2$-50s|\n";
+		double runnerTime = ((double) WholeLineRunnerReachingDefinitions.v().getAnalysesTime()) / 1000000;
+		double liftedTime = ((double) WholeLineLiftedReachingDefinitions.v().getAnalysesTime()) / 1000000;
+		System.out.format(format, "runner took:", runnerTime + "ms");
+		System.out.format(format, "lifted took:", liftedTime + "ms");
+		System.out.format(format, "runner/lifted:", runnerTime / liftedTime);
+
+		long totalBodies = FeatureModelInstrumentorTransformer.getTotalBodies();
+		long coloredBodies = FeatureModelInstrumentorTransformer.getTotalColoredBodies();
+
+		System.out.format(format, "Total bodies: ", totalBodies);
+		System.out.format(format, "Bodies with at least 1 ft.: ", coloredBodies);
+		System.out.format(format, "Percentage: ", ((((double) coloredBodies) / ((double) (totalBodies))) * 100) + "%");
+		System.out.format(format, "Total of assignments: ", AssignmentsCounter.v().getCounter());
+		System.out.format(format, "Average assignments/bodies: ", AssignmentsCounter.v().getCounter() / totalBodies);
+
+		WholeLineLiftedReachingDefinitions.v().reset();
+		WholeLineRunnerReachingDefinitions.v().reset();
+		FeatureModelInstrumentorTransformer.v().reset();
+		AssignmentsCounter.v().reset();
+		// #endif
 	}
 }

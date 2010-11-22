@@ -60,7 +60,6 @@ import br.ufal.cideei.soot.analyses.reachingdefs.FeatureSensitiveReachingDefinit
 import br.ufal.cideei.soot.instrument.FeatureModelInstrumentorTransformer;
 import br.ufal.cideei.soot.instrument.FeatureTag;
 import br.ufal.cideei.soot.instrument.asttounit.ASTNodeUnitBridge;
-import br.ufal.cideei.soot.inter.RD;
 import br.ufal.cideei.ui.InfoPopup;
 import br.ufal.cideei.util.MethodDeclarationSootMethodBridge;
 import br.ufal.cideei.util.SetUtil;

@@ -28,22 +28,27 @@ public class WholeLineRunnerReachingDefinitions extends BodyTransformer {
 	}
 	
 	public long getAnalysesTime() {
-		return analysisTime;
+		long tmp = analysisTime;
+		return tmp;
+	}
+	
+	public void reset() {
+		analysisTime = 0;
 	}
 
 	@Override
 	protected void internalTransform(Body body, String phase, Map options) {
-//		System.out.println("[While Runner] analysing " + body.getMethod() + " with " + body.getTag("FeatureTag"));
 		BriefUnitGraph bodyGraph = new BriefUnitGraph(body);
 		FeatureTag<Set<String>> featureTag = (FeatureTag<Set<String>>) body.getTag("FeatureTag");
 
 		FeatureSensitiveAnalysisRunner runner = new FeatureSensitiveAnalysisRunner(bodyGraph, featureTag.getFeatures(),
 				new FeatureSensitiveReachedDefinitionsFactory(), new HashMap<Object, Object>());
 		try {
-			long beforeRunner = System.currentTimeMillis();
+			long beforeRunner = System.nanoTime();
 			runner.execute2();
-			long afterRunner = System.currentTimeMillis();
+			long afterRunner = System.nanoTime();
 			this.analysisTime += afterRunner - beforeRunner;
+			System.out.println("[Runner]" + body.getMethod() + " with " + body.getTag("FeatureTag") + " took " + ((double)(afterRunner - beforeRunner)/1000000));
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

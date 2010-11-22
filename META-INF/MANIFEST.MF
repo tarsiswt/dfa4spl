@@ -16,6 +16,7 @@ Import-Package: cide.gast,
  de.ovgu.cide.features,
  de.ovgu.cide.features.source,
  de.ovgu.cide.language.jdt,
+ org.eclipse.jdt.apt.core.build,
  org.eclipse.jdt.core.dom
 Bundle-ClassPath: .,
  lib/soot-2.4.0.jar,

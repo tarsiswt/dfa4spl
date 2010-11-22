@@ -60,6 +60,11 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 	private static String classPath;
 	private CachedICompilationUnitParser cachedParser = new CachedICompilationUnitParser();
 
+	// #ifdef METRICS
+	private static long totalBodies = 0;
+	private static long totalColoredBodies = 0;
+	// #endif
+
 	/**
 	 * Disable default constructor. This class is a singleton.
 	 */
@@ -193,12 +198,14 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 		 */
 		FeatureTag<Set<String>> powerSetTag = new FeatureTag<Set<String>>();
 		powerSetTag.addAll(featurePowerSet);
-		// Iterator<Set<String>> featurePowerSetIterator =
-		// featurePowerSet.iterator();
-		// while (featurePowerSetIterator.hasNext()) {
-		// Set<String> set = (Set<String>) featurePowerSetIterator.next();
-		// powerSetTag.add(set);
-		// }
+
+		// #ifdef METRICS
+		FeatureModelInstrumentorTransformer.totalBodies++;
+		// if the body has more than one color
+		if (featurePowerSet.size() > 1) {
+			FeatureModelInstrumentorTransformer.totalColoredBodies++;
+		}
+		// #endif
 
 		/*
 		 * All colorless units will have a full feature power set tag, meaning
@@ -236,8 +243,6 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 			unitInUaf.addTag(validConfigurationsTag);
 
 		}
-		
-		System.out.println(body.getMethod() + ":" + body.getTag("FeatureTag"));
 	}
 
 	/**
@@ -294,14 +299,16 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 		 * ligther way of doing this,instead of building so many objects?
 		 */
 		CompilationUnit jdtCompilationUnit = cachedParser.parse(iFile);
-//		long t1 = System.currentTimeMillis();
-//		ICompilationUnit compilationUnit = JavaCore.createCompilationUnitFrom(iFile);
-//		ASTParser parser = ASTParser.newParser(AST.JLS3);
-//		parser.setSource(compilationUnit);
-//		parser.setKind(ASTParser.K_COMPILATION_UNIT);
-//		parser.setResolveBindings(true);
-//		CompilationUnit jdtCompilationUnit = (CompilationUnit) parser.createAST(null);
-//		System.out.println(System.currentTimeMillis() - t1);
+		// long t1 = System.currentTimeMillis();
+		// ICompilationUnit compilationUnit =
+		// JavaCore.createCompilationUnitFrom(iFile);
+		// ASTParser parser = ASTParser.newParser(AST.JLS3);
+		// parser.setSource(compilationUnit);
+		// parser.setKind(ASTParser.K_COMPILATION_UNIT);
+		// parser.setResolveBindings(true);
+		// CompilationUnit jdtCompilationUnit = (CompilationUnit)
+		// parser.createAST(null);
+		// System.out.println(System.currentTimeMillis() - t1);
 
 		/*
 		 * The CIDE feature extractor depends on this object.
@@ -312,4 +319,19 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 	public Collection<Set<String>> getPowerSet() {
 		return this.configurationPowerSet;
 	}
+
+	// #ifdef METRICS
+	public static long getTotalBodies() {
+		return FeatureModelInstrumentorTransformer.totalBodies;
+	}
+
+	public static long getTotalColoredBodies() {
+		return FeatureModelInstrumentorTransformer.totalColoredBodies;
+	}
+	
+	public static void reset() {
+		FeatureModelInstrumentorTransformer.totalColoredBodies = 0;
+		FeatureModelInstrumentorTransformer.totalBodies = 0;
+	}
+	// #endif
 }
