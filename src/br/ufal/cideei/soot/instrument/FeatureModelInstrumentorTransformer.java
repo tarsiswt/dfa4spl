@@ -53,7 +53,6 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 	/** Current compilation unit the transformation is working on */
 	private CompilationUnit currentCompilationUnit;
 	private IFile iFile;
-	private Collection<Set<String>> configurationPowerSet;
 	/*
 	 * Workaround for the preTransform method. See comments.
 	 */
@@ -314,10 +313,6 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 		 * The CIDE feature extractor depends on this object.
 		 */
 		this.currentCompilationUnit = jdtCompilationUnit;
-	}
-
-	public Collection<Set<String>> getPowerSet() {
-		return this.configurationPowerSet;
 	}
 
 	// #ifdef METRICS

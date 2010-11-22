@@ -35,6 +35,25 @@ public abstract class FeatureSensitiviteFowardFlowAnalysis<A extends Unit, N ext
 	protected final Set<?> configuration;
 	private Set<Unit> unitBin = new HashSet<Unit>();
 
+	// #ifdef METRICS
+	private static long flowThroughCounter = 0;
+	private static long jumpOverCounter = 0;
+
+	public static long getFlowThroughCounter() {
+		return flowThroughCounter;
+	}
+	
+	public static long getJumpOverCounter() {
+		return jumpOverCounter;
+	}
+	
+	public static void reset() {
+		flowThroughCounter = 0;
+		jumpOverCounter = 0;
+	}
+
+	// #endif
+
 	/**
 	 * Instantiates a new feature sensitivite foward flow analysis.
 	 * 
@@ -56,8 +75,14 @@ public abstract class FeatureSensitiviteFowardFlowAnalysis<A extends Unit, N ext
 	 */
 	protected final void flowThrough(FlowSet source, Unit unit, FlowSet dest) {
 		if (beforeFilter(source, unit, dest)) {
+			// #ifdef METRICS
+			flowThroughCounter++;
+			// #endif
 			filteredFlowThrough(source, unit, dest);
 		} else {
+			// #ifdef METRICS
+			jumpOverCounter++;
+			// #endif
 			source.copy(dest);
 		}
 	}
@@ -89,7 +114,7 @@ public abstract class FeatureSensitiviteFowardFlowAnalysis<A extends Unit, N ext
 		this.unitBin.add(unit);
 		return false;
 	}
-	
+
 	public FlowSet getFlowAfter(Unit unit) {
 		if (this.unitBin.contains(unit)) {
 			return new ArraySparseSet();
@@ -97,7 +122,6 @@ public abstract class FeatureSensitiviteFowardFlowAnalysis<A extends Unit, N ext
 			return super.getFlowAfter(unit);
 		}
 	}
-	
 
 	/**
 	 * Filtered flow through.

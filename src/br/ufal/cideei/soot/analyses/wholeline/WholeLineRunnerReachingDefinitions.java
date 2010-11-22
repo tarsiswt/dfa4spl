@@ -44,11 +44,15 @@ public class WholeLineRunnerReachingDefinitions extends BodyTransformer {
 		FeatureSensitiveAnalysisRunner runner = new FeatureSensitiveAnalysisRunner(bodyGraph, featureTag.getFeatures(),
 				new FeatureSensitiveReachedDefinitionsFactory(), new HashMap<Object, Object>());
 		try {
+			//#ifdef METRICS
 			long beforeRunner = System.nanoTime();
+			//#endif
 			runner.execute2();
+			//#ifdef METRICS
 			long afterRunner = System.nanoTime();
 			this.analysisTime += afterRunner - beforeRunner;
 			System.out.println("[Runner]" + body.getMethod() + " with " + body.getTag("FeatureTag") + " took " + ((double)(afterRunner - beforeRunner)/1000000));
+			//#endif
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

@@ -26,7 +26,7 @@ public class WholeLineLiftedReachingDefinitions extends BodyTransformer {
 		long tmp = analysisTime;
 		return tmp;
 	}
-	
+
 	public void reset() {
 		analysisTime = 0;
 	}
@@ -36,12 +36,16 @@ public class WholeLineLiftedReachingDefinitions extends BodyTransformer {
 		BriefUnitGraph bodyGraph = new BriefUnitGraph(body);
 		FeatureTag<Set<String>> featureTag = (FeatureTag<Set<String>>) body.getTag("FeatureTag");
 
+		// #ifdef METRICS
 		long beforeRunner = System.nanoTime();
-		TestReachingDefinitions tst = new TestReachingDefinitions(bodyGraph, featureTag.getFeatures());
+		// #endif
+		new TestReachingDefinitions(bodyGraph, featureTag.getFeatures());
+		// #ifdef METRICS
 		long afterRunner = System.nanoTime();
 		this.analysisTime += afterRunner - beforeRunner;
-		System.out.println("[Lifted Lattice]" + body.getMethod() + " with " + body.getTag("FeatureTag") + " took " + ((double)(afterRunner - beforeRunner)/1000000));
-
+		System.out.println("[Lifted Lattice]" + body.getMethod() + " with " + body.getTag("FeatureTag") + " took "
+				+ ((double) (afterRunner - beforeRunner) / 1000000));
+		// #endif
 	}
 
 }

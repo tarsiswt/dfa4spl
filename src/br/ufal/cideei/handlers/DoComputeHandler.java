@@ -179,7 +179,7 @@ public class DoComputeHandler extends AbstractHandler implements IHandler {
 			 * Instantiate and execute a runner for the FSRD analysis.
 			 */
 			long runnerStart = System.currentTimeMillis();
-			FeatureSensitiveAnalysisRunner runner = new FeatureSensitiveAnalysisRunner(bodyGraph, instrumentorTransformer.getPowerSet(),
+			FeatureSensitiveAnalysisRunner runner = new FeatureSensitiveAnalysisRunner(bodyGraph, ((FeatureTag)body.getTag("FeatureTag")).getFeatures(),
 					new FeatureSensitiveReachedDefinitionsFactory(), new HashMap<Object, Object>());
 			runner.execute2();
 			long runnerEnd = System.currentTimeMillis();

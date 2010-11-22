@@ -166,7 +166,7 @@ public class DoIFSRDHandler extends AbstractHandler implements IHandler {
 
 			BriefUnitGraph bodyGraph = new BriefUnitGraph(body);
 
-			this.runTestReachingDefs(bodyGraph, instrumentorTransformer.getPowerSet());
+			this.runTestReachingDefs(bodyGraph, ((FeatureTag)body.getTag("FeatureTag")).getFeatures());
 
 			G.v().reset();
 

@@ -23,11 +23,25 @@ public class TestReachingDefinitions extends ForwardFlowAnalysis<Unit, LiftedFlo
 
 	/** The empty set. */
 	/*
-	 * FIXME: the clone method of LiftedFlowSet is not working properly right
-	 * now.
+	 * FIXME: the clone method of LiftedFlowSet is currently not working
+	 * properly.
 	 */
 	private LiftedFlowSet<Collection<Set<String>>> emptySet;
 	private Collection<Set<String>> configurations;
+
+	// #ifdef METRICS
+	private static long flowThroughCounter = 0;
+
+
+	public static long getFlowThroughCounter() {
+		return flowThroughCounter;		
+	}
+	
+	public static void reset() {
+		flowThroughCounter = 0;
+	}
+
+	// #endif
 
 	/**
 	 * Instantiates a new TestReachingDefinitions.
@@ -92,6 +106,9 @@ public class TestReachingDefinitions extends ForwardFlowAnalysis<Unit, LiftedFlo
 	 */
 	@Override
 	protected void flowThrough(LiftedFlowSet source, Unit unit, LiftedFlowSet dest) {
+		// #ifdef METRICS
+		flowThroughCounter++;
+		// #endif
 		kill(source, unit, dest);
 		gen(dest, unit);
 	}
@@ -109,10 +126,12 @@ public class TestReachingDefinitions extends ForwardFlowAnalysis<Unit, LiftedFlo
 	 *            the dest
 	 */
 	private void kill(LiftedFlowSet source, Unit unit, LiftedFlowSet dest) {
-
-		LiftedFlowSet<Collection<Set<String>>> kills = new LiftedFlowSet(this.configurations);
-		// FIXME: clone not working correctly!
+		/*
+		 * FIXME: clone not working correctly! Instantiating a new FlowSet
+		 * instead.
+		 */
 		// LiftedFlowSet kills = this.emptySet.clone();
+		LiftedFlowSet<Collection<Set<String>>> kills = new LiftedFlowSet(this.configurations);
 
 		/*
 		 * For the kill set, we are only interested on Assignments.
@@ -164,4 +183,5 @@ public class TestReachingDefinitions extends ForwardFlowAnalysis<Unit, LiftedFlo
 			dest.add(unit);
 		}
 	}
+
 }

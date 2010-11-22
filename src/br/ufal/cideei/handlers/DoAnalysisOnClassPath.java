@@ -36,6 +36,8 @@ import br.ufal.cideei.features.CIDEFeatureExtracterFactory;
 import br.ufal.cideei.features.IFeatureExtracter;
 import br.ufal.cideei.soot.AssignmentsCounter;
 import br.ufal.cideei.soot.SootManager;
+import br.ufal.cideei.soot.analyses.FeatureSensitiviteFowardFlowAnalysis;
+import br.ufal.cideei.soot.analyses.TestReachingDefinitions;
 import br.ufal.cideei.soot.analyses.wholeline.WholeLineLiftedReachingDefinitions;
 import br.ufal.cideei.soot.analyses.wholeline.WholeLineRunnerReachingDefinitions;
 import br.ufal.cideei.soot.instrument.FeatureModelInstrumentorTransformer;
@@ -176,6 +178,12 @@ public class DoAnalysisOnClassPath extends AbstractHandler {
 		System.out.format(format, "runner took:", runnerTime + "ms");
 		System.out.format(format, "lifted took:", liftedTime + "ms");
 		System.out.format(format, "runner/lifted:", runnerTime / liftedTime);
+		
+		long runnerFlowThroughCounter = FeatureSensitiviteFowardFlowAnalysis.getFlowThroughCounter();
+		System.out.format(format, "Runner no. of flowThroughs called: ", runnerFlowThroughCounter);
+		long liftedFlowThroughCounter = TestReachingDefinitions.getFlowThroughCounter();
+		System.out.format(format, "Lifted no. of flowThroughs called: ", liftedFlowThroughCounter);
+		
 
 		long totalBodies = FeatureModelInstrumentorTransformer.getTotalBodies();
 		long coloredBodies = FeatureModelInstrumentorTransformer.getTotalColoredBodies();
@@ -184,12 +192,14 @@ public class DoAnalysisOnClassPath extends AbstractHandler {
 		System.out.format(format, "Bodies with at least 1 ft.: ", coloredBodies);
 		System.out.format(format, "Percentage: ", ((((double) coloredBodies) / ((double) (totalBodies))) * 100) + "%");
 		System.out.format(format, "Total of assignments: ", AssignmentsCounter.v().getCounter());
-		System.out.format(format, "Average assignments/bodies: ", AssignmentsCounter.v().getCounter() / totalBodies);
+		System.out.format(format, "Average assignments/bodies: ", AssignmentsCounter.v().getCounter() / totalBodies);		
 
 		WholeLineLiftedReachingDefinitions.v().reset();
 		WholeLineRunnerReachingDefinitions.v().reset();
 		FeatureModelInstrumentorTransformer.v().reset();
 		AssignmentsCounter.v().reset();
+		FeatureSensitiviteFowardFlowAnalysis.reset();
+		TestReachingDefinitions.reset();
 		// #endif
 	}
 }
