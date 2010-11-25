@@ -67,6 +67,26 @@ public class DoAnalysisOnClassPath extends AbstractHandler {
 					throw new ExecutionException("No source classpath identified");
 				}
 
+				/*
+				 * To build the path string variable that will represent Soot's
+				 * classpath we will first iterate through all libs (.jars)
+				 * files, then through all source classpaths.
+				 * 
+				 * FIXME: WARNING: A bug was found on Soot, in which the
+				 * FileSourceTag would contain incorrect information regarding
+				 * the absolute localtion of the source file. In order to
+				 * workaround this, the classpath must be injected into the
+				 * FeatureModelInstrumentorTransformer class (it is done though
+				 * its constructor).
+				 * 
+				 * As a consequence, we CANNOT build an string with all
+				 * classpaths that contains source code for the project and thus
+				 * one only source code classpath can be analysed at a given
+				 * time.
+				 * 
+				 * This seriously restricts the range of projects that can be
+				 * analysed with this tool.
+				 */
 				StringBuilder libsPaths = new StringBuilder();
 				for (IClasspathEntry entry : classPathEntries) {
 					if (entry.getEntryKind() == IClasspathEntry.CPE_LIBRARY) {
@@ -170,12 +190,11 @@ public class DoAnalysisOnClassPath extends AbstractHandler {
 		System.out.format(format, "runner took:", runnerTime + "ms");
 		System.out.format(format, "lifted took:", liftedTime + "ms");
 		System.out.format(format, "runner/lifted:", runnerTime / liftedTime);
-		
+
 		long runnerFlowThroughCounter = FeatureSensitiviteFowardFlowAnalysis.getFlowThroughCounter();
 		System.out.format(format, "Runner no. of flowThroughs called: ", runnerFlowThroughCounter);
 		long liftedFlowThroughCounter = TestReachingDefinitions.getFlowThroughCounter();
 		System.out.format(format, "Lifted no. of flowThroughs called: ", liftedFlowThroughCounter);
-		
 
 		long totalBodies = FeatureModelInstrumentorTransformer.getTotalBodies();
 		long coloredBodies = FeatureModelInstrumentorTransformer.getTotalColoredBodies();
@@ -184,7 +203,7 @@ public class DoAnalysisOnClassPath extends AbstractHandler {
 		System.out.format(format, "Bodies with at least 1 ft.: ", coloredBodies);
 		System.out.format(format, "Percentage: ", ((((double) coloredBodies) / ((double) (totalBodies))) * 100) + "%");
 		System.out.format(format, "Total of assignments: ", AssignmentsCounter.v().getCounter());
-		System.out.format(format, "Average assignments/bodies: ", AssignmentsCounter.v().getCounter() / totalBodies);		
+		System.out.format(format, "Average assignments/bodies: ", AssignmentsCounter.v().getCounter() / totalBodies);
 
 		WholeLineLiftedReachingDefinitions.v().reset();
 		WholeLineRunnerReachingDefinitions.v().reset();
