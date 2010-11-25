@@ -23,6 +23,9 @@ import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 
+import de.ovgu.cide.features.FeatureModelNotFoundException;
+import de.ovgu.cide.features.IFeature;
+
 import soot.Body;
 import soot.BodyTransformer;
 import soot.SootClass;
@@ -52,7 +55,7 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 	private static IFeatureExtracter extracter;
 	/** Current compilation unit the transformation is working on */
 	private CompilationUnit currentCompilationUnit;
-	private IFile iFile;
+	private IFile file;
 	/*
 	 * Workaround for the preTransform method. See comments.
 	 */
@@ -62,6 +65,7 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 	// #ifdef METRICS
 	private static long totalBodies = 0;
 	private static long totalColoredBodies = 0;
+
 	// #endif
 
 	/**
@@ -98,7 +102,7 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 		try {
 			preTransform(body);
 		} catch (IllegalStateException ex) {
-			System.out.println("Skipping " + body.getMethod() + " :" + ex.getMessage());
+			System.out.println("Skipping " + body.getMethod().getName() + " :" + ex.getMessage());
 			return;
 		}
 		// System.out.println("Instrumenting body of " + body.getMethod());
@@ -107,8 +111,10 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 		 * The feature set and its power set will be computed during the first
 		 * iteration and after the second iteration respectivelly
 		 */
-		Set<String> featureSet = new HashSet<String>();
-		Set<Set<String>> featurePowerSet = null;
+		Set<String> featureNameSet = new HashSet<String>();
+		Set<IFeature> featureSet = new HashSet<IFeature>();
+		Set<Set<String>> featureNamePowerSet = null;
+		Set<Set<IFeature>> featurePowerSet = null;
 
 		/*
 		 * This is the first iteration over the units. We will find out what are
@@ -140,7 +146,7 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 		while (unitIt.hasNext()) {
 			Unit nextUnit = unitIt.next();
 			Collection<ASTNode> nodesTakenFromUnit = null;
-			Set<String> featuresOnUnit = new HashSet<String>();
+			Set<IFeature> featuresOnUnit = new HashSet<IFeature>();
 
 			// flag used to improve code performance
 			boolean alreadyAddedUnit = false;
@@ -156,13 +162,14 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 			Iterator<ASTNode> nodesIterator = nodesTakenFromUnit.iterator();
 			while (nodesIterator.hasNext()) {
 				ASTNode nextNode = nodesIterator.next();
-				Set<String> features = extracter.getFeaturesNames(nextNode, this.iFile);
+				Set<IFeature> features = extracter.getFeatures(nextNode, this.file);
 
-				Iterator<String> nodesFeaturesIterator = features.iterator();
+				Iterator<IFeature> nodesFeaturesIterator = features.iterator();
 				while (nodesFeaturesIterator.hasNext()) {
-					String feature = nodesFeaturesIterator.next();
+					IFeature feature = nodesFeaturesIterator.next();
 					featuresOnUnit.add(feature);
-					if (!featureSet.contains(feature)) {
+					if (!featureNameSet.contains(feature.getName())) {
+						featureNameSet.add(feature.getName());
 						featureSet.add(feature);
 					}
 				}
@@ -182,7 +189,23 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 		}
 
 		featurePowerSet = SetUtil.powerSet(featureSet);
-		// this.configurationPowerSet = featurePowerSet;
+		featureNamePowerSet = new HashSet<Set<String>>(featurePowerSet.size());
+		for (Set<IFeature> config : featurePowerSet) {
+			boolean valid = false;
+			try {
+				valid = extracter.isValid(config);
+			} catch (FeatureModelNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			if (valid) {
+				Set<String> strConfig = new HashSet<String>(config.size());
+				for (IFeature feat : config) {
+					strConfig.add(feat.getName());
+				}
+				featureNamePowerSet.add(strConfig);
+			} 
+		}
 
 		/*
 		 * Now, in this second iteration, the units will be tagged with their
@@ -196,12 +219,12 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 		 * no color and the Body. This object should not be modified.
 		 */
 		FeatureTag<Set<String>> powerSetTag = new FeatureTag<Set<String>>();
-		powerSetTag.addAll(featurePowerSet);
+		powerSetTag.addAll(featureNamePowerSet);
 
 		// #ifdef METRICS
 		FeatureModelInstrumentorTransformer.totalBodies++;
 		// if the body has more than one color
-		if (featurePowerSet.size() > 1) {
+		if (featureNamePowerSet.size() > 1) {
 			FeatureModelInstrumentorTransformer.totalColoredBodies++;
 		}
 		// #endif
@@ -232,7 +255,7 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 
 			FeatureTag<Set<String>> validConfigurationsTag = new FeatureTag<Set<String>>();
 
-			Set<Set<String>> validConfigurationsPowerSet = SetUtil.configurationSet(featurePowerSet, featuresInUaf);
+			Set<Set<String>> validConfigurationsPowerSet = SetUtil.configurationSet(featureNamePowerSet, featuresInUaf);
 			Iterator<Set<String>> validConfigurationsIterator = validConfigurationsPowerSet.iterator();
 			while (validConfigurationsIterator.hasNext()) {
 				Set<String> set = (Set<String>) validConfigurationsIterator.next();
@@ -271,7 +294,7 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 		 * through a parameter in this method. We will use tag.getSourceFile()
 		 * in order to resolve the file name.
 		 * 
-		 * Yeah, it's ugly.
+		 * Yes, this is ugly.
 		 */
 		SourceFileTag tag = (SourceFileTag) body.getMethod().getDeclaringClass().getTag("SourceFileTag");
 
@@ -285,29 +308,20 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 		} else {
 			absolutePath = "";
 		}
+
+		/*
+		 * String#replaceAll bugs when replacing "special" chars like
+		 * File.separator. The Matcher and Patter composes a workaround for
+		 * that.
+		 */
 		absolutePath = absolutePath.replaceAll(Pattern.quote("."), Matcher.quoteReplacement(File.separator));
 		absolutePath = classPath + File.separator + absolutePath + File.separator + tag.getSourceFile();
-		// System.out.println(absolutePath);
 		tag.setAbsolutePath(absolutePath);
 
 		IPath path = new Path(tag.getAbsolutePath());
-		this.iFile = org.eclipse.core.resources.ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(path);
+		this.file = org.eclipse.core.resources.ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(path);
 
-		/*
-		 * TODO: the following lines are very expensive. Perhaps there is a
-		 * ligther way of doing this,instead of building so many objects?
-		 */
-		CompilationUnit jdtCompilationUnit = cachedParser.parse(iFile);
-		// long t1 = System.currentTimeMillis();
-		// ICompilationUnit compilationUnit =
-		// JavaCore.createCompilationUnitFrom(iFile);
-		// ASTParser parser = ASTParser.newParser(AST.JLS3);
-		// parser.setSource(compilationUnit);
-		// parser.setKind(ASTParser.K_COMPILATION_UNIT);
-		// parser.setResolveBindings(true);
-		// CompilationUnit jdtCompilationUnit = (CompilationUnit)
-		// parser.createAST(null);
-		// System.out.println(System.currentTimeMillis() - t1);
+		CompilationUnit jdtCompilationUnit = cachedParser.parse(file);
 
 		/*
 		 * The CIDE feature extractor depends on this object.
@@ -323,7 +337,7 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 	public static long getTotalColoredBodies() {
 		return FeatureModelInstrumentorTransformer.totalColoredBodies;
 	}
-	
+
 	public static void reset() {
 		FeatureModelInstrumentorTransformer.totalColoredBodies = 0;
 		FeatureModelInstrumentorTransformer.totalBodies = 0;

@@ -72,15 +72,12 @@ public class DoAnalysisOnClassPath extends AbstractHandler {
 					if (entry.getEntryKind() == IClasspathEntry.CPE_LIBRARY) {
 						File file = entry.getPath().makeAbsolute().toFile();
 						if (file.isAbsolute()) {
-							// System.out.println(file.getAbsolutePath());
 							libsPaths.append(file.getAbsolutePath() + File.pathSeparator);
 						} else {
-							// System.out.println(ResourcesPlugin.getWorkspace().getRoot().getFile(entry.getPath()).getLocation().toOSString());
 							libsPaths.append(ResourcesPlugin.getWorkspace().getRoot().getFile(entry.getPath()).getLocation().toOSString() + File.pathSeparator);
 						}
 					}
 				}
-				System.out.println(libsPaths.toString());
 				for (IClasspathEntry entry : classPathEntries) {
 					if (entry.getEntryKind() == IClasspathEntry.CPE_SOURCE) {
 						this.addPacks(javaProject, entry, libsPaths.toString());
@@ -108,9 +105,8 @@ public class DoAnalysisOnClassPath extends AbstractHandler {
 		}
 
 		SootManager.configure(classPath + File.pathSeparator + libs);
-		System.out.println(classPath + File.pathSeparator + libs);
 
-		IFeatureExtracter extracter = CIDEFeatureExtracterFactory.getInstance().newExtracter();
+		IFeatureExtracter extracter = CIDEFeatureExtracterFactory.getInstance().newExtracter(javaProject);
 		IPackageFragmentRoot[] packageFragmentRoots = javaProject.findPackageFragmentRoots(entry);
 		for (IPackageFragmentRoot packageFragmentRoot : packageFragmentRoots) {
 			IJavaElement[] children = null;
@@ -146,10 +142,6 @@ public class DoAnalysisOnClassPath extends AbstractHandler {
 
 					// This goes into Soot loadAndSupport
 					SootClass sootClass = SootManager.loadAndSupport(qualifiedNameStrBuilder.toString());
-					// System.out.println("Compilation unit:" + classPath +
-					// File.separator + qualifiedNameStrBuilder.toString() +
-					// " RLEVEL: "
-					// + sootClass.resolvingLevel());
 				}
 			}
 		}

@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.dom.ASTNode;
 
 import cide.gast.IASTNode;
@@ -21,9 +22,14 @@ class CIDEFeatureExtracter implements IFeatureExtracter {
 
 	/** The file from which colors from nodes are to be extracted. */
 	private IFile file;
-	
+	private IJavaProject javaProject;
+
 	public CIDEFeatureExtracter() {
 		// TODO Auto-generated constructor stub
+	}
+
+	public CIDEFeatureExtracter(IJavaProject javaProject) {
+		this.javaProject = javaProject;
 	}
 
 	/*
@@ -35,7 +41,7 @@ class CIDEFeatureExtracter implements IFeatureExtracter {
 	 */
 	// TODO: treat exception correctly
 	@Override
-	public Set<String> getFeaturesNames(ASTNode node,IFile file) {
+	public Set<String> getFeaturesNames(ASTNode node, IFile file) {
 		Set<IFeature> cideFeatureSet = this.getFeatures(node, file);
 		Set<String> stringFeatureSet = new HashSet<String>(cideFeatureSet.size());
 		for (IFeature feature : cideFeatureSet) {
@@ -46,9 +52,9 @@ class CIDEFeatureExtracter implements IFeatureExtracter {
 		}
 		return stringFeatureSet;
 	}
-	
+
 	@Override
-	public Set<IFeature> getFeatures(ASTNode node,IFile file) {
+	public Set<IFeature> getFeatures(ASTNode node, IFile file) {
 		ColoredSourceFile coloredFile;
 		try {
 			coloredFile = ColoredSourceFile.getColoredSourceFile(file);
@@ -60,7 +66,14 @@ class CIDEFeatureExtracter implements IFeatureExtracter {
 		Set<IFeature> cideFeatureSet = coloredFile.getColorManager().getColors(iASTNode);
 		return cideFeatureSet;
 	}
-	
-	
+
+	@Override
+	public boolean isValid(Set<IFeature> config) throws FeatureModelNotFoundException {
+		/*
+		 * FIXME: simply not working. Oh god why?
+		 */
+//		return FeatureModelManager.getInstance().getFeatureModel(javaProject.getProject()).isValidSelection(config);
+		return true;
+	}
 
 }
