@@ -51,66 +51,76 @@ import soot.SootMethod;
 import soot.Transform;
 
 public class DoAnalysisOnClassPath extends AbstractHandler {
+	private static double totalRunnerTime;
+	private static double totalLiftedTime;
+
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		try {
-			IStructuredSelection selection = (IStructuredSelection) HandlerUtil.getActiveMenuSelection(event);
-			Object firstElement = selection.getFirstElement();
-			if (firstElement instanceof IJavaProject) {
-				IJavaProject javaProject = (IJavaProject) firstElement;
+			for (int i = 0; i < 10; i++) {
+				IStructuredSelection selection = (IStructuredSelection) HandlerUtil.getActiveMenuSelection(event);
+				Object firstElement = selection.getFirstElement();
+				if (firstElement instanceof IJavaProject) {
+					IJavaProject javaProject = (IJavaProject) firstElement;
 
-				IClasspathEntry[] classPathEntries = null;
-				try {
-					classPathEntries = javaProject.getResolvedClasspath(true);
-				} catch (JavaModelException e) {
-					e.printStackTrace();
-					throw new ExecutionException("No source classpath identified");
-				}
+					IClasspathEntry[] classPathEntries = null;
+					try {
+						classPathEntries = javaProject.getResolvedClasspath(true);
+					} catch (JavaModelException e) {
+						e.printStackTrace();
+						throw new ExecutionException("No source classpath identified");
+					}
 
-				/*
-				 * To build the path string variable that will represent Soot's
-				 * classpath we will first iterate through all libs (.jars)
-				 * files, then through all source classpaths.
-				 * 
-				 * FIXME: WARNING: A bug was found on Soot, in which the
-				 * FileSourceTag would contain incorrect information regarding
-				 * the absolute localtion of the source file. In order to
-				 * workaround this, the classpath must be injected into the
-				 * FeatureModelInstrumentorTransformer class (it is done though
-				 * its constructor).
-				 * 
-				 * As a consequence, we CANNOT build an string with all
-				 * classpaths that contains source code for the project and thus
-				 * one only source code classpath can be analysed at a given
-				 * time.
-				 * 
-				 * This seriously restricts the range of projects that can be
-				 * analysed with this tool.
-				 */
-				StringBuilder libsPaths = new StringBuilder();
-				for (IClasspathEntry entry : classPathEntries) {
-					if (entry.getEntryKind() == IClasspathEntry.CPE_LIBRARY) {
-						File file = entry.getPath().makeAbsolute().toFile();
-						if (file.isAbsolute()) {
-							libsPaths.append(file.getAbsolutePath() + File.pathSeparator);
-						} else {
-							libsPaths.append(ResourcesPlugin.getWorkspace().getRoot().getFile(entry.getPath()).getLocation().toOSString() + File.pathSeparator);
+					/*
+					 * To build the path string variable that will represent
+					 * Soot's classpath we will first iterate through all libs
+					 * (.jars) files, then through all source classpaths.
+					 * 
+					 * FIXME: WARNING: A bug was found on Soot, in which the
+					 * FileSourceTag would contain incorrect information
+					 * regarding the absolute localtion of the source file. In
+					 * order to workaround this, the classpath must be injected
+					 * into the FeatureModelInstrumentorTransformer class (it is
+					 * done though its constructor).
+					 * 
+					 * As a consequence, we CANNOT build an string with all
+					 * classpaths that contains source code for the project and
+					 * thus one only source code classpath can be analysed at a
+					 * given time.
+					 * 
+					 * This seriously restricts the range of projects that can
+					 * be analysed with this tool.
+					 */
+					StringBuilder libsPaths = new StringBuilder();
+					for (IClasspathEntry entry : classPathEntries) {
+						if (entry.getEntryKind() == IClasspathEntry.CPE_LIBRARY) {
+							File file = entry.getPath().makeAbsolute().toFile();
+							if (file.isAbsolute()) {
+								libsPaths.append(file.getAbsolutePath() + File.pathSeparator);
+							} else {
+								libsPaths.append(ResourcesPlugin.getWorkspace().getRoot().getFile(entry.getPath()).getLocation().toOSString()
+										+ File.pathSeparator);
+							}
 						}
 					}
-				}
-				for (IClasspathEntry entry : classPathEntries) {
-					if (entry.getEntryKind() == IClasspathEntry.CPE_SOURCE) {
-						this.addPacks(javaProject, entry, libsPaths.toString());
+					for (IClasspathEntry entry : classPathEntries) {
+						if (entry.getEntryKind() == IClasspathEntry.CPE_SOURCE) {
+							this.addPacks(javaProject, entry, libsPaths.toString());
+						}
 					}
-				}
+				}				
+				G.v().reset();
 			}
-			return null;
 		} catch (Exception e) {
 			e.printStackTrace();
-			return null;
 		} finally {
 			G.v().reset();
 		}
+		String format = "|%1$-50s|%2$-50s|\n";
+		System.out.format(format, "TOTAL: Lifted" ,DoAnalysisOnClassPath.totalLiftedTime);
+		System.out.format(format, "TOTAL: Runner" ,DoAnalysisOnClassPath.totalRunnerTime);
+		System.out.format(format, "TOTAL: Runner/Lifted" ,DoAnalysisOnClassPath.totalRunnerTime/DoAnalysisOnClassPath.totalLiftedTime);
+		return null;
 	}
 
 	private void addPacks(IJavaProject javaProject, IClasspathEntry entry, String libs) {
@@ -187,6 +197,8 @@ public class DoAnalysisOnClassPath extends AbstractHandler {
 		String format = "|%1$-50s|%2$-50s|\n";
 		double runnerTime = ((double) WholeLineRunnerReachingDefinitions.v().getAnalysesTime()) / 1000000;
 		double liftedTime = ((double) WholeLineLiftedReachingDefinitions.v().getAnalysesTime()) / 1000000;
+		DoAnalysisOnClassPath.totalRunnerTime =+ runnerTime;
+		DoAnalysisOnClassPath.totalLiftedTime =+ liftedTime;
 		System.out.format(format, "runner took:", runnerTime + "ms");
 		System.out.format(format, "lifted took:", liftedTime + "ms");
 		System.out.format(format, "runner/lifted:", runnerTime / liftedTime);

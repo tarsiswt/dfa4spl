@@ -51,7 +51,7 @@ public class WholeLineRunnerReachingDefinitions extends BodyTransformer {
 			//#ifdef METRICS
 			long afterRunner = System.nanoTime();
 			this.analysisTime += afterRunner - beforeRunner;
-			System.out.println("[Runner]" + body.getMethod() + " with " + body.getTag("FeatureTag") + " took " + ((double)(afterRunner - beforeRunner)/1000000));
+//			System.out.println("[Runner]" + body.getMethod() + " with " + body.getTag("FeatureTag") + " took " + ((double)(afterRunner - beforeRunner)/1000000));
 			//#endif
 		} catch (Exception e) {
 			// TODO Auto-generated catch block

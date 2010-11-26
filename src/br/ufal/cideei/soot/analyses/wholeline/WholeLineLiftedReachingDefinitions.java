@@ -43,8 +43,8 @@ public class WholeLineLiftedReachingDefinitions extends BodyTransformer {
 		// #ifdef METRICS
 		long afterRunner = System.nanoTime();
 		this.analysisTime += afterRunner - beforeRunner;
-		System.out.println("[Lifted Lattice]" + body.getMethod() + " with " + body.getTag("FeatureTag") + " took "
-				+ ((double) (afterRunner - beforeRunner) / 1000000));
+//		System.out.println("[Lifted Lattice]" + body.getMethod() + " with " + body.getTag("FeatureTag") + " took "
+//				+ ((double) (afterRunner - beforeRunner) / 1000000));
 		// #endif
 	}
 
