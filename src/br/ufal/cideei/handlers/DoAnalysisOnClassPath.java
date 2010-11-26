@@ -56,8 +56,9 @@ public class DoAnalysisOnClassPath extends AbstractHandler {
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
+		int times = 10;
 		try {
-			for (int i = 0; i < 10; i++) {
+			for (int i = 0; i < times; i++) {
 				IStructuredSelection selection = (IStructuredSelection) HandlerUtil.getActiveMenuSelection(event);
 				Object firstElement = selection.getFirstElement();
 				if (firstElement instanceof IJavaProject) {
@@ -117,8 +118,8 @@ public class DoAnalysisOnClassPath extends AbstractHandler {
 			G.v().reset();
 		}
 		String format = "|%1$-50s|%2$-50s|\n";
-		System.out.format(format, "TOTAL: Lifted" ,DoAnalysisOnClassPath.totalLiftedTime);
-		System.out.format(format, "TOTAL: Runner" ,DoAnalysisOnClassPath.totalRunnerTime);
+		System.out.format(format, "TOTAL/" + times +": Lifted" ,DoAnalysisOnClassPath.totalLiftedTime);
+		System.out.format(format, "TOTAL/" + times +": Runner" ,DoAnalysisOnClassPath.totalRunnerTime);
 		System.out.format(format, "TOTAL: Runner/Lifted" ,DoAnalysisOnClassPath.totalRunnerTime/DoAnalysisOnClassPath.totalLiftedTime);
 		return null;
 	}
@@ -197,8 +198,8 @@ public class DoAnalysisOnClassPath extends AbstractHandler {
 		String format = "|%1$-50s|%2$-50s|\n";
 		double runnerTime = ((double) WholeLineRunnerReachingDefinitions.v().getAnalysesTime()) / 1000000;
 		double liftedTime = ((double) WholeLineLiftedReachingDefinitions.v().getAnalysesTime()) / 1000000;
-		DoAnalysisOnClassPath.totalRunnerTime =+ runnerTime;
-		DoAnalysisOnClassPath.totalLiftedTime =+ liftedTime;
+		DoAnalysisOnClassPath.totalRunnerTime += runnerTime;
+		DoAnalysisOnClassPath.totalLiftedTime += liftedTime;
 		System.out.format(format, "runner took:", runnerTime + "ms");
 		System.out.format(format, "lifted took:", liftedTime + "ms");
 		System.out.format(format, "runner/lifted:", runnerTime / liftedTime);
