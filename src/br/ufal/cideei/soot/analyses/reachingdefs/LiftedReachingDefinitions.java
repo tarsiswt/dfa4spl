@@ -1,64 +1,59 @@
-package br.ufal.cideei.soot.analyses;
+package br.ufal.cideei.soot.analyses.reachingdefs;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import soot.Local;
 import soot.Unit;
 import soot.jimple.AssignStmt;
-import soot.jimple.internal.JimpleLocal;
 import soot.toolkits.graph.DirectedGraph;
-import soot.toolkits.graph.UnitGraph;
 import soot.toolkits.scalar.FlowSet;
 import soot.toolkits.scalar.ForwardFlowAnalysis;
-import soot.util.Chain;
+import br.ufal.cideei.soot.analyses.LiftedFlowSet;
 import br.ufal.cideei.soot.instrument.FeatureTag;
 
 // TODO: Auto-generated Javadoc
 /**
- * This implementation of the Initialized variable analysis uses a LiftedFlowSet
+ * This implementation of the Reaching Definitions analysis uses a LiftedFlowSet
  * as a lattice element. The only major change is how it's KILL method is
- * implemented. Also, the gen method is empty. We fulfill the lattice with local variables
- * at the class constructor.
+ * implemented. Everything else is quite similar to a 'regular' FlowSet-based
+ * analysis.
  */
-public class LiftedInitializedVariableAnalysis extends ForwardFlowAnalysis<Unit, LiftedFlowSet> {
+public class LiftedReachingDefinitions extends ForwardFlowAnalysis<Unit, LiftedFlowSet<Collection<Set<Object>>>> {
 
 	/** The empty set. */
 	/*
-	 * FIXME: the clone method of LiftedFlowSet is not working properly right
-	 * now.
+	 * FIXME: the clone method of LiftedFlowSet is currently not working
+	 * properly.
 	 */
-	private LiftedFlowSet emptySet;
+	private LiftedFlowSet<Collection<Set<String>>> emptySet;
 	private Collection<Set<String>> configurations;
+
+	// #ifdef METRICS
+	private static long flowThroughCounter = 0;
+
+
+	public static long getFlowThroughCounter() {
+		return flowThroughCounter;		
+	}
+	
+	public static void reset() {
+		flowThroughCounter = 0;
+	}
+
+	// #endif
 
 	/**
 	 * Instantiates a new TestReachingDefinitions.
 	 * 
 	 * @param graph
 	 *            the graph
-	 * @param configs the configurations.
 	 */
-	public LiftedInitializedVariableAnalysis(DirectedGraph<Unit> graph, Collection<Set<String>> configs) {
+	public LiftedReachingDefinitions(DirectedGraph<Unit> graph, Collection<Set<String>> configs) {
 		super(graph);
 		this.configurations = configs;
-		this.emptySet = new LiftedFlowSet(configs);
-		
-		if (graph instanceof UnitGraph) {
-			UnitGraph ug = (UnitGraph) graph;
-			
-			Chain locals = ug.getBody().getLocals();
-			
-			for (Object object : locals) {
-				Local local = (Local) object;
-				
-				if (!local.getName().contains("$")) {
-					emptySet.add(local);
-				}
-			}
-		}
-		
+		this.emptySet = new LiftedFlowSet<Collection<Set<String>>>(configs);
 		super.doAnalysis();
 	}
 
@@ -112,14 +107,17 @@ public class LiftedInitializedVariableAnalysis extends ForwardFlowAnalysis<Unit,
 	 */
 	@Override
 	protected void flowThrough(LiftedFlowSet source, Unit unit, LiftedFlowSet dest) {
+		// #ifdef METRICS
+		flowThroughCounter++;
+		// #endif
 		kill(source, unit, dest);
 		gen(dest, unit);
 	}
 
 	/**
 	 * Creates a KILL set for a given Unit and it to the FlowSet dest. In this
-	 * case, if the Unit has an assignment to a variable contained in the lattice,
-	 * we remove that variable from there, since it was definitely initialized.
+	 * case, our KILL set are the Assignments made to the same Value that this
+	 * Unit assigns to.
 	 * 
 	 * @param source
 	 *            the source
@@ -129,10 +127,12 @@ public class LiftedInitializedVariableAnalysis extends ForwardFlowAnalysis<Unit,
 	 *            the dest
 	 */
 	private void kill(LiftedFlowSet source, Unit unit, LiftedFlowSet dest) {
-
-		LiftedFlowSet kills = new LiftedFlowSet(this.configurations);
-		// FIXME: clone not working correctly!
+		/*
+		 * FIXME: clone not working correctly! Instantiating a new FlowSet
+		 * instead.
+		 */
 		// LiftedFlowSet kills = this.emptySet.clone();
+		LiftedFlowSet<Collection<Set<String>>> kills = new LiftedFlowSet(this.configurations);
 
 		/*
 		 * For the kill set, we are only interested on Assignments.
@@ -151,15 +151,15 @@ public class LiftedInitializedVariableAnalysis extends ForwardFlowAnalysis<Unit,
 			 * FeatureTag. If for every configuration C, C contains an earlier
 			 * assignment made to the same Local we are looking at now (unit),
 			 * then it must be killed.
-			 */			
+			 */
 			for (Set<String> validConfig : features) {
 				if (configurations.contains(validConfig)) {
 					List flowSetList = liftedMap.get(validConfig).toList();
-					for (Object declaredVariable : flowSetList) {
-						if (declaredVariable instanceof Local) {
-							Local local = (Local) declaredVariable;
-							if (local.equivTo(assignStmt.getLeftOp())) {
-								kills.add(validConfig, local);
+					for (Object earlierAssignment : flowSetList) {
+						if (earlierAssignment instanceof AssignStmt) {
+							AssignStmt stmt = (AssignStmt) earlierAssignment;
+							if (stmt.getLeftOp().equivTo(assignStmt.getLeftOp())) {
+								kills.add(validConfig, earlierAssignment);
 							}
 						}
 					}
@@ -170,13 +170,19 @@ public class LiftedInitializedVariableAnalysis extends ForwardFlowAnalysis<Unit,
 	}
 
 	/**
+	 * Creates a GEN set for a given Unit and it to the FlowSet dest. In this
+	 * case, our GEN set are all the definitions present in the unit.
+	 * 
 	 * @param dest
 	 *            the dest
 	 * @param unit
 	 *            the unit
 	 */
+	// TODO: MUST ITERATE THROUGH ALL DEFBOXES!!!
 	private void gen(LiftedFlowSet dest, Unit unit) {
-		// do nothing
+		if (unit instanceof AssignStmt) {
+			dest.add(unit);
+		}
 	}
 
 }

@@ -5,12 +5,15 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.dom.ASTNode;
 
 import cide.gast.IASTNode;
+import de.ovgu.cide.features.FeatureModelManager;
 import de.ovgu.cide.features.FeatureModelNotFoundException;
 import de.ovgu.cide.features.IFeature;
+import de.ovgu.cide.features.IFeatureModel;
 import de.ovgu.cide.features.source.ColoredSourceFile;
 import de.ovgu.cide.language.jdt.ASTBridge;
 
@@ -72,7 +75,8 @@ class CIDEFeatureExtracter implements IFeatureExtracter {
 		/*
 		 * FIXME: simply not working. Oh god why?
 		 */
-//		return FeatureModelManager.getInstance().getFeatureModel(javaProject.getProject()).isValidSelection(config);
+//		IFeatureModel featureModel = FeatureModelManager.getInstance().getActiveFeatureModelProvider().getFeatureModel(javaProject.getProject());
+//		return FeatureModelManager.getInstance().getActiveFeatureModelProvider().getFeatureModel(javaProject.getProject()).isValidSelection(featureModel.getVisibleFeatures());
 		return true;
 	}
 

@@ -37,10 +37,13 @@ import br.ufal.cideei.features.IFeatureExtracter;
 import br.ufal.cideei.soot.AssignmentsCounter;
 import br.ufal.cideei.soot.SootManager;
 import br.ufal.cideei.soot.analyses.FeatureSensitiviteFowardFlowAnalysis;
-import br.ufal.cideei.soot.analyses.TestReachingDefinitions;
+import br.ufal.cideei.soot.analyses.reachingdefs.LiftedReachingDefinitions;
 import br.ufal.cideei.soot.analyses.wholeline.WholeLineLiftedReachingDefinitions;
+import br.ufal.cideei.soot.analyses.wholeline.WholeLineLiftedUninitializedVariableAnalysis;
 import br.ufal.cideei.soot.analyses.wholeline.WholeLineRunnerReachingDefinitions;
+import br.ufal.cideei.soot.analyses.wholeline.WholeLineRunnerUninitializedVariable;
 import br.ufal.cideei.soot.instrument.FeatureModelInstrumentorTransformer;
+import br.ufal.cideei.util.ExecutionResultWrapper;
 import br.ufal.cideei.util.MethodDeclarationSootMethodBridge;
 
 import soot.G;
@@ -51,8 +54,16 @@ import soot.SootMethod;
 import soot.Transform;
 
 public class DoAnalysisOnClassPath extends AbstractHandler {
-	private static double totalRunnerTime;
-	private static double totalLiftedTime;
+	private static double totalRDRunnerTime;
+	private static double totalRDLiftedTime;
+	private static double totalUVRunnerTime;
+	private static double totalUVLiftedTime;
+	private static ExecutionResultWrapper<Double> rdRunnerResults = new ExecutionResultWrapper<Double>();
+	private static ExecutionResultWrapper<Double> uvRunnerResults = new ExecutionResultWrapper<Double>();
+	private static ExecutionResultWrapper<Double> rdLiftedResults = new ExecutionResultWrapper<Double>();
+	private static ExecutionResultWrapper<Double> uvLiftedResults = new ExecutionResultWrapper<Double>();
+	private static ExecutionResultWrapper<Double> instrumentationResults = new ExecutionResultWrapper<Double>();
+	private static ExecutionResultWrapper<Double> jimplificationResults = new ExecutionResultWrapper<Double>();
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
@@ -109,18 +120,39 @@ public class DoAnalysisOnClassPath extends AbstractHandler {
 							this.addPacks(javaProject, entry, libsPaths.toString());
 						}
 					}
-				}				
-				G.v().reset();
+				}
+				G.reset();
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
-			G.v().reset();
+			G.reset();
 		}
-		String format = "|%1$-50s|%2$-50s|\n";
-		System.out.format(format, "TOTAL/" + times +": Lifted" ,DoAnalysisOnClassPath.totalLiftedTime);
-		System.out.format(format, "TOTAL/" + times +": Runner" ,DoAnalysisOnClassPath.totalRunnerTime);
-		System.out.format(format, "TOTAL: Runner/Lifted" ,DoAnalysisOnClassPath.totalRunnerTime/DoAnalysisOnClassPath.totalLiftedTime);
+		String format = "|%1$-50s|%2$-80s|\n";
+		// System.out.format(format, "TOTAL/" + times +": Lifted"
+		// ,DoAnalysisOnClassPath.totalRDLiftedTime);
+		// System.out.format(format, "TOTAL/" + times +": Runner"
+		// ,DoAnalysisOnClassPath.totalRDRunnerTime);
+		// System.out.format(format, "TOTAL: Runner/Lifted"
+		// ,DoAnalysisOnClassPath.totalRDRunnerTime/DoAnalysisOnClassPath.totalRDLiftedTime);
+		try {
+			System.out.format(format, "[RD-LIFTED] results: ", rdLiftedResults.toString());
+			System.out.format(format, "[RD-RUNNER] results: ", rdRunnerResults.toString());
+			System.out.format(format, "[UV-LIFTED] results: ", uvLiftedResults.toString());
+			System.out.format(format, "[UV-RUNNER] results: ", uvRunnerResults.toString());
+			System.out.format(format, "[INSTRUMNT] results: ", instrumentationResults.toString());
+			System.out.format(format, "[JIMPLFCTN] results: ", jimplificationResults.toString());
+
+			rdLiftedResults = new ExecutionResultWrapper<Double>();
+			rdRunnerResults = new ExecutionResultWrapper<Double>();
+			uvLiftedResults = new ExecutionResultWrapper<Double>();
+			uvRunnerResults = new ExecutionResultWrapper<Double>();
+			instrumentationResults = new ExecutionResultWrapper<Double>();
+			jimplificationResults = new ExecutionResultWrapper<Double>();
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		return null;
 	}
 
@@ -134,6 +166,10 @@ public class DoAnalysisOnClassPath extends AbstractHandler {
 		} else {
 			classPath = ResourcesPlugin.getWorkspace().getRoot().getFolder(entry.getPath()).getLocation().toOSString();
 		}
+
+		// #ifdef METRICS
+		long startJimplification = System.nanoTime();
+		// #endif
 
 		SootManager.configure(classPath + File.pathSeparator + libs);
 
@@ -172,20 +208,30 @@ public class DoAnalysisOnClassPath extends AbstractHandler {
 					}
 
 					// This goes into Soot loadAndSupport
-					SootClass sootClass = SootManager.loadAndSupport(qualifiedNameStrBuilder.toString());
+					SootManager.loadAndSupport(qualifiedNameStrBuilder.toString());
 				}
 			}
 		}
 		Scene.v().loadNecessaryClasses();
 
-		Transform t = new Transform("jap.fminst", FeatureModelInstrumentorTransformer.v(extracter, classPath));
-		PackManager.v().getPack("jap").add(t);
+		// #ifdef METRICS
+		long endJimplification = System.nanoTime();
+		// #endif
 
-		Transform t2 = new Transform("jap.rdrunner", WholeLineRunnerReachingDefinitions.v());
-		PackManager.v().getPack("jap").add(t2);
+		Transform instrumentation = new Transform("jtp.fminst", FeatureModelInstrumentorTransformer.v(extracter, classPath));
+		PackManager.v().getPack("jtp").add(instrumentation);
 
-		Transform t3 = new Transform("jap.rdlifted", WholeLineLiftedReachingDefinitions.v());
-		PackManager.v().getPack("jap").add(t3);
+		Transform reachingDefRunner = new Transform("jap.rdrunner", WholeLineRunnerReachingDefinitions.v());
+		PackManager.v().getPack("jap").add(reachingDefRunner);
+
+		Transform reachingDefLifted = new Transform("jap.rdlifted", WholeLineLiftedReachingDefinitions.v());
+		PackManager.v().getPack("jap").add(reachingDefLifted);
+
+		Transform uninitVarsLifted = new Transform("jap.uninitvarlifted", WholeLineLiftedUninitializedVariableAnalysis.v());
+		PackManager.v().getPack("jap").add(uninitVarsLifted);
+
+		Transform uninitVarsRunner = new Transform("jap.uninitvarrunner", WholeLineRunnerUninitializedVariable.v());
+		PackManager.v().getPack("jap").add(uninitVarsRunner);
 
 		// #ifdef METRICS
 		Transform t4 = new Transform("jap.asgnmc", AssignmentsCounter.v());
@@ -196,34 +242,60 @@ public class DoAnalysisOnClassPath extends AbstractHandler {
 
 		// #ifdef METRICS
 		String format = "|%1$-50s|%2$-50s|\n";
-		double runnerTime = ((double) WholeLineRunnerReachingDefinitions.v().getAnalysesTime()) / 1000000;
-		double liftedTime = ((double) WholeLineLiftedReachingDefinitions.v().getAnalysesTime()) / 1000000;
-		DoAnalysisOnClassPath.totalRunnerTime += runnerTime;
-		DoAnalysisOnClassPath.totalLiftedTime += liftedTime;
-		System.out.format(format, "runner took:", runnerTime + "ms");
-		System.out.format(format, "lifted took:", liftedTime + "ms");
-		System.out.format(format, "runner/lifted:", runnerTime / liftedTime);
+		double rdRunnerTime = ((double) WholeLineRunnerReachingDefinitions.v().getAnalysesTime()) / 1000000;
+		double rdLiftedTime = ((double) WholeLineLiftedReachingDefinitions.v().getAnalysesTime()) / 1000000;
+
+		double uvRunnerTime = ((double) WholeLineRunnerUninitializedVariable.v().getAnalysesTime()) / 1000000;
+		double uvLiftedTime = ((double) WholeLineLiftedUninitializedVariableAnalysis.v().getAnalysesTime()) / 1000000;
+
+		double instrumentationTime = ((double) FeatureModelInstrumentorTransformer.getTransformationTime()) / 1000000;
+
+		DoAnalysisOnClassPath.rdLiftedResults.add(rdLiftedTime);
+		DoAnalysisOnClassPath.rdRunnerResults.add(rdRunnerTime);
+		DoAnalysisOnClassPath.uvLiftedResults.add(uvLiftedTime);
+		DoAnalysisOnClassPath.uvRunnerResults.add(uvRunnerTime);
+		DoAnalysisOnClassPath.instrumentationResults.add(instrumentationTime);
+		DoAnalysisOnClassPath.jimplificationResults.add(((double) (endJimplification - startJimplification)) / 1000000);
+
+		DoAnalysisOnClassPath.totalRDRunnerTime += rdRunnerTime;
+		DoAnalysisOnClassPath.totalRDLiftedTime += rdLiftedTime;
+		DoAnalysisOnClassPath.totalUVRunnerTime += uvRunnerTime;
+		DoAnalysisOnClassPath.totalUVLiftedTime += uvLiftedTime;
+
+		// System.out.format(format, "[RD]runner took:", rdRunnerTime + "ms");
+		// System.out.format(format, "[RD]lifted took:", rdLiftedTime + "ms");
+		// System.out.format(format, "[RD]runner/lifted:",
+		// DoAnalysisOnClassPath.totalRDRunnerTime /
+		// DoAnalysisOnClassPath.totalRDLiftedTime);
 
 		long runnerFlowThroughCounter = FeatureSensitiviteFowardFlowAnalysis.getFlowThroughCounter();
-		System.out.format(format, "Runner no. of flowThroughs called: ", runnerFlowThroughCounter);
-		long liftedFlowThroughCounter = TestReachingDefinitions.getFlowThroughCounter();
-		System.out.format(format, "Lifted no. of flowThroughs called: ", liftedFlowThroughCounter);
+		// System.out.format(format, "Runner no. of flowThroughs called: ",
+		// runnerFlowThroughCounter);
+		long liftedFlowThroughCounter = LiftedReachingDefinitions.getFlowThroughCounter();
+		// System.out.format(format, "Lifted no. of flowThroughs called: ",
+		// liftedFlowThroughCounter);
 
 		long totalBodies = FeatureModelInstrumentorTransformer.getTotalBodies();
 		long coloredBodies = FeatureModelInstrumentorTransformer.getTotalColoredBodies();
 
-		System.out.format(format, "Total bodies: ", totalBodies);
-		System.out.format(format, "Bodies with at least 1 ft.: ", coloredBodies);
-		System.out.format(format, "Percentage: ", ((((double) coloredBodies) / ((double) (totalBodies))) * 100) + "%");
-		System.out.format(format, "Total of assignments: ", AssignmentsCounter.v().getCounter());
-		System.out.format(format, "Average assignments/bodies: ", AssignmentsCounter.v().getCounter() / totalBodies);
+		// System.out.format(format, "Total bodies: ", totalBodies);
+		// System.out.format(format, "Bodies with at least 1 ft.: ",
+		// coloredBodies);
+		// System.out.format(format, "Percentage: ", ((((double) coloredBodies)
+		// / ((double) (totalBodies))) * 100) + "%");
+		// System.out.format(format, "Total of assignments: ",
+		// AssignmentsCounter.v().getCounter());
+		// System.out.format(format, "Average assignments/bodies: ",
+		// AssignmentsCounter.v().getCounter() / totalBodies);
 
 		WholeLineLiftedReachingDefinitions.v().reset();
 		WholeLineRunnerReachingDefinitions.v().reset();
+		WholeLineRunnerUninitializedVariable.v().reset();
+		WholeLineLiftedUninitializedVariableAnalysis.v().reset();
 		FeatureModelInstrumentorTransformer.v().reset();
 		AssignmentsCounter.v().reset();
 		FeatureSensitiviteFowardFlowAnalysis.reset();
-		TestReachingDefinitions.reset();
+		LiftedReachingDefinitions.reset();
 		// #endif
 	}
 }

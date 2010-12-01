@@ -53,8 +53,8 @@ import br.ufal.cideei.soot.UnitUtil;
 import br.ufal.cideei.soot.analyses.FeatureSensitiveAnalysisRunner;
 import br.ufal.cideei.soot.analyses.FeatureSensitiviteFowardFlowAnalysis;
 import br.ufal.cideei.soot.analyses.LiftedFlowSet;
-import br.ufal.cideei.soot.analyses.TestReachingDefinitions;
 import br.ufal.cideei.soot.analyses.reachingdefs.FeatureSensitiveReachingDefinitions;
+import br.ufal.cideei.soot.analyses.reachingdefs.LiftedReachingDefinitions;
 import br.ufal.cideei.soot.instrument.FeatureModelInstrumentorTransformer;
 import br.ufal.cideei.soot.instrument.FeatureTag;
 import br.ufal.cideei.soot.instrument.asttounit.ASTNodeUnitBridge;
@@ -179,7 +179,7 @@ public class DoIFSRDHandler extends AbstractHandler implements IHandler {
 
 	public void runTestReachingDefs(BriefUnitGraph bodyGraph, Collection<Set<String>> configs) {
 		long liftedStart = System.currentTimeMillis();
-		TestReachingDefinitions tst = new TestReachingDefinitions(bodyGraph, configs);
+		LiftedReachingDefinitions tst = new LiftedReachingDefinitions(bodyGraph, configs);
 		long liftedEnd = System.currentTimeMillis();
 		System.out.println("Lifted time: " + (liftedEnd - liftedStart));
 		Iterator<Unit> iterator = bodyGraph.iterator();

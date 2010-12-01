@@ -54,9 +54,9 @@ import br.ufal.cideei.soot.UnitUtil;
 import br.ufal.cideei.soot.analyses.FeatureSensitiveAnalysisRunner;
 import br.ufal.cideei.soot.analyses.FeatureSensitiviteFowardFlowAnalysis;
 import br.ufal.cideei.soot.analyses.LiftedFlowSet;
-import br.ufal.cideei.soot.analyses.TestReachingDefinitions;
-import br.ufal.cideei.soot.analyses.reachingdefs.FeatureSensitiveReachedDefinitionsFactory;
+import br.ufal.cideei.soot.analyses.reachingdefs.FeatureSensitiveReachingDefinitionsFactory;
 import br.ufal.cideei.soot.analyses.reachingdefs.FeatureSensitiveReachingDefinitions;
+import br.ufal.cideei.soot.analyses.reachingdefs.LiftedReachingDefinitions;
 import br.ufal.cideei.soot.instrument.FeatureModelInstrumentorTransformer;
 import br.ufal.cideei.soot.instrument.FeatureTag;
 import br.ufal.cideei.soot.instrument.asttounit.ASTNodeUnitBridge;
@@ -180,7 +180,7 @@ public class DoComputeHandler extends AbstractHandler implements IHandler {
 			 */
 			long runnerStart = System.currentTimeMillis();
 			FeatureSensitiveAnalysisRunner runner = new FeatureSensitiveAnalysisRunner(bodyGraph, ((FeatureTag)body.getTag("FeatureTag")).getFeatures(),
-					new FeatureSensitiveReachedDefinitionsFactory(), new HashMap<Object, Object>());
+					FeatureSensitiveReachingDefinitionsFactory.getInstance(), new HashMap<Object, Object>());
 			runner.execute2();
 			long runnerEnd = System.currentTimeMillis();
 			Map<Set<String>, FeatureSensitiviteFowardFlowAnalysis> results = runner.getResults();

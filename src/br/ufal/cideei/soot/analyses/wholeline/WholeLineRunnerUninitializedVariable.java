@@ -8,32 +8,30 @@ import soot.Body;
 import soot.BodyTransformer;
 import soot.toolkits.graph.BriefUnitGraph;
 import br.ufal.cideei.soot.analyses.FeatureSensitiveAnalysisRunner;
-import br.ufal.cideei.soot.analyses.reachingdefs.FeatureSensitiveReachingDefinitionsFactory;
+import br.ufal.cideei.soot.analyses.uninitvars.FeatureSensitiveUninitializedVariablesFactory;
 import br.ufal.cideei.soot.instrument.FeatureTag;
 
-public class WholeLineRunnerReachingDefinitions extends BodyTransformer {
-
-	private static WholeLineRunnerReachingDefinitions instance = new WholeLineRunnerReachingDefinitions();
-
-	private WholeLineRunnerReachingDefinitions() {
-	}
+public class WholeLineRunnerUninitializedVariable extends BodyTransformer {
 	
-	public static WholeLineRunnerReachingDefinitions v() {
-		return instance;
-	}
 
-	// #ifdef METRICS
+	private static WholeLineRunnerUninitializedVariable instance = new WholeLineRunnerUninitializedVariable();
 	private long analysisTime = 0;
 
-	public long getAnalysesTime() {
-		return analysisTime;
+	private WholeLineRunnerUninitializedVariable() {
 	}
-
+	
+	public static WholeLineRunnerUninitializedVariable v() {
+		return instance;
+	}
+	
+	public long getAnalysesTime() {
+		long tmp = analysisTime;
+		return tmp;
+	}
+	
 	public void reset() {
 		analysisTime = 0;
 	}
-
-	// #ifdef METRICS
 
 	@Override
 	protected void internalTransform(Body body, String phase, Map options) {
@@ -41,7 +39,7 @@ public class WholeLineRunnerReachingDefinitions extends BodyTransformer {
 		FeatureTag<Set<String>> featureTag = (FeatureTag<Set<String>>) body.getTag("FeatureTag");
 
 		FeatureSensitiveAnalysisRunner runner = new FeatureSensitiveAnalysisRunner(bodyGraph, featureTag.getFeatures(),
-				FeatureSensitiveReachingDefinitionsFactory.getInstance(), new HashMap<Object, Object>());
+				FeatureSensitiveUninitializedVariablesFactory.getInstance(), new HashMap<Object, Object>());
 		try {
 			//#ifdef METRICS
 			long beforeRunner = System.nanoTime();

@@ -20,6 +20,10 @@
 		<command categoryId="br.ufal.cideei.categories.ComputeEI"
 			id="br.ufal.cideei.commands.DoAnalysisOnClassPath" name="Run FSA">
 		</command>
+		
+		<command categoryId="br.ufal.cideei.categories.ComputeEI"
+			id="br.ufal.cideei.commands.DoFeatureObliviousAnalysisOnClassPath" name="Run FOA">
+		</command>
 	</extension>
 
 	<extension point="org.eclipse.ui.handlers">
@@ -33,6 +37,10 @@
 		
 		<handler class="br.ufal.cideei.handlers.DoAnalysisOnClassPath"
 			commandId="br.ufal.cideei.commands.DoAnalysisOnClassPath" name="Handler for DoAnalysisOnClassPath command">
+		</handler>
+		
+		<handler class="br.ufal.cideei.handlers.DoFeatureObliviousAnalysisOnClassPath"
+			commandId="br.ufal.cideei.commands.DoFeatureObliviousAnalysisOnClassPath" name="Handler for DoFeatureObliviousAnalysisOnClassPath command">
 		</handler>
 	</extension>
 
@@ -49,6 +57,11 @@
 
 		<menuContribution locationURI="popup:org.eclipse.jdt.ui.PackageExplorer">
 			<command commandId="br.ufal.cideei.commands.DoAnalysisOnClassPath">
+			</command>
+		</menuContribution>
+		
+		<menuContribution locationURI="popup:org.eclipse.jdt.ui.PackageExplorer">
+			<command commandId="br.ufal.cideei.commands.DoFeatureObliviousAnalysisOnClassPath">
 			</command>
 		</menuContribution>
 	</extension>

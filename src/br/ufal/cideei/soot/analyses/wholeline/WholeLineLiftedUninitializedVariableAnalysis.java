@@ -4,21 +4,23 @@ import java.util.Map;
 import java.util.Set;
 
 import br.ufal.cideei.soot.analyses.reachingdefs.LiftedReachingDefinitions;
+import br.ufal.cideei.soot.analyses.uninitvars.LiftedUninitializedVariableAnalysis;
 import br.ufal.cideei.soot.instrument.FeatureTag;
 
 import soot.Body;
 import soot.BodyTransformer;
 import soot.toolkits.graph.BriefUnitGraph;
 
-public class WholeLineLiftedReachingDefinitions extends BodyTransformer {
+public class WholeLineLiftedUninitializedVariableAnalysis extends BodyTransformer {
 
-	private static WholeLineLiftedReachingDefinitions instance = new WholeLineLiftedReachingDefinitions();
+
+	private static WholeLineLiftedUninitializedVariableAnalysis instance = new WholeLineLiftedUninitializedVariableAnalysis();
 	private long analysisTime = 0;
 
-	private WholeLineLiftedReachingDefinitions() {
+	private WholeLineLiftedUninitializedVariableAnalysis() {
 	}
 
-	public static WholeLineLiftedReachingDefinitions v() {
+	public static WholeLineLiftedUninitializedVariableAnalysis v() {
 		return instance;
 	}
 
@@ -39,7 +41,7 @@ public class WholeLineLiftedReachingDefinitions extends BodyTransformer {
 		// #ifdef METRICS
 		long beforeRunner = System.nanoTime();
 		// #endif
-		new LiftedReachingDefinitions(bodyGraph, featureTag.getFeatures());
+		new LiftedUninitializedVariableAnalysis(bodyGraph, featureTag.getFeatures());
 		// #ifdef METRICS
 		long afterRunner = System.nanoTime();
 		this.analysisTime += afterRunner - beforeRunner;
@@ -47,5 +49,6 @@ public class WholeLineLiftedReachingDefinitions extends BodyTransformer {
 //				+ ((double) (afterRunner - beforeRunner) / 1000000));
 		// #endif
 	}
+
 
 }

@@ -14,25 +14,17 @@ import soot.toolkits.graph.BriefUnitGraph;
 import soot.toolkits.graph.DirectedGraph;
 
 import br.ufal.cideei.soot.analyses.reachingdefs.FeatureSensitiveReachedDefinitionsAnalysis;
-import br.ufal.cideei.soot.analyses.reachingdefs.FeatureSensitiveReachedDefinitionsFactory;
+import br.ufal.cideei.soot.analyses.reachingdefs.FeatureSensitiveReachingDefinitionsFactory;
 import br.ufal.cideei.soot.analyses.reachingdefs.FeatureSensitiveReachingDefinitions;
+import br.ufal.cideei.soot.analyses.uninitvars.FeatureSensitiveUninitializedVariablesFactory;
 
 public class FeatureSensitiveAnalysisRunner {
 
 	private Collection<Set<String>> configurations;
 	private DirectedGraph graph;
-	private Class analysis;
 	private Map<Set<String>, FeatureSensitiviteFowardFlowAnalysis> configurationAnalysisMap;
 	private Map options;
 	private AnalysisFactory<? extends FeatureSensitiviteFowardFlowAnalysis> factory;
-
-	public FeatureSensitiveAnalysisRunner(DirectedGraph graph, Collection<Set<String>> configurations, Class analysis, Map options) {
-		this.graph = graph;
-		this.configurations = configurations;
-		this.analysis = analysis;
-		this.options = options;
-		this.configurationAnalysisMap = new HashMap<Set<String>, FeatureSensitiviteFowardFlowAnalysis>(configurations.size());
-	}
 
 	public FeatureSensitiveAnalysisRunner(DirectedGraph graph, Collection<Set<String>> configurations, AnalysisFactory<? extends FeatureSensitiviteFowardFlowAnalysis> factory , Map options) {
 		this.graph = graph;

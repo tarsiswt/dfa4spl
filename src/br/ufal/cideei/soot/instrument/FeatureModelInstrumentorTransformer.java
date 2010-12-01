@@ -57,7 +57,7 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 	private CompilationUnit currentCompilationUnit;
 	private IFile file;
 	/*
-	 * Workaround for the preTransform method. See comments.
+	 * XXX: Workaround for the preTransform method. See comments on #preTransform method.
 	 */
 	private static String classPath;
 	private CachedICompilationUnitParser cachedParser = new CachedICompilationUnitParser();
@@ -65,6 +65,7 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 	// #ifdef METRICS
 	private static long totalBodies = 0;
 	private static long totalColoredBodies = 0;
+	private static long transformationTime = 0;
 
 	// #endif
 
@@ -99,6 +100,7 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 	 */
 	@Override
 	protected void internalTransform(Body body, String phase, Map options) {
+		long startTransform = System.nanoTime();
 		try {
 			preTransform(body);
 		} catch (IllegalStateException ex) {
@@ -204,7 +206,7 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 					strConfig.add(feat.getName());
 				}
 				featureNamePowerSet.add(strConfig);
-			} 
+			}
 		}
 
 		/*
@@ -265,6 +267,9 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 			unitInUaf.addTag(validConfigurationsTag);
 
 		}
+		
+		long endTransform = System.nanoTime();
+		FeatureModelInstrumentorTransformer.transformationTime += endTransform - startTransform;
 	}
 
 	/**
@@ -288,7 +293,7 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 			throw new IllegalArgumentException("the body cannot be traced to its source file");
 		}
 		/*
-		 * FIXME: WARNING! tag.getAbsolutePath() returns an INCORRECT value for
+		 * XXX: WARNING! tag.getAbsolutePath() returns an INCORRECT value for
 		 * the absolute path AFTER the first body transformation. In order to
 		 * work around this, we must inject the classpath we are working on
 		 * through a parameter in this method. We will use tag.getSourceFile()
@@ -310,7 +315,7 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 		}
 
 		/*
-		 * String#replaceAll bugs when replacing "special" chars like
+		 * XXX String#replaceAll bugs when replacing "special" chars like
 		 * File.separator. The Matcher and Patter composes a workaround for
 		 * that.
 		 */
@@ -330,6 +335,10 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 	}
 
 	// #ifdef METRICS
+	public static long getTransformationTime() {
+		return FeatureModelInstrumentorTransformer.transformationTime;
+	}
+	
 	public static long getTotalBodies() {
 		return FeatureModelInstrumentorTransformer.totalBodies;
 	}
@@ -341,6 +350,7 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 	public static void reset() {
 		FeatureModelInstrumentorTransformer.totalColoredBodies = 0;
 		FeatureModelInstrumentorTransformer.totalBodies = 0;
+		FeatureModelInstrumentorTransformer.transformationTime = 0;
 	}
 	// #endif
 }
