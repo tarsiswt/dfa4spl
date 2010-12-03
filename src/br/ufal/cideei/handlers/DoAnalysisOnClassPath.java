@@ -34,7 +34,6 @@ import org.eclipse.ui.handlers.HandlerUtil;
 
 import br.ufal.cideei.features.CIDEFeatureExtracterFactory;
 import br.ufal.cideei.features.IFeatureExtracter;
-import br.ufal.cideei.soot.AssignmentsCounter;
 import br.ufal.cideei.soot.SootManager;
 import br.ufal.cideei.soot.analyses.FeatureSensitiviteFowardFlowAnalysis;
 import br.ufal.cideei.soot.analyses.reachingdefs.LiftedReachingDefinitions;
@@ -42,6 +41,7 @@ import br.ufal.cideei.soot.analyses.wholeline.WholeLineLiftedReachingDefinitions
 import br.ufal.cideei.soot.analyses.wholeline.WholeLineLiftedUninitializedVariableAnalysis;
 import br.ufal.cideei.soot.analyses.wholeline.WholeLineRunnerReachingDefinitions;
 import br.ufal.cideei.soot.analyses.wholeline.WholeLineRunnerUninitializedVariable;
+import br.ufal.cideei.soot.count.AssignmentsCounter;
 import br.ufal.cideei.soot.instrument.FeatureModelInstrumentorTransformer;
 import br.ufal.cideei.util.ExecutionResultWrapper;
 import br.ufal.cideei.util.MethodDeclarationSootMethodBridge;

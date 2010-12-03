@@ -1,4 +1,4 @@
-package br.ufal.cideei.soot;
+package br.ufal.cideei.soot.count;
 
 //#ifdef METRICS
 import java.util.Map;
@@ -9,7 +9,7 @@ import soot.PatchingChain;
 import soot.Unit;
 import soot.jimple.AssignStmt;
 
-public class AssignmentsCounter extends BodyTransformer {
+public class AssignmentsCounter extends BodyTransformer implements ICounter<Long> {
 
 	private static AssignmentsCounter instance = null;
 
@@ -23,24 +23,24 @@ public class AssignmentsCounter extends BodyTransformer {
 
 	}
 
-	private static long counter = 0;
+	private long counter = 0;
 
 	@Override
 	protected void internalTransform(Body body, String phase, Map opt) {
 		PatchingChain<Unit> units = body.getUnits();
 		for (Unit unit : units) {
 			if (unit instanceof AssignStmt) {
-				AssignmentsCounter.counter++;
+				counter++;
 			}
 		}
 	}
 
-	public static long getCounter() {
-		return AssignmentsCounter.counter;
+	public Long getCount() {
+		return counter;
 	}
 
-	public static void reset() {
-		AssignmentsCounter.counter = 0;
+	public void reset() {
+		counter = 0;
 	}
 
 }
