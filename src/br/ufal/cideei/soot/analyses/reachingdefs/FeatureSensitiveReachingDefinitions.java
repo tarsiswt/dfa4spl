@@ -37,14 +37,6 @@ public class FeatureSensitiveReachingDefinitions extends FeatureSensitiviteFowar
 	 */
 	public FeatureSensitiveReachingDefinitions(DirectedGraph graph, Set<String> configuration, Map options) {
 		super(graph, configuration);
-		if (options.containsKey("initialFlow")) {
-			Collection<? extends Unit> initialFlow = (Collection<? extends Unit>) options.get("initialFlow");
-			Iterator<? extends Unit> iterator = initialFlow.iterator();
-			while (iterator.hasNext()) {
-				Unit unit = (Unit) iterator.next();
-				newInitialFlowSet.add(unit);
-			}
-		}
 		// Initiate the analysis framework algorithms
 		super.doAnalysis();
 	}
@@ -90,11 +82,7 @@ public class FeatureSensitiveReachingDefinitions extends FeatureSensitiviteFowar
 	 */
 	@Override
 	protected FlowSet newInitialFlow() {
-		if (newInitialFlowSet.isEmpty()) {
-			return this.emptySet.clone();
-		} else {
-			return newInitialFlowSet.clone();
-		}
+		return this.emptySet.clone();
 	}
 
 	/**
@@ -145,7 +133,7 @@ public class FeatureSensitiveReachingDefinitions extends FeatureSensitiviteFowar
 	protected void copy(FlowSet source, FlowSet dest) {
 		source.copy(dest);
 	}
-	
+
 	public List<Unit> getReachedDefinitions(Unit target) {
 		// Iterate over all Units in the graph and search for evey Unit that the
 		// definition passed as a parameter reaches.
@@ -172,15 +160,15 @@ public class FeatureSensitiveReachingDefinitions extends FeatureSensitiviteFowar
 		}
 		return reached;
 	}
-	
-	public List<Unit> getReachedUses(Unit target){
+
+	public List<Unit> getReachedUses(Unit target) {
 		List<Unit> results = new ArrayList<Unit>();
 		List<Unit> reachedUnits = this.getReachedDefinitions(target);
-		
+
 		if (!reachedUnits.isEmpty()) {
 			ValueBox valueBox = target.getDefBoxes().get(0);
 			Value valueFromDefBox = valueBox.getValue();
-			
+
 			Iterator<Unit> reachedUnitsIterator = reachedUnits.iterator();
 			while (reachedUnitsIterator.hasNext()) {
 				Unit reachedUnit = (Unit) reachedUnitsIterator.next();
@@ -197,10 +185,8 @@ public class FeatureSensitiveReachingDefinitions extends FeatureSensitiviteFowar
 				}
 			}
 		}
-		
+
 		return results;
 	}
-	
-	
 
 }

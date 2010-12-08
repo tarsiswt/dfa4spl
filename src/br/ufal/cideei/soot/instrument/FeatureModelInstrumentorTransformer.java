@@ -1,6 +1,7 @@
 package br.ufal.cideei.soot.instrument;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -39,6 +40,7 @@ import br.ufal.cideei.soot.UnitUtil;
 import br.ufal.cideei.soot.instrument.asttounit.ASTNodeUnitBridge;
 import br.ufal.cideei.util.CachedICompilationUnitParser;
 import br.ufal.cideei.util.SetUtil;
+import br.ufal.cideei.util.WriterFacadeForAnalysingMM;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -107,7 +109,15 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 			System.out.println("Skipping " + body.getMethod().getName() + " :" + ex.getMessage());
 			return;
 		}
-		// System.out.println("Instrumenting body of " + body.getMethod());
+		
+		// #ifdef METRICS
+		try {
+			WriterFacadeForAnalysingMM.write(WriterFacadeForAnalysingMM.METHOD_COLUMN, body.getMethod().toString());
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		// #endif
 
 		/*
 		 * The feature set and its power set will be computed during the first
@@ -269,7 +279,17 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 		}
 		
 		long endTransform = System.nanoTime();
-		FeatureModelInstrumentorTransformer.transformationTime += endTransform - startTransform;
+		long delta = endTransform - startTransform;
+		FeatureModelInstrumentorTransformer.transformationTime += delta;
+		
+		// #ifdef METRICS
+		try {
+			WriterFacadeForAnalysingMM.write(WriterFacadeForAnalysingMM.INSTRUMENTATION_COLUMN, Double.toString(((double)delta)/1000000));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		// #endif
 	}
 
 	/**
@@ -347,7 +367,7 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 		return FeatureModelInstrumentorTransformer.totalColoredBodies;
 	}
 
-	public static void reset() {
+	public void reset() {
 		FeatureModelInstrumentorTransformer.totalColoredBodies = 0;
 		FeatureModelInstrumentorTransformer.totalBodies = 0;
 		FeatureModelInstrumentorTransformer.transformationTime = 0;

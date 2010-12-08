@@ -5,7 +5,7 @@ import java.util.Map;
 import soot.Body;
 import soot.BodyTransformer;
 
-public class BodyCounter extends BodyTransformer implements ICounter<Long> {
+public class BodyCounter extends BodyTransformer implements ICounter<Long>, IResettable {
 
 	private static BodyCounter instance = null;
 
@@ -28,5 +28,10 @@ public class BodyCounter extends BodyTransformer implements ICounter<Long> {
 	@Override
 	protected void internalTransform(Body body, String phase, Map opt) {
 		counter++;
+	}
+
+	@Override
+	public void reset() {
+		counter = 0;
 	}
 }

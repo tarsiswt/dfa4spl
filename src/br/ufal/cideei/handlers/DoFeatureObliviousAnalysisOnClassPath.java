@@ -25,12 +25,20 @@ import br.ufal.cideei.features.IFeatureExtracter;
 import br.ufal.cideei.soot.SootManager;
 import br.ufal.cideei.soot.analyses.wholeline.WholeLineSimpleReachingDefinitionsAnalysis;
 import br.ufal.cideei.soot.analyses.wholeline.WholeLineSimpleUninitializedVariablesAnalysis;
+import br.ufal.cideei.soot.count.AssignmentsCounter;
+import br.ufal.cideei.soot.count.BodyCounter;
+import br.ufal.cideei.soot.count.LocalCounter;
+import br.ufal.cideei.soot.count.MethodCounter;
 import br.ufal.cideei.util.ExecutionResultWrapper;
 
 public class DoFeatureObliviousAnalysisOnClassPath extends AbstractHandler {
 	private static ExecutionResultWrapper<Double> jimplificationResults = new ExecutionResultWrapper<Double>();
 	private static ExecutionResultWrapper<Double> simpleRDResults = new ExecutionResultWrapper<Double>();
 	private static ExecutionResultWrapper<Double> simpleUVResults = new ExecutionResultWrapper<Double>();
+
+	private Long assignmentsCount;
+	private Long bodyCount;
+	private Long localCount;
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
@@ -107,7 +115,11 @@ public class DoFeatureObliviousAnalysisOnClassPath extends AbstractHandler {
 			System.out.format(format, "[JIMPLFCTN] results: ", jimplificationResults.toString());
 			System.out.format(format, "[RD-SIMPLE] results: ", simpleRDResults.toString());
 			System.out.format(format, "[UV-SIMPLE] results: ", simpleUVResults.toString());
-			
+
+			System.out.format(format, "[ASSGNMNT-COUNT] results: ", assignmentsCount);
+			System.out.format(format, "[BODY-COUNT] results: ", bodyCount);
+			System.out.format(format, "[LOCAL-COUNT] results: ", localCount);
+
 			jimplificationResults = new ExecutionResultWrapper<Double>();
 			simpleRDResults = new ExecutionResultWrapper<Double>();
 			simpleUVResults = new ExecutionResultWrapper<Double>();
@@ -185,17 +197,34 @@ public class DoFeatureObliviousAnalysisOnClassPath extends AbstractHandler {
 
 		Transform uninitVars = new Transform("jap.simpleuv", WholeLineSimpleUninitializedVariablesAnalysis.v());
 		PackManager.v().getPack("jap").add(uninitVars);
-		
-		SootManager.runPacks(extracter);	
-		
+
+		Transform assignmentsCounter = new Transform("jap.counter.assgnmt", AssignmentsCounter.v());
+		PackManager.v().getPack("jap").add(assignmentsCounter);
+
+		Transform bodyCounter = new Transform("jap.counter.body", BodyCounter.v());
+		PackManager.v().getPack("jap").add(bodyCounter);
+
+		Transform localCounter = new Transform("jap.counter.local", LocalCounter.v());
+		PackManager.v().getPack("jap").add(localCounter);
+
+		SootManager.runPacks(extracter);
+
 		double simpleRDTime = ((double) WholeLineSimpleReachingDefinitionsAnalysis.v().getAnalysesTime()) / 1000000;
 		double simpleUVTime = ((double) WholeLineSimpleUninitializedVariablesAnalysis.v().getAnalysesTime()) / 1000000;
-		
+
 		DoFeatureObliviousAnalysisOnClassPath.jimplificationResults.add(((double) (endJimplification - startJimplification)) / 1000000);
 		DoFeatureObliviousAnalysisOnClassPath.simpleRDResults.add(simpleRDTime);
 		DoFeatureObliviousAnalysisOnClassPath.simpleUVResults.add(simpleUVTime);
 		
+		assignmentsCount = AssignmentsCounter.v().getCount();
+		bodyCount = BodyCounter.v().getCount();
+		localCount = LocalCounter.v().getCount();
+
+		AssignmentsCounter.v().reset();
+		BodyCounter.v().reset();
+		LocalCounter.v().reset();
 		WholeLineSimpleReachingDefinitionsAnalysis.v().reset();
 		WholeLineSimpleUninitializedVariablesAnalysis.v().reset();
+
 	}
 }

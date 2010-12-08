@@ -26,6 +26,10 @@ public class ExecutionResultWrapper<T extends Number> {
 		}
 		return sum / al.size();
 	}
+	
+	public T get(int i) {
+		return al.get(i);
+	}
 
 	public String toString() {
 		int size = al.size();

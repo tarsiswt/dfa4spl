@@ -42,9 +42,12 @@ import br.ufal.cideei.soot.analyses.wholeline.WholeLineLiftedUninitializedVariab
 import br.ufal.cideei.soot.analyses.wholeline.WholeLineRunnerReachingDefinitions;
 import br.ufal.cideei.soot.analyses.wholeline.WholeLineRunnerUninitializedVariable;
 import br.ufal.cideei.soot.count.AssignmentsCounter;
+import br.ufal.cideei.soot.count.ColoredBodyCounter;
+import br.ufal.cideei.soot.count.LocalCounter;
 import br.ufal.cideei.soot.instrument.FeatureModelInstrumentorTransformer;
 import br.ufal.cideei.util.ExecutionResultWrapper;
 import br.ufal.cideei.util.MethodDeclarationSootMethodBridge;
+import br.ufal.cideei.util.WriterFacadeForAnalysingMM;
 
 import soot.G;
 import soot.PackManager;
@@ -64,12 +67,22 @@ public class DoAnalysisOnClassPath extends AbstractHandler {
 	private static ExecutionResultWrapper<Double> uvLiftedResults = new ExecutionResultWrapper<Double>();
 	private static ExecutionResultWrapper<Double> instrumentationResults = new ExecutionResultWrapper<Double>();
 	private static ExecutionResultWrapper<Double> jimplificationResults = new ExecutionResultWrapper<Double>();
+	private static ExecutionResultWrapper<Long> coloredBodyResults = new ExecutionResultWrapper<Long>();
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		int times = 10;
 		try {
 			for (int i = 0; i < times; i++) {
+				// #ifdef METRICS
+				try {
+					WriterFacadeForAnalysingMM.renew();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				// #endif
+
 				IStructuredSelection selection = (IStructuredSelection) HandlerUtil.getActiveMenuSelection(event);
 				Object firstElement = selection.getFirstElement();
 				if (firstElement instanceof IJavaProject) {
@@ -142,6 +155,7 @@ public class DoAnalysisOnClassPath extends AbstractHandler {
 			System.out.format(format, "[UV-RUNNER] results: ", uvRunnerResults.toString());
 			System.out.format(format, "[INSTRUMNT] results: ", instrumentationResults.toString());
 			System.out.format(format, "[JIMPLFCTN] results: ", jimplificationResults.toString());
+			System.out.format(format, "[COLORBODY] results: ", ColoredBodyCounter.v().toString());
 
 			rdLiftedResults = new ExecutionResultWrapper<Double>();
 			rdRunnerResults = new ExecutionResultWrapper<Double>();
@@ -149,6 +163,7 @@ public class DoAnalysisOnClassPath extends AbstractHandler {
 			uvRunnerResults = new ExecutionResultWrapper<Double>();
 			instrumentationResults = new ExecutionResultWrapper<Double>();
 			jimplificationResults = new ExecutionResultWrapper<Double>();
+			coloredBodyResults = new ExecutionResultWrapper<Long>();
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -234,8 +249,15 @@ public class DoAnalysisOnClassPath extends AbstractHandler {
 		PackManager.v().getPack("jap").add(uninitVarsRunner);
 
 		// #ifdef METRICS
-		Transform t4 = new Transform("jap.asgnmc", AssignmentsCounter.v());
-		PackManager.v().getPack("jap").add(t4);
+		Transform assignmentsCounter = new Transform("jap.counter.assgnmt", AssignmentsCounter.v());
+		PackManager.v().getPack("jap").add(assignmentsCounter);
+
+		Transform cBodyCounter = new Transform("jap.counter.coloredbody", ColoredBodyCounter.v());
+		PackManager.v().getPack("jap").add(cBodyCounter);
+
+		Transform localCounter = new Transform("jap.counter.local", LocalCounter.v());
+		PackManager.v().getPack("jap").add(localCounter);
+
 		// #endif
 
 		SootManager.runPacks(extracter);
@@ -256,6 +278,7 @@ public class DoAnalysisOnClassPath extends AbstractHandler {
 		DoAnalysisOnClassPath.uvRunnerResults.add(uvRunnerTime);
 		DoAnalysisOnClassPath.instrumentationResults.add(instrumentationTime);
 		DoAnalysisOnClassPath.jimplificationResults.add(((double) (endJimplification - startJimplification)) / 1000000);
+		coloredBodyResults.add(ColoredBodyCounter.v().getCount());
 
 		DoAnalysisOnClassPath.totalRDRunnerTime += rdRunnerTime;
 		DoAnalysisOnClassPath.totalRDLiftedTime += rdLiftedTime;
@@ -294,8 +317,10 @@ public class DoAnalysisOnClassPath extends AbstractHandler {
 		WholeLineLiftedUninitializedVariableAnalysis.v().reset();
 		FeatureModelInstrumentorTransformer.v().reset();
 		AssignmentsCounter.v().reset();
+		LocalCounter.v().reset();
 		FeatureSensitiviteFowardFlowAnalysis.reset();
 		LiftedReachingDefinitions.reset();
+		ColoredBodyCounter.v().reset();
 		// #endif
 	}
 }

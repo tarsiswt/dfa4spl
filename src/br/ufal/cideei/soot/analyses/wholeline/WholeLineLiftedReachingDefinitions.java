@@ -1,10 +1,12 @@
 package br.ufal.cideei.soot.analyses.wholeline;
 
+import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 
 import br.ufal.cideei.soot.analyses.reachingdefs.LiftedReachingDefinitions;
 import br.ufal.cideei.soot.instrument.FeatureTag;
+import br.ufal.cideei.util.WriterFacadeForAnalysingMM;
 
 import soot.Body;
 import soot.BodyTransformer;
@@ -42,7 +44,15 @@ public class WholeLineLiftedReachingDefinitions extends BodyTransformer {
 		new LiftedReachingDefinitions(bodyGraph, featureTag.getFeatures());
 		// #ifdef METRICS
 		long afterRunner = System.nanoTime();
-		this.analysisTime += afterRunner - beforeRunner;
+		long delta = afterRunner - beforeRunner;
+		this.analysisTime += delta;
+		
+		try {
+			WriterFacadeForAnalysingMM.write(WriterFacadeForAnalysingMM.RD_LIFTED_COLUMN, Double.toString(((double)delta)/1000000));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 //		System.out.println("[Lifted Lattice]" + body.getMethod() + " with " + body.getTag("FeatureTag") + " took "
 //				+ ((double) (afterRunner - beforeRunner) / 1000000));
 		// #endif

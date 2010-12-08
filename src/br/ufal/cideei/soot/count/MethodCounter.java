@@ -1,6 +1,7 @@
 package br.ufal.cideei.soot.count;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -9,7 +10,7 @@ import soot.Body;
 import soot.BodyTransformer;
 import soot.SootMethod;
 
-public class MethodCounter extends BodyTransformer implements ICounter<Integer> {
+public class MethodCounter extends BodyTransformer implements ICounter<Integer>, IResettable {
 
 	private static MethodCounter instance = null;
 	
@@ -25,7 +26,7 @@ public class MethodCounter extends BodyTransformer implements ICounter<Integer> 
 	}
 	
 	public Collection<SootMethod> getMethods(){
-		return methodContainer;
+		return Collections.unmodifiableCollection(methodContainer);
 	}
 
 	@Override
@@ -39,5 +40,10 @@ public class MethodCounter extends BodyTransformer implements ICounter<Integer> 
 	@Override
 	public Integer getCount() {
 		return methodContainer.size();
+	}
+
+	@Override
+	public void reset() {
+		methodContainer.clear();
 	}
 }

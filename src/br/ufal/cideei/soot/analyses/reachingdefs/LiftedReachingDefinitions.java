@@ -153,7 +153,7 @@ public class LiftedReachingDefinitions extends ForwardFlowAnalysis<Unit, LiftedF
 			 * then it must be killed.
 			 */
 			for (Set<String> validConfig : features) {
-				if (configurations.contains(validConfig)) {
+//				if (configurations.contains(validConfig)) {
 					List flowSetList = liftedMap.get(validConfig).toList();
 					for (Object earlierAssignment : flowSetList) {
 						if (earlierAssignment instanceof AssignStmt) {
@@ -162,7 +162,7 @@ public class LiftedReachingDefinitions extends ForwardFlowAnalysis<Unit, LiftedF
 								kills.add(validConfig, earlierAssignment);
 							}
 						}
-					}
+//					}
 				}
 			}
 		}

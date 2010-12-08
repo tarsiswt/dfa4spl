@@ -51,6 +51,7 @@
 		</menuContribution>
 
 		<menuContribution locationURI="popup:#CompilationUnitEditorContext">
+			
 			<command commandId="br.ufal.cideei.commands.DoIFSRD">
 			</command>
 		</menuContribution>
