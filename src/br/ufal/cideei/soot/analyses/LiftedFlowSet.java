@@ -219,7 +219,9 @@ public class LiftedFlowSet<T> extends AbstractFlowSet {
 	public void copy(FlowSet dest) {
 		LiftedFlowSet destLifted = (LiftedFlowSet) dest;
 
-		for (int i = 0; i < this.size(); i++) {
+		int size = this.size();
+		
+		for (int i = 0; i < size; i++) {
 			FlowSet otherNormal = (FlowSet) destLifted.lattices.get(i);
 			FlowSet thisNormal = (FlowSet) lattices.get(i);
 			
@@ -310,7 +312,9 @@ public class LiftedFlowSet<T> extends AbstractFlowSet {
 
 		destLifted.clearFlowSets();
 
-		for (int i = 0; i < this.size(); i++) {
+		int size = this.size();
+		
+		for (int i = 0; i < size; i++) {
 			FlowSet otherNormal = (FlowSet) otherLifted.lattices.get(i);
 			FlowSet thisNormal = (FlowSet) lattices.get(i);
 			
@@ -337,7 +341,10 @@ public class LiftedFlowSet<T> extends AbstractFlowSet {
 	@Override
 	public String toString() {
 		StringBuffer result = new StringBuffer();
-		for (int i = 0; i < this.size(); i++) {
+		
+		int size = this.size();
+		
+		for (int i = 0; i < size; i++) {
 			result.append(this.configurations.get(i).toString());
 			result.append("=");
 			result.append(this.lattices.get(i).toString());
