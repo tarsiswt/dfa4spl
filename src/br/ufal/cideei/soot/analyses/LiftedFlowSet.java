@@ -1,19 +1,14 @@
 package br.ufal.cideei.soot.analyses;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.Map.Entry;
 
-import soot.Unit;
 import soot.toolkits.scalar.AbstractFlowSet;
 import soot.toolkits.scalar.ArraySparseSet;
 import soot.toolkits.scalar.FlowSet;
-import br.ufal.cideei.soot.instrument.FeatureTag;
 
 /**
  * The Class LiftedFlowSet.
@@ -25,28 +20,33 @@ import br.ufal.cideei.soot.instrument.FeatureTag;
  */
 public class LiftedFlowSet<T> extends AbstractFlowSet {
 
-	/**
-	 * The map attribute maps Configurations (Set<String>) to an average Soot
-	 * FlowSet (tipically an ArraySparseSet will suffice)
-	 */
-	private HashMap<Set<String>, FlowSet> map;
-
-	/**
-	 * Getter for the map attribute.
-	 * 
-	 * @return the map
-	 */
-	public HashMap<Set<String>, FlowSet> getMap() {
-		return map;
+	private List<Set<String>> configurations;
+	
+	private List<FlowSet> lattices;
+	
+	public List<Set<String>> getConfigurations() {
+		return Collections.unmodifiableList(configurations);
+	}
+	
+	public List<FlowSet> getLattices() {
+		return Collections.unmodifiableList(lattices);
 	}
 
 	/**
 	 * Instantiates a new LiftedFlowSet.
 	 */
 	public LiftedFlowSet(Collection<Set<String>> configs) {
-		this.map = new HashMap<Set<String>, FlowSet>();
-		for (Set<String> config : configs) {
-			this.map.put(config, new ArraySparseSet());
+		
+		//Both lists have the same size...
+		//Configurations = [ {}, {A}, {B}, {A, B} ]
+		//Lattices       = [ l1, l2, l3, l4 ]
+		
+		this.configurations = new ArrayList<Set<String>>();
+		this.lattices = new ArrayList<FlowSet>();
+		
+		for (Set<String> configuration : configs) {
+			this.configurations.add(configuration);
+			this.lattices.add(new ArraySparseSet());
 		}
 	}
 
@@ -58,10 +58,15 @@ public class LiftedFlowSet<T> extends AbstractFlowSet {
 	 *            the other
 	 */
 	public LiftedFlowSet(LiftedFlowSet other) {
-		HashMap<Set<String>, FlowSet> otherMap = other.getMap();
-
-		this.map = new HashMap<Set<String>, FlowSet>();
-		this.map.putAll(otherMap);
+		
+		List<Set<String>> otherConfigurations = other.getConfigurations();
+		List<FlowSet> otherLattices = other.getLattices();
+		
+		this.configurations = new ArrayList<Set<String>>();
+		this.lattices = new ArrayList<FlowSet>();
+		
+		this.configurations.addAll(otherConfigurations);
+		this.lattices.addAll(otherLattices);
 	}
 
 	/*
@@ -91,9 +96,11 @@ public class LiftedFlowSet<T> extends AbstractFlowSet {
 			return true;
 		// If their maps are equals, then the objects are considered equal.
 		LiftedFlowSet other = (LiftedFlowSet) obj;
-		if (other.map.equals(this.map)) {
+		
+		if (other.configurations.equals(this.configurations) && other.lattices.equals(this.lattices)) {
 			return true;
 		}
+
 		return false;
 	}
 
@@ -104,21 +111,8 @@ public class LiftedFlowSet<T> extends AbstractFlowSet {
 	 */
 	@Override
 	public void clear() {
-		this.map.clear();
-	}
-
-	/**
-	 * Adds obj to it's respective configuration FlowSet only if such config exists.
-	 * 
-	 * @param config
-	 *            the config
-	 * @param obj
-	 *            the obj
-	 */
-	public void add(Set<String> config, Object obj) {
-		if (map.containsKey(config)) {
-			map.get(config).add(obj);
-		}
+		this.configurations.clear();
+		this.lattices.clear();
 	}
 
 	/*
@@ -137,25 +131,6 @@ public class LiftedFlowSet<T> extends AbstractFlowSet {
 	 * LiftedFlowSet.
 	 */
 	public void add(Object object) {
-		FeatureTag<T> tag = getFeatureTag(object);
-
-		if (tag != null) {
-			List<Set<String>> taggedFeatures = (List<Set<String>>) tag.getFeatures();
-			for (Set<String> taggedFeatureSet : taggedFeatures) {
-				if (map.containsKey(taggedFeatureSet)) {
-					map.get(taggedFeatureSet).add(object);
-				}
-			}
-
-			// TODO tomar cuidado com esse else... acho que vem "" e isso n‹o Ž
-			// igual a null!
-		} else {
-			// In this case, the unit is mandatory, so that it should be
-			// included in all configurations.
-			for (Set<String> featureSet : map.keySet()) {
-				map.get(featureSet).add(object);
-			}
-		}
 	}
 
 	/*
@@ -192,7 +167,7 @@ public class LiftedFlowSet<T> extends AbstractFlowSet {
 	 * ser óbvia.
 	 */
 	public boolean isEmpty() {
-		return map.isEmpty();
+		return configurations.isEmpty() && lattices.isEmpty();
 	}
 
 	/*
@@ -207,15 +182,6 @@ public class LiftedFlowSet<T> extends AbstractFlowSet {
 	 * TODO: SUGESTÃO: Vide os comentários, TO-DO e FIX-ME do método add.
 	 */
 	public void remove(Object object) {
-		FeatureTag<T> tag = getFeatureTag(object);
-		if (tag != null) {
-			List<Set<String>> taggedFeatures = (List<Set<String>>) tag.getFeatures();
-			for (Set<String> taggedFeatureSet : taggedFeatures) {
-				if (map.containsKey(taggedFeatureSet)) {
-					map.get(taggedFeatureSet).remove(object);
-				}
-			}
-		}
 	}
 
 	/*
@@ -225,7 +191,7 @@ public class LiftedFlowSet<T> extends AbstractFlowSet {
 	 */
 	@Override
 	public int size() {
-		return map.size();
+		return this.configurations.size();
 	}
 
 	/*
@@ -237,14 +203,6 @@ public class LiftedFlowSet<T> extends AbstractFlowSet {
 	public List toList() {
 		throw new UnsupportedOperationException("This method is not defined for a LiftedFlowSet");
 	}
-
-	/*
-	 * TODO: implementar nosso iterator pra evitar que os clientes conhecam
-	 * nossa map???
-	 * 
-	 * 
-	 * public Iterator iterator() { return map. }
-	 */
 
 	/**
 	 * Copies this Config-FlowSet mapping into dest.
@@ -261,15 +219,11 @@ public class LiftedFlowSet<T> extends AbstractFlowSet {
 	public void copy(FlowSet dest) {
 		LiftedFlowSet destLifted = (LiftedFlowSet) dest;
 
-		Set<Set<String>> configurations = map.keySet();
-
-		for (Set<String> configuration : configurations) {
-			if (destLifted.map.containsKey(configuration)) {
-				FlowSet otherNormal = (FlowSet) destLifted.map.get(configuration);
-				FlowSet thisNormal = (FlowSet) map.get(configuration);
-
-				thisNormal.copy(otherNormal);
-			}
+		for (int i = 0; i < this.size(); i++) {
+			FlowSet otherNormal = (FlowSet) destLifted.lattices.get(i);
+			FlowSet thisNormal = (FlowSet) lattices.get(i);
+			
+			thisNormal.copy(otherNormal);
 		}
 	}
 
@@ -284,34 +238,30 @@ public class LiftedFlowSet<T> extends AbstractFlowSet {
 	 * @see soot.toolkits.scalar.AbstractFlowSet#difference(soot.toolkits.scalar.
 	 *      FlowSet, soot.toolkits.scalar.FlowSet)
 	 */
-	@Override
-	public void difference(FlowSet other, FlowSet dest) {
-		LiftedFlowSet otherLifted = (LiftedFlowSet) other;
-		LiftedFlowSet destLifted = (LiftedFlowSet) dest;
-
-		destLifted.clearFlowSets();
-
-		/*
-		 * If they are the same object, or equal, then the resulting difference
-		 * must be empty.
-		 */
-		if (this.equals(other)) {
-			return;
-		}
-
-		Set<Set<String>> configurations = map.keySet();
-
-		for (Set<String> configuration : configurations) {
-			if (otherLifted.map.containsKey(configuration)) {
-				FlowSet thisNormal = (FlowSet) map.get(configuration);
-				FlowSet otherNormal = (FlowSet) otherLifted.map.get(configuration);
-
-				FlowSet destNewFlowSet = new ArraySparseSet();
-				destLifted.map.put(configuration, destNewFlowSet);
-				thisNormal.difference(otherNormal, destNewFlowSet);
-			}
-		}
-	}
+//	@Override
+//	public void difference(FlowSet other, FlowSet dest) {
+//		LiftedFlowSet otherLifted = (LiftedFlowSet) other;
+//		LiftedFlowSet destLifted = (LiftedFlowSet) dest;
+//
+//		destLifted.clearFlowSets();
+//
+//		/*
+//		 * If they are the same object, or equal, then the resulting difference
+//		 * must be empty.
+//		 */
+//		if (this.equals(other)) {
+//			return;
+//		}
+//
+//		for (int i = 0; i < this.size(); i++) {
+//			FlowSet otherNormal = (FlowSet) otherLifted.lattices.get(i);
+//			FlowSet thisNormal = (FlowSet) lattices.get(i);
+//			
+//			FlowSet destNewFlowSet = new ArraySparseSet();
+//			destLifted.lattices.add(i, destNewFlowSet);
+//			thisNormal.difference(otherNormal, destNewFlowSet);
+//		}
+//	}
 
 	/**
 	 * The intersection between LiftedFlowSets is defined as the intersection
@@ -325,26 +275,22 @@ public class LiftedFlowSet<T> extends AbstractFlowSet {
 	 * @see soot.toolkits.scalar.AbstractFlowSet#intersection(soot.toolkits.scalar
 	 *      .FlowSet, soot.toolkits.scalar.FlowSet)
 	 */
-	@Override
-	public void intersection(FlowSet other, FlowSet dest) {
-		LiftedFlowSet otherLifted = (LiftedFlowSet) other;
-		LiftedFlowSet destLifted = (LiftedFlowSet) dest;
-
-		destLifted.clearFlowSets();
-
-		Set<Set<String>> configurations = map.keySet();
-
-		for (Set<String> configuration : configurations) {
-			if (otherLifted.map.containsKey(configuration)) {
-				FlowSet otherNormal = (FlowSet) otherLifted.map.get(configuration);
-				FlowSet thisNormal = (FlowSet) map.get(configuration);
-
-				FlowSet destNewFlowSet = new ArraySparseSet();
-				destLifted.map.put(configuration, destNewFlowSet);
-				thisNormal.intersection(otherNormal, destNewFlowSet);
-			}
-		}
-	}
+//	@Override
+//	public void intersection(FlowSet other, FlowSet dest) {
+//		LiftedFlowSet otherLifted = (LiftedFlowSet) other;
+//		LiftedFlowSet destLifted = (LiftedFlowSet) dest;
+//
+//		destLifted.clearFlowSets();
+//
+//		for (int i = 0; i < this.size(); i++) {
+//			FlowSet otherNormal = (FlowSet) otherLifted.lattices.get(i);
+//			FlowSet thisNormal = (FlowSet) lattices.get(i);
+//			
+//			FlowSet destNewFlowSet = new ArraySparseSet();
+//			destLifted.lattices.add(i, destNewFlowSet);
+//			thisNormal.intersection(otherNormal, destNewFlowSet);
+//		}
+//	}
 
 	/**
 	 * The union between LiftedFlowSets is defined as the union between every
@@ -364,46 +310,22 @@ public class LiftedFlowSet<T> extends AbstractFlowSet {
 
 		destLifted.clearFlowSets();
 
-		Set<Set<String>> configurations = map.keySet();
-
-		for (Set<String> configuration : configurations) {
-			if (otherLifted.map.containsKey(configuration)) {
-				FlowSet otherNormal = (FlowSet) otherLifted.map.get(configuration);
-				FlowSet thisNormal = (FlowSet) map.get(configuration);
-
-				FlowSet destNewFlowSet = new ArraySparseSet();
-				destLifted.map.put(configuration, destNewFlowSet);
-				thisNormal.union(otherNormal, destNewFlowSet);
-			}
+		for (int i = 0; i < this.size(); i++) {
+			FlowSet otherNormal = (FlowSet) otherLifted.lattices.get(i);
+			FlowSet thisNormal = (FlowSet) lattices.get(i);
+			
+			FlowSet destNewFlowSet = new ArraySparseSet();
+			destLifted.lattices.add(i, destNewFlowSet);
+			thisNormal.union(otherNormal, destNewFlowSet);
 		}
-	}
-
-	/**
-	 * Gets the FeatureTag of the Object if it is an instance of a Unit.
-	 * 
-	 * @param object
-	 *            the object
-	 * @return the feature tag, null otherwise
-	 */
-	private FeatureTag getFeatureTag(Object object) {
-		if (object instanceof Unit) {
-			Unit unit = (Unit) object;
-			if (unit.hasTag("FeatureTag")) {
-				FeatureTag<T> tag = (FeatureTag<T>) unit.getTag("FeatureTag");
-				return tag;
-			}
-		}
-		return null;
 	}
 
 	/**
 	 * Clear only the FlowSets inside the map, the keys remain.
 	 */
 	private void clearFlowSets() {
-		Set<Set<String>> keySet = this.map.keySet();
-		for (Set<String> set : keySet) {
-			map.put(set, new ArraySparseSet());
-		}
+		//TODO isso est‡ errado... o limpar dele Ž colocar o ArraySparseSet...
+		this.lattices.clear();
 	}
 
 	/**
@@ -414,6 +336,14 @@ public class LiftedFlowSet<T> extends AbstractFlowSet {
 	 */
 	@Override
 	public String toString() {
-		return this.map.toString();
+		StringBuffer result = new StringBuffer();
+		for (int i = 0; i < this.size(); i++) {
+			result.append(this.configurations.get(i).toString());
+			result.append("=");
+			result.append(this.lattices.get(i).toString());
+			result.append("; ");
+		}
+		return result.toString();
 	}
+
 }
