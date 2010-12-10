@@ -291,7 +291,6 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 			FeatureTag<Set<String>> validConfigurationsTag = new FeatureTag<Set<String>>();
 
 			Set<Set<String>> validConfigurationsPowerSet = SetUtil.configurationSet(featureNamePowerSet, featuresInUaf);
-			System.out.println(featureNamePowerSet + "::" + featuresInUaf + " = " + validConfigurationsPowerSet);
 			Iterator<Set<String>> validConfigurationsIterator = validConfigurationsPowerSet.iterator();
 			while (validConfigurationsIterator.hasNext()) {
 				Set<String> set = (Set<String>) validConfigurationsIterator.next();

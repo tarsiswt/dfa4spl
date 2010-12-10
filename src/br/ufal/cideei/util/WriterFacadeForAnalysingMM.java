@@ -87,7 +87,6 @@ public class WriterFacadeForAnalysingMM {
 	}
 
 	private static void dump() throws IOException {
-		System.out.println("Dumping");
 		/*
 		 * Use a StringBuilder to build a string instead of calling #print in a
 		 * loop.
