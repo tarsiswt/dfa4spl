@@ -58,26 +58,20 @@ public class ASTNodesAtRangeFinder extends ASTVisitor {
 	}
 
 	/**
-	 * Instantiates a new ASTNodes at range finder. The Unit MUST have the
-	 * SourceLnPosTag tag attached to it, or an {@link IllegalArgumentException}
-	 * will be thrown.
+	 * Instantiates a new ASTNodes at range finder.
 	 * 
 	 * @param unit
 	 *            the unit
 	 * @param compilationUnit
 	 *            the compilation unit
 	 */
-	public ASTNodesAtRangeFinder(Unit unit, CompilationUnit compilationUnit) {
-		if (unit.hasTag("SourceLnPosTag")) {
-			SourceLnPosTag lineTag = (SourceLnPosTag) unit.getTag("SourceLnPosTag");
-			this.startLine = lineTag.startLn();
-			this.startPos = lineTag.startPos();
-			this.endLine = lineTag.endLn();
-			this.endPos = lineTag.endPos();
-			this.compilationUnit = compilationUnit;
-		} else {
-			throw new IllegalArgumentException("No SourceLnPosTag found in this unit.");
-		}
+
+	public ASTNodesAtRangeFinder(SourceLnPosTag lineTag, CompilationUnit compilationUnit) {
+		this.startLine = lineTag.startLn();
+		this.startPos = lineTag.startPos();
+		this.endLine = lineTag.endLn();
+		this.endPos = lineTag.endPos();
+		this.compilationUnit = compilationUnit;
 	}
 
 	/*

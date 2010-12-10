@@ -140,6 +140,14 @@ public class DoAnalysisOnClassPath extends AbstractHandler {
 			e.printStackTrace();
 		} finally {
 			G.reset();
+			// #ifdef METRICS
+			try {
+				WriterFacadeForAnalysingMM.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			// #endif
 		}
 		String format = "|%1$-50s|%2$-80s|\n";
 		// System.out.format(format, "TOTAL/" + times +": Lifted"

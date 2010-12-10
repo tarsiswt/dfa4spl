@@ -35,6 +35,7 @@ import soot.Unit;
 import soot.javaToJimple.InitialResolver;
 import soot.options.Options;
 import soot.tagkit.SourceFileTag;
+import soot.tagkit.Tag;
 import br.ufal.cideei.features.IFeatureExtracter;
 import br.ufal.cideei.soot.UnitUtil;
 import br.ufal.cideei.soot.instrument.asttounit.ASTNodeUnitBridge;
@@ -42,7 +43,6 @@ import br.ufal.cideei.util.CachedICompilationUnitParser;
 import br.ufal.cideei.util.SetUtil;
 import br.ufal.cideei.util.WriterFacadeForAnalysingMM;
 
-// TODO: Auto-generated Javadoc
 /**
  * The Class FeatureModelInstrumentor is a Soot transformation for transcribing
  * feature information to every Unit. This is done via Tag annonations. The
@@ -59,7 +59,8 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 	private CompilationUnit currentCompilationUnit;
 	private IFile file;
 	/*
-	 * XXX: Workaround for the preTransform method. See comments on #preTransform method.
+	 * XXX: Workaround for the preTransform method. See comments on
+	 * #preTransform method.
 	 */
 	private static String classPath;
 	private CachedICompilationUnitParser cachedParser = new CachedICompilationUnitParser();
@@ -109,7 +110,7 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 			System.out.println("Skipping " + body.getMethod().getName() + " :" + ex.getMessage());
 			return;
 		}
-		
+
 		// #ifdef METRICS
 		try {
 			WriterFacadeForAnalysingMM.write(WriterFacadeForAnalysingMM.METHOD_COLUMN, body.getMethod().toString());
@@ -117,6 +118,14 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		// #endif
+		
+		/*
+		 * XXX: variable used to compute how much time some portions of this
+		 * code takes. Looking for bottlenecks
+		 */
+		// #ifdef METRICS_INSTRUMENTATION_BOTTLENECK
+		long unitToASTNodeDelta = 0;
 		// #endif
 
 		/*
@@ -163,9 +172,18 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 			// flag used to improve code performance
 			boolean alreadyAddedUnit = false;
 
-			// TODO: treat exception correctly
+			// TODO: how to treat this exception?
 			try {
+				// #ifdef METRICS_INSTRUMENTATION_BOTTLENECK
+				long startUnitToASTNodeDelta = System.nanoTime();
+				// #endif
+
 				nodesTakenFromUnit = ASTNodeUnitBridge.getASTNodesFromUnit(nextUnit, this.currentCompilationUnit);
+
+				// #ifdef METRICS_INSTRUMENTATION_BOTTLENECK
+				long endUnitToASTNodeDelta = System.nanoTime();
+				unitToASTNodeDelta += endUnitToASTNodeDelta - startUnitToASTNodeDelta;
+				// #endif
 			} catch (Exception e) {
 				e.printStackTrace();
 				continue;
@@ -258,16 +276,22 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 		 * Now iterate over the colored units and produce a valid configuration
 		 * set for each of them
 		 */
+
+		/*
+		 * FIXME: possible bottleneck, measure it (BDDS!)
+		 * 
+		 */
 		Iterator<Object[]> uafIterator = uaf.iterator();
 		while (uafIterator.hasNext()) {
 			Object[] tripleObject = (Object[]) uafIterator.next();
 			Unit unitInUaf = (Unit) tripleObject[0];
 			Collection<ASTNode> ASTNodesInUaf = (Collection<ASTNode>) tripleObject[1];
-			Set<String> featuresInUaf = (Set<String>) tripleObject[2];
+			Set<IFeature> featuresInUaf = (Set<IFeature>) tripleObject[2];
 
 			FeatureTag<Set<String>> validConfigurationsTag = new FeatureTag<Set<String>>();
 
 			Set<Set<String>> validConfigurationsPowerSet = SetUtil.configurationSet(featureNamePowerSet, featuresInUaf);
+			System.out.println(featureNamePowerSet + "::" + featuresInUaf + " = " + validConfigurationsPowerSet);
 			Iterator<Set<String>> validConfigurationsIterator = validConfigurationsPowerSet.iterator();
 			while (validConfigurationsIterator.hasNext()) {
 				Set<String> set = (Set<String>) validConfigurationsIterator.next();
@@ -277,14 +301,22 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 			unitInUaf.addTag(validConfigurationsTag);
 
 		}
-		
+
 		long endTransform = System.nanoTime();
 		long delta = endTransform - startTransform;
 		FeatureModelInstrumentorTransformer.transformationTime += delta;
-		
+
 		// #ifdef METRICS
 		try {
-			WriterFacadeForAnalysingMM.write(WriterFacadeForAnalysingMM.INSTRUMENTATION_COLUMN, Double.toString(((double)delta)/1000000));
+			WriterFacadeForAnalysingMM.write(WriterFacadeForAnalysingMM.INSTRUMENTATION_COLUMN, Double.toString(((double) delta) / 1000000));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		// #endif
+		// #ifdef METRICS_INSTRUMENTATION_BOTTLENECK
+		try {
+			WriterFacadeForAnalysingMM.write(WriterFacadeForAnalysingMM.INSTRUMENTATION_UNITTOASTNODE_COLUMN, Double.toString(((double) unitToASTNodeDelta) / 1000000));
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -358,7 +390,7 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 	public static long getTransformationTime() {
 		return FeatureModelInstrumentorTransformer.transformationTime;
 	}
-	
+
 	public static long getTotalBodies() {
 		return FeatureModelInstrumentorTransformer.totalBodies;
 	}

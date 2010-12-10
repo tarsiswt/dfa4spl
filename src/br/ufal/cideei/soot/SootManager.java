@@ -23,7 +23,7 @@ public class SootManager {
 
 		PhaseOptions.v().setPhaseOption("bb", "off");
 
-		PhaseOptions.v().setPhaseOption("tag.ln", "off");
+		PhaseOptions.v().setPhaseOption("tag.ln", "on");
 		// PhaseOptions.v().setPhaseOption("cg.cha", "off");
 		// PhaseOptions.v().setPhaseOption("cg.spark", "on");
 	}

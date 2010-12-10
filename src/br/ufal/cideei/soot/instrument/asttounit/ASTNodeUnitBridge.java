@@ -1,6 +1,5 @@
 package br.ufal.cideei.soot.instrument.asttounit;
 
-import java.io.ObjectInputStream.GetField;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -12,6 +11,7 @@ import org.eclipse.jdt.core.dom.CompilationUnit;
 
 import soot.Body;
 import soot.Unit;
+import soot.tagkit.Host;
 import soot.tagkit.SourceLnPosTag;
 import soot.util.Chain;
 
@@ -28,7 +28,7 @@ public class ASTNodeUnitBridge {
 	 */
 	private ASTNodeUnitBridge() {
 	}
-
+	
 	/**
 	 * Gets the ASTNodes from a unit. This transition takes into consideration
 	 * the position of unit in the source code. The SourceLnPosTag must be
@@ -41,10 +41,13 @@ public class ASTNodeUnitBridge {
 	 *            the compilation unit
 	 * @return the aST nodes from unit
 	 */
-	public static Collection<ASTNode> getASTNodesFromUnit(Unit unit, CompilationUnit compilationUnit) {
+	public static Collection<ASTNode> getASTNodesFromUnit(Host host, CompilationUnit compilationUnit) {
 		ASTNodesAtRangeFinder ASTNodeVisitor;
+		if (!host.hasTag("SourceLnPosTag")) {
+			throw new IllegalArgumentException("No SourceLnPosTag tag present on host");
+		}
 		try {
-			ASTNodeVisitor = new ASTNodesAtRangeFinder(unit, compilationUnit);
+			ASTNodeVisitor = new ASTNodesAtRangeFinder((SourceLnPosTag)host.getTag("SourceLnPosTag"), compilationUnit);
 		} catch (IllegalArgumentException ex) {
 			// TODO: treat exception correctly
 			return Collections.emptyList();
