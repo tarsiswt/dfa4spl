@@ -2,12 +2,12 @@ package br.ufal.cideei.soot.analyses.reachingdefs;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import soot.Unit;
 import soot.jimple.AssignStmt;
 import soot.toolkits.graph.DirectedGraph;
+import soot.toolkits.scalar.ArraySparseSet;
 import soot.toolkits.scalar.FlowSet;
 import soot.toolkits.scalar.ForwardFlowAnalysis;
 import br.ufal.cideei.soot.analyses.LiftedFlowSet;
@@ -30,9 +30,8 @@ public class LiftedReachingDefinitions extends ForwardFlowAnalysis<Unit, LiftedF
 	private LiftedFlowSet<Collection<Set<String>>> emptySet;
 	private Collection<Set<String>> configurations;
 
-	// #ifdef METRICS
+	//#ifdef METRICS
 	private static long flowThroughCounter = 0;
-
 
 	public static long getFlowThroughCounter() {
 		return flowThroughCounter;		
@@ -41,8 +40,7 @@ public class LiftedReachingDefinitions extends ForwardFlowAnalysis<Unit, LiftedF
 	public static void reset() {
 		flowThroughCounter = 0;
 	}
-
-	// #endif
+	//#endif
 
 	/**
 	 * Instantiates a new TestReachingDefinitions.
@@ -86,7 +84,7 @@ public class LiftedReachingDefinitions extends ForwardFlowAnalysis<Unit, LiftedF
 	 */
 	@Override
 	protected LiftedFlowSet entryInitialFlow() {
-		return this.emptySet.clone();
+		return new LiftedFlowSet<Collection<Set<String>>>(configurations);
 	}
 
 	/*
@@ -96,7 +94,7 @@ public class LiftedReachingDefinitions extends ForwardFlowAnalysis<Unit, LiftedF
 	 */
 	@Override
 	protected LiftedFlowSet newInitialFlow() {
-		return this.emptySet.clone();
+		return new LiftedFlowSet<Collection<Set<String>>>(configurations);
 	}
 
 	/*
@@ -107,68 +105,49 @@ public class LiftedReachingDefinitions extends ForwardFlowAnalysis<Unit, LiftedF
 	 */
 	@Override
 	protected void flowThrough(LiftedFlowSet source, Unit unit, LiftedFlowSet dest) {
-		// #ifdef METRICS
+		//#ifdef METRICS
 		flowThroughCounter++;
-		// #endif
-		kill(source, unit, dest);
-		gen(dest, unit);
+		//#endif
+		
+		FeatureTag<Set<String>> tag = (FeatureTag<Set<String>>) unit.getTag("FeatureTag");
+		Collection<Set<String>> features = tag.getFeatures();
+		
+		List<Set<String>> configurations = source.getConfigurations();
+		
+		List<FlowSet> sourceLattices = source.getLattices();
+		List<FlowSet> destLattices = dest.getLattices();
+		
+		for (int i = 0; i < configurations.size(); i++) {
+			
+			Set<String> configuration = configurations.get(i);
+			FlowSet sourceFlowSet = sourceLattices.get(i);
+			FlowSet destFlowSet = destLattices.get(i);
+			
+			if (features.contains(configuration)) {
+				kill(sourceFlowSet, unit, destFlowSet);
+				gen(destFlowSet, unit);
+			} else {
+				sourceFlowSet.copy(destFlowSet);
+			}
+		}
 	}
 
-	/**
-	 * Creates a KILL set for a given Unit and it to the FlowSet dest. In this
-	 * case, our KILL set are the Assignments made to the same Value that this
-	 * Unit assigns to.
-	 * 
-	 * @param source
-	 *            the source
-	 * @param unit
-	 *            the unit
-	 * @param dest
-	 *            the dest
-	 */
-	private void kill(LiftedFlowSet source, Unit unit, LiftedFlowSet dest) {
-		/*
-		 * FIXME: clone not working correctly! Instantiating a new FlowSet
-		 * instead.
-		 */
-		// LiftedFlowSet kills = this.emptySet.clone();
-		LiftedFlowSet<Collection<Set<String>>> kills = new LiftedFlowSet(this.configurations);
-
-		/*
-		 * For the kill set, we are only interested on Assignments.
-		 */
+	private void kill(FlowSet source, Unit unit, FlowSet dest) {
+		FlowSet kills = new ArraySparseSet();//emptySet.clone();
 		if (unit instanceof AssignStmt) {
-			Map<Set<String>, FlowSet> liftedMap = source.getMap();
-			Set<Set<String>> configurations = liftedMap.keySet();
-
-			FeatureTag<Set<String>> tag = (FeatureTag<Set<String>>) unit.getTag("FeatureTag");
-			Collection<Set<String>> features = tag.getFeatures();
-
 			AssignStmt assignStmt = (AssignStmt) unit;
-
-			/*
-			 * Iterate through all valid configurations as intrumented in the
-			 * FeatureTag. If for every configuration C, C contains an earlier
-			 * assignment made to the same Local we are looking at now (unit),
-			 * then it must be killed.
-			 */
-			for (Set<String> validConfig : features) {
-//				if (configurations.contains(validConfig)) {
-					List flowSetList = liftedMap.get(validConfig).toList();
-					for (Object earlierAssignment : flowSetList) {
-						if (earlierAssignment instanceof AssignStmt) {
-							AssignStmt stmt = (AssignStmt) earlierAssignment;
-							if (stmt.getLeftOp().equivTo(assignStmt.getLeftOp())) {
-								kills.add(validConfig, earlierAssignment);
-							}
-						}
-//					}
+			for (Object earlierAssignment : source.toList()) {
+				if (earlierAssignment instanceof AssignStmt) {
+					AssignStmt stmt = (AssignStmt) earlierAssignment;
+					if (stmt.getLeftOp().equivTo(assignStmt.getLeftOp())) {
+						kills.add(earlierAssignment);
+					}
 				}
 			}
 		}
 		source.difference(kills, dest);
 	}
-
+	
 	/**
 	 * Creates a GEN set for a given Unit and it to the FlowSet dest. In this
 	 * case, our GEN set are all the definitions present in the unit.
@@ -179,7 +158,7 @@ public class LiftedReachingDefinitions extends ForwardFlowAnalysis<Unit, LiftedF
 	 *            the unit
 	 */
 	// TODO: MUST ITERATE THROUGH ALL DEFBOXES!!!
-	private void gen(LiftedFlowSet dest, Unit unit) {
+	private void gen(FlowSet dest, Unit unit) {
 		if (unit instanceof AssignStmt) {
 			dest.add(unit);
 		}
