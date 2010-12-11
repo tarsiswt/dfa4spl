@@ -22,12 +22,6 @@ import br.ufal.cideei.soot.instrument.FeatureTag;
  */
 public class LiftedReachingDefinitions extends ForwardFlowAnalysis<Unit, LiftedFlowSet<Collection<Set<Object>>>> {
 
-	/** The empty set. */
-	/*
-	 * FIXME: the clone method of LiftedFlowSet is currently not working
-	 * properly.
-	 */
-	private LiftedFlowSet<Collection<Set<String>>> emptySet;
 	private Collection<Set<String>> configurations;
 
 	//#ifdef METRICS
@@ -51,7 +45,6 @@ public class LiftedReachingDefinitions extends ForwardFlowAnalysis<Unit, LiftedF
 	public LiftedReachingDefinitions(DirectedGraph<Unit> graph, Collection<Set<String>> configs) {
 		super(graph);
 		this.configurations = configs;
-		this.emptySet = new LiftedFlowSet<Collection<Set<String>>>(configs);
 		super.doAnalysis();
 	}
 
@@ -133,7 +126,7 @@ public class LiftedReachingDefinitions extends ForwardFlowAnalysis<Unit, LiftedF
 	}
 
 	private void kill(FlowSet source, Unit unit, FlowSet dest) {
-		FlowSet kills = new ArraySparseSet();//emptySet.clone();
+		FlowSet kills = new ArraySparseSet();
 		if (unit instanceof AssignStmt) {
 			AssignStmt assignStmt = (AssignStmt) unit;
 			for (Object earlierAssignment : source.toList()) {
