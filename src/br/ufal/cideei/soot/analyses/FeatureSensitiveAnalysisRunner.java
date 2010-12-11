@@ -22,28 +22,28 @@ public class FeatureSensitiveAnalysisRunner {
 
 	private Collection<Set<String>> configurations;
 	private DirectedGraph graph;
-	private Map<Set<String>, FeatureSensitiviteFowardFlowAnalysis> configurationAnalysisMap;
+	private Map<Set<String>, FowardFlowAnalysis> configurationAnalysisMap;
 	private Map options;
-	private AnalysisFactory<? extends FeatureSensitiviteFowardFlowAnalysis> factory;
+	private AnalysisFactory<? extends FowardFlowAnalysis> factory;
 
-	public FeatureSensitiveAnalysisRunner(DirectedGraph graph, Collection<Set<String>> configurations, AnalysisFactory<? extends FeatureSensitiviteFowardFlowAnalysis> factory , Map options) {
+	public FeatureSensitiveAnalysisRunner(DirectedGraph graph, Collection<Set<String>> configurations, AnalysisFactory<? extends FowardFlowAnalysis> factory , Map options) {
 		this.graph = graph;
 		this.configurations = configurations;
 		this.options = options;
 		this.factory = factory;
-		this.configurationAnalysisMap = new HashMap<Set<String>, FeatureSensitiviteFowardFlowAnalysis>(configurations.size());
+		this.configurationAnalysisMap = new HashMap<Set<String>, FowardFlowAnalysis>(configurations.size());
 	}
 
 	public void execute2() {
 		Iterator<Set<String>> iterator = configurations.iterator();
 		while (iterator.hasNext()) {
 			Set<String> config = iterator.next();
-			FeatureSensitiviteFowardFlowAnalysis newAnalysis = factory.newAnalysis(graph, config, options);
+			FowardFlowAnalysis newAnalysis = factory.newAnalysis(graph, config, options);
 			configurationAnalysisMap.put(config, newAnalysis);
 		}
 	}
 
-	public Map<Set<String>, FeatureSensitiviteFowardFlowAnalysis> getResults() {
+	public Map<Set<String>, FowardFlowAnalysis> getResults() {
 		return configurationAnalysisMap;
 	}
 }

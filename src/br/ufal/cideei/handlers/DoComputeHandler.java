@@ -1,14 +1,9 @@
 package br.ufal.cideei.handlers;
 
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Map.Entry;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -27,44 +22,21 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.handlers.HandlerUtil;
 
-import polyglot.util.CollectionUtil;
-
 import soot.Body;
 import soot.G;
-import soot.PackManager;
 import soot.PatchingChain;
 import soot.SootMethod;
-import soot.Transform;
 import soot.Unit;
-import soot.Value;
-import soot.ValueBox;
-import soot.tagkit.SourceLnPosTag;
 import soot.toolkits.graph.BriefUnitGraph;
-import soot.toolkits.graph.UnitGraph;
-
-import br.ufal.cideei.algorithms.assignment.AssignmentAlgorithm;
-import br.ufal.cideei.algorithms.coa.ChainOfAssignmentAlgorithm;
-import br.ufal.cideei.algorithms.declaration.DeclarationAlgorithm;
-import br.ufal.cideei.algorithms.unique.UniqueUsesAlgorithm;
 import br.ufal.cideei.features.CIDEFeatureExtracterFactory;
 import br.ufal.cideei.features.IFeatureExtracter;
 import br.ufal.cideei.soot.SootManager;
-import br.ufal.cideei.soot.SootUnitGraphSerializer;
-import br.ufal.cideei.soot.UnitUtil;
-import br.ufal.cideei.soot.analyses.FeatureSensitiveAnalysisRunner;
-import br.ufal.cideei.soot.analyses.FeatureSensitiviteFowardFlowAnalysis;
 import br.ufal.cideei.soot.analyses.LiftedFlowSet;
-import br.ufal.cideei.soot.analyses.reachingdefs.FeatureSensitiveReachingDefinitionsFactory;
-import br.ufal.cideei.soot.analyses.reachingdefs.FeatureSensitiveReachingDefinitions;
-import br.ufal.cideei.soot.analyses.reachingdefs.LiftedReachingDefinitions;
+import br.ufal.cideei.soot.analyses.reachingdefs.UnliftedReachingDefinitions;
 import br.ufal.cideei.soot.instrument.FeatureModelInstrumentorTransformer;
 import br.ufal.cideei.soot.instrument.FeatureTag;
-import br.ufal.cideei.soot.instrument.asttounit.ASTNodeUnitBridge;
-import br.ufal.cideei.ui.InfoPopup;
 import br.ufal.cideei.util.MethodDeclarationSootMethodBridge;
-import br.ufal.cideei.util.SetUtil;
 import br.ufal.cideei.visitors.SelectionNodesVisitor;
-import de.ovgu.cide.features.IFeature;
 import de.ovgu.cide.features.source.ColoredSourceFile;
 
 /**
@@ -168,179 +140,25 @@ public class DoComputeHandler extends AbstractHandler implements IHandler {
 			// PackManager.v().getPack("jtp").add(featureModelTransform);
 			// }
 
-			long instrStart = System.currentTimeMillis();
 			FeatureModelInstrumentorTransformer instrumentorTransformer = FeatureModelInstrumentorTransformer.v(extracter, correspondentClasspath);
 			instrumentorTransformer.transform2(body, correspondentClasspath);
-			long instrEnd = System.currentTimeMillis();
 
 			BriefUnitGraph bodyGraph = new BriefUnitGraph(body);
 
-			/*
-			 * Instantiate and execute a runner for the FSRD analysis.
-			 */
-			long runnerStart = System.currentTimeMillis();
-			FeatureSensitiveAnalysisRunner runner = new FeatureSensitiveAnalysisRunner(bodyGraph, ((FeatureTag)body.getTag("FeatureTag")).getFeatures(),
-					FeatureSensitiveReachingDefinitionsFactory.getInstance(), new HashMap<Object, Object>());
-			runner.execute2();
-			long runnerEnd = System.currentTimeMillis();
-			Map<Set<String>, FeatureSensitiviteFowardFlowAnalysis> results = runner.getResults();
+			Map<Set<String>, UnliftedReachingDefinitions> results = new HashMap<Set<String>, UnliftedReachingDefinitions>();
+			String format = "|%1$-35s|%2$-30s|%3$-40s|\n";
+			FeatureTag<Set<String>> featureTag = (FeatureTag<Set<String>>) body.getTag("FeatureTag");
+			for (Set<String> configuration : featureTag) {
+				UnliftedReachingDefinitions urd = new UnliftedReachingDefinitions(bodyGraph, configuration);
 
-			System.out.println("RUNNER RESULTS:");
-			System.out.println("instrumentation took: " + (instrEnd - instrStart));
-			System.out.println("time: " + (runnerEnd - runnerStart));
+				System.out.println(configuration);
 
-			/*
-			 * Bridges from the ASTNodes from the selection to Soot Units using
-			 * line number as a parameter.
-			 */
-			Collection<Unit> unitsInSelection = ASTNodeUnitBridge.getUnitsFromLines(ASTNodeUnitBridge.getLinesFromASTNodes(selectionNodes, jdtCompilationUnit),
-					body);
-
-			StringBuilder messageBuilder = new StringBuilder();
-
-			Iterator<Unit> unitsInSelectionIterator = unitsInSelection.iterator();
-			while (unitsInSelectionIterator.hasNext()) {
-				Unit unit = (Unit) unitsInSelectionIterator.next();
-				messageBuilder.append("Provides " + unit + " to ");
-
-				Set<Entry<Set<String>, FeatureSensitiviteFowardFlowAnalysis>> entrySet = results.entrySet();
-
-				Iterator<Entry<Set<String>, FeatureSensitiviteFowardFlowAnalysis>> iterator = entrySet.iterator();
-				Set<IFeature> tmpFeatureSet = new HashSet<IFeature>();
-				while (iterator.hasNext()) {
-					Map.Entry<Set<String>, FeatureSensitiviteFowardFlowAnalysis> entry = (Map.Entry<Set<String>, FeatureSensitiviteFowardFlowAnalysis>) iterator
-							.next();
-
-					FeatureSensitiviteFowardFlowAnalysis value = entry.getValue();
-					List<Unit> reachedUsesUnits = ((FeatureSensitiveReachingDefinitions) value).getReachedUses(unit);
-
-					for (Unit reachedUnit : reachedUsesUnits) {
-						Set<IFeature> colorsOnReachedUnit = new HashSet<IFeature>();
-						Collection<ASTNode> astNodesFromUnit = ASTNodeUnitBridge.getASTNodesFromUnit(reachedUnit, jdtCompilationUnit);
-						for (ASTNode nodeFromUnit : astNodesFromUnit) {
-							colorsOnReachedUnit.addAll(extracter.getFeatures(nodeFromUnit, textSelectionFile));
-						}
-						SourceLnPosTag lineTag = (SourceLnPosTag) reachedUnit.getTag("SourceLnPosTag");
-
-						messageBuilder.append(colorsOnReachedUnit.toString() + "(line " + lineTag.startLn() + ")\n");
-					}
+				PatchingChain<Unit> units = body.getUnits();
+				for (Unit nextUnit : units) {
+					System.out.format(format, nextUnit, nextUnit.getTag("FeatureTag"), urd.getFlowAfter(nextUnit));
 				}
+				results.put(configuration, urd);
 			}
-
-			/*
-			 * TODO: apenas para imprimir o resultado. Remover depois.
-			 */
-			Collection<Set<String>> keySet = results.keySet();
-			String format = "|%1$-50s|%2$-50s|%3$-50s|\n";
-			for (Set<String> key : keySet) {
-				System.out.println(key);
-				FeatureSensitiviteFowardFlowAnalysis featureSensitiviteFowardFlowAnalysis = results.get(key);
-
-				Iterator<Unit> iterator = bodyGraph.iterator();
-				while (iterator.hasNext()) {
-					Unit unit = (Unit) iterator.next();
-					System.out.format(format, unit, unit.getTag("FeatureTag"), featureSensitiviteFowardFlowAnalysis.getFlowAfter(unit));
-				}
-
-				System.out.println();
-			}
-
-			// System.out.println("==================");
-			// System.out.println(entry.getKey());
-			// System.out.println("------------------");
-			// String format = "|%1$-50s|%2$-50s|\n";
-			// System.out.format(format, unit, reachedUsesUnits);
-			// System.out.println("==================");
-			// System.out.println();
-
-			InfoPopup.pop(shell, messageBuilder.toString());
-
-			//
-			// if (!PackManager.v().hasPack("wjtp.rd")) {
-			// Transform t = new Transform("wjtp.rd", RD.v());
-			// PackManager.v().getPack("wjtp").add(t);
-			// }
-			//
-			// long instrumentationStart = System.currentTimeMillis();
-			// PackManager.v().runPacks();
-			// long instrumentationEnd = System.currentTimeMillis();
-			// System.out.println("running packs took " + (instrumentationEnd -
-			// instrumentationStart) + "ms");
-
-			// Map<Body, FeatureSensitiveAnalysisRunner> bodyRunnerMap =
-			// RD.v().getBodyRunnerMap();
-			//
-			// Set<Entry<Body, FeatureSensitiveAnalysisRunner>> entrySet =
-			// bodyRunnerMap.entrySet();
-			// Iterator<Entry<Body, FeatureSensitiveAnalysisRunner>> iterator =
-			// entrySet.iterator();
-			// while (iterator.hasNext()) {
-			// Map.Entry<Body, FeatureSensitiveAnalysisRunner> entry =
-			// (Map.Entry<Body, FeatureSensitiveAnalysisRunner>)
-			// iterator.next();
-			// System.out.println("========================");
-			// System.out.println("Results for " +
-			// entry.getKey().getMethod().getName());
-			//				
-			// FeatureSensitiveAnalysisRunner runner = entry.getValue();
-			// Map<Set<Object>, FeatureSensitiviteFowardFlowAnalysis> results =
-			// runner.getResults();
-			// for (Entry<Set<Object>, FeatureSensitiviteFowardFlowAnalysis>
-			// entry2 : results.entrySet()) {
-			// System.out.println("configuration set:" + entry2.getKey());
-			// FeatureSensitiviteFowardFlowAnalysis value = entry2.getValue();
-			//
-			// Iterator<Unit> iterator2 = body.getUnits().iterator();
-			// while (iterator2.hasNext()) {
-			// Unit unit = (Unit) iterator2.next();
-			// System.out.println(unit + " " + ((FeatureTag)
-			// unit.getTag("FeatureTag")).getFeatures());
-			// System.out.println(value.getFlowAfter(unit));
-			// System.out.println("---");
-			// }
-			// }
-			// System.out.println("========================");
-			// }
-
-			/*
-			 * TODO: For testing purposes only: manually define a set of valid
-			 * configurations. This will probably be user input, so a parser
-			 * will be needed.
-			 */
-
-			// UnitGraph graph = new BriefUnitGraph(body);
-
-			/*
-			 * The analyses are ran for every configuration in the
-			 * configurations set automatically by the AnalysisRunner.
-			 */
-			// FeatureSensitiveAnalysisRunner runner = new
-			// FeatureSensitiveAnalysisRunner(graph, SetUtil.tstconfig(),
-			// FeatureSensitiveReachingDefinitions.class, new
-			// HashMap<Object,Object>());
-			// runner.execute();
-
-			/*
-			 * TODO: For testing purposes only: print the analysis output
-			 */
-
-			// Map<Set<Object>, FeatureSensitiviteFowardFlowAnalysis> results =
-			// runner.getResults();
-			// for (Entry<Set<Object>, FeatureSensitiviteFowardFlowAnalysis>
-			// entry : results.entrySet()) {
-			// System.out.println("configuration set:" + entry.getKey());
-			// FeatureSensitiviteFowardFlowAnalysis value = entry.getValue();
-			//
-			// Iterator<Unit> iterator = body.getUnits().iterator();
-			// while (iterator.hasNext()) {
-			// Unit unit = (Unit) iterator.next();
-			// System.out.println(unit + " " + ((FeatureTag)
-			// unit.getTag("FeatureTag")).getFeatures());
-			// System.out.println(value.getFlowAfter(unit));
-			// System.out.println("---");
-			// }
-			// System.out.println("===");
-			// }
 
 			/*
 			 * Reset SOOT states and free resources

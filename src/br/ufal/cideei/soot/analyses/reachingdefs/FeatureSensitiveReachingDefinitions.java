@@ -15,12 +15,12 @@ import soot.jimple.NopStmt;
 import soot.toolkits.graph.DirectedGraph;
 import soot.toolkits.scalar.ArraySparseSet;
 import soot.toolkits.scalar.FlowSet;
-import br.ufal.cideei.soot.analyses.FeatureSensitiviteFowardFlowAnalysis;
+import br.ufal.cideei.soot.analyses.FowardFlowAnalysis;
 
 /**
  * The Class FeatureSensitiveReachingDefinitions.
  */
-public class FeatureSensitiveReachingDefinitions extends FeatureSensitiviteFowardFlowAnalysis<Unit, FlowSet, Collection> {
+public class FeatureSensitiveReachingDefinitions extends FowardFlowAnalysis<Unit, FlowSet, Collection> {
 
 	/** The empty set. */
 	private FlowSet emptySet = new ArraySparseSet();

@@ -13,7 +13,7 @@
 		</command>
 
 		<command categoryId="br.ufal.cideei.categories.ComputeEI"
-			description="Runs an interprocedural feature-sensitive reaching definitions analysis"
+			description=""
 			id="br.ufal.cideei.commands.DoIFSRD" name="RD com Lifted">
 		</command>
 

@@ -102,10 +102,10 @@ public class UnliftedReachingDefinitions extends ForwardFlowAnalysis<Unit, FlowS
 		flowThroughCounter++;
 		//#endif
 		
-		FeatureTag<Set<String>> tag = (FeatureTag<Set<String>>) unit.getTag("FeatureTag");
-		Collection<Set<String>> features = tag.getFeatures();
+		FeatureTag<String> tag = (FeatureTag<String>) unit.getTag("FeatureTag");
+		Collection<String> features = tag.getFeatures();
 
-		if (features.contains(configuration)) {
+		if (configuration.containsAll(features)) {
 			kill(source, unit, dest);
 			gen(dest, unit);
 		} else {
