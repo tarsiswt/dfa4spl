@@ -1,14 +1,8 @@
 package br.ufal.cideei.handlers;
 
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.Map.Entry;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -27,42 +21,20 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.handlers.HandlerUtil;
 
-import polyglot.util.CollectionUtil;
-
 import soot.Body;
 import soot.G;
-import soot.PackManager;
-import soot.PatchingChain;
 import soot.SootMethod;
-import soot.Transform;
 import soot.Unit;
-import soot.Value;
-import soot.ValueBox;
-import soot.tagkit.SourceLnPosTag;
 import soot.toolkits.graph.BriefUnitGraph;
-import soot.toolkits.graph.UnitGraph;
-
-import br.ufal.cideei.algorithms.assignment.AssignmentAlgorithm;
-import br.ufal.cideei.algorithms.coa.ChainOfAssignmentAlgorithm;
-import br.ufal.cideei.algorithms.declaration.DeclarationAlgorithm;
-import br.ufal.cideei.algorithms.unique.UniqueUsesAlgorithm;
 import br.ufal.cideei.features.CIDEFeatureExtracterFactory;
 import br.ufal.cideei.features.IFeatureExtracter;
 import br.ufal.cideei.soot.SootManager;
-import br.ufal.cideei.soot.UnitUtil;
-import br.ufal.cideei.soot.analyses.FeatureSensitiveAnalysisRunner;
-import br.ufal.cideei.soot.analyses.FeatureSensitiviteFowardFlowAnalysis;
 import br.ufal.cideei.soot.analyses.LiftedFlowSet;
-import br.ufal.cideei.soot.analyses.reachingdefs.FeatureSensitiveReachingDefinitions;
 import br.ufal.cideei.soot.analyses.reachingdefs.LiftedReachingDefinitions;
 import br.ufal.cideei.soot.instrument.FeatureModelInstrumentorTransformer;
 import br.ufal.cideei.soot.instrument.FeatureTag;
-import br.ufal.cideei.soot.instrument.asttounit.ASTNodeUnitBridge;
-import br.ufal.cideei.ui.InfoPopup;
 import br.ufal.cideei.util.MethodDeclarationSootMethodBridge;
-import br.ufal.cideei.util.SetUtil;
 import br.ufal.cideei.visitors.SelectionNodesVisitor;
-import de.ovgu.cide.features.IFeature;
 import de.ovgu.cide.features.source.ColoredSourceFile;
 
 /**
