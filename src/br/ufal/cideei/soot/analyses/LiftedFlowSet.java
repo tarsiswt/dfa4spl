@@ -18,19 +18,11 @@ import soot.toolkits.scalar.FlowSet;
  * @param <T>
  *            the generic type
  */
-public class LiftedFlowSet<T> extends AbstractFlowSet {
+public class LiftedFlowSet<T> extends AbstractFlowSet implements Cloneable {
 
 	private List<Set<String>> configurations;
 	
 	private List<FlowSet> lattices;
-	
-	public List<Set<String>> getConfigurations() {
-		return Collections.unmodifiableList(configurations);
-	}
-	
-	public List<FlowSet> getLattices() {
-		return Collections.unmodifiableList(lattices);
-	}
 
 	/**
 	 * Instantiates a new LiftedFlowSet.
@@ -69,6 +61,14 @@ public class LiftedFlowSet<T> extends AbstractFlowSet {
 		this.lattices.addAll(otherLattices);
 	}
 
+	public List<Set<String>> getConfigurations() {
+		return Collections.unmodifiableList(configurations);
+	}
+	
+	public List<FlowSet> getLattices() {
+		return Collections.unmodifiableList(lattices);
+	}
+	
 	/*
 	 * (non-Javadoc)
 	 * 
