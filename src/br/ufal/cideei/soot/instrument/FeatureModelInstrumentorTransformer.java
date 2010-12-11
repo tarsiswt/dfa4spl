@@ -35,6 +35,7 @@ import soot.Unit;
 import soot.javaToJimple.InitialResolver;
 import soot.options.Options;
 import soot.tagkit.SourceFileTag;
+import soot.tagkit.SourceLnPosTag;
 import soot.tagkit.Tag;
 import br.ufal.cideei.features.IFeatureExtracter;
 import br.ufal.cideei.soot.UnitUtil;
@@ -64,6 +65,8 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 	 */
 	private static String classPath;
 	private CachedICompilationUnitParser cachedParser = new CachedICompilationUnitParser();
+	private CachedLineNumberMapper cachedLineColorMapper = new CachedLineNumberMapper();
+	private Map<Integer, Set<String>> currentColorMap;
 
 	// #ifdef METRICS
 	private static long totalBodies = 0;
@@ -103,12 +106,10 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 	 */
 	@Override
 	protected void internalTransform(Body body, String phase, Map options) {
-		long startTransform = System.nanoTime();
 		try {
 			preTransform(body);
 		} catch (IllegalStateException ex) {
-			System.out.println("Skipping " + body.getMethod().getName() + " :" + ex.getMessage());
-			return;
+			System.out.println(body.getMethod().getName() + " :" + ex.getMessage());
 		}
 
 		// #ifdef METRICS
@@ -118,209 +119,41 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		long startTransform = System.nanoTime();
 		// #endif
-		
-		/*
-		 * XXX: variable used to compute how much time some portions of this
-		 * code takes. Looking for bottlenecks
-		 */
-		// #ifdef METRICS_INSTRUMENTATION_BOTTLENECK
-		long unitToASTNodeDelta = 0;
-		// #endif
-
-		/*
-		 * The feature set and its power set will be computed during the first
-		 * iteration and after the second iteration respectivelly
-		 */
-		Set<String> featureNameSet = new HashSet<String>();
-		Set<IFeature> featureSet = new HashSet<IFeature>();
-		Set<Set<String>> featureNamePowerSet = null;
-		Set<Set<IFeature>> featurePowerSet = null;
-
-		/*
-		 * This is the first iteration over the units. We will find out what are
-		 * the features present in this body, so that we can generate our power
-		 * set. In order to optimize the code, we will also keep record of all
-		 * the nodes and features of units that has at least one feature.
-		 * 
-		 * This triple is stored as an array of objects in this order: {Unit,
-		 * ASTNodes, Features}.
-		 * 
-		 * The first object can be seen as the "key" of the triple. The second
-		 * one is the ASTNodes reated to the Unit. The third is the features
-		 * they have been marked with
-		 */
-		Iterator<Unit> unitIt = body.getUnits().snapshotIterator();
-
-		/*
-		 * A list of triples, in the form {Unit, ASTNodes, Features}, named UAF.
-		 * Units that have at least one color attached to it will be stored in
-		 * this array.
-		 */
-		List<Object[]> uaf = new ArrayList<Object[]>();
-
-		/*
-		 * Units that have no colors are stored in this list;
-		 */
-		List<Unit> colorlessUnits = new ArrayList<Unit>();
+		Iterator<Unit> unitIt = body.getUnits().iterator();
+		Set<String> allPresentFeatures = new HashSet<String>();
 
 		while (unitIt.hasNext()) {
 			Unit nextUnit = unitIt.next();
-			Collection<ASTNode> nodesTakenFromUnit = null;
-			Set<IFeature> featuresOnUnit = new HashSet<IFeature>();
+			SourceLnPosTag lineTag = (SourceLnPosTag) nextUnit.getTag("SourceLnPosTag");
+			if (lineTag == null) {
+				nextUnit.addTag(FeatureTag.<Set<String>> emptyFeatureTag());
+			} else {
+				int unitLine = lineTag.startLn();
+				Set<String> nextUnitColors = currentColorMap.get(unitLine);
+				allPresentFeatures.addAll(nextUnitColors);
+				FeatureTag<String> featureTag = new FeatureTag<String>();
+				featureTag.addAll(nextUnitColors);
+			}
+			
+			// #ifdef METRICS
+			long endTransform = System.nanoTime();
+			long delta = endTransform - startTransform;
+			FeatureModelInstrumentorTransformer.transformationTime += delta;
 
-			// flag used to improve code performance
-			boolean alreadyAddedUnit = false;
-
-			// TODO: how to treat this exception?
 			try {
-				// #ifdef METRICS_INSTRUMENTATION_BOTTLENECK
-				long startUnitToASTNodeDelta = System.nanoTime();
-				// #endif
-
-				nodesTakenFromUnit = ASTNodeUnitBridge.getASTNodesFromUnit(nextUnit, this.currentCompilationUnit);
-
-				// #ifdef METRICS_INSTRUMENTATION_BOTTLENECK
-				long endUnitToASTNodeDelta = System.nanoTime();
-				unitToASTNodeDelta += endUnitToASTNodeDelta - startUnitToASTNodeDelta;
-				// #endif
-			} catch (Exception e) {
-				e.printStackTrace();
-				continue;
-			}
-
-			Iterator<ASTNode> nodesIterator = nodesTakenFromUnit.iterator();
-			while (nodesIterator.hasNext()) {
-				ASTNode nextNode = nodesIterator.next();
-				Set<IFeature> features = extracter.getFeatures(nextNode, this.file);
-
-				Iterator<IFeature> nodesFeaturesIterator = features.iterator();
-				while (nodesFeaturesIterator.hasNext()) {
-					IFeature feature = nodesFeaturesIterator.next();
-					featuresOnUnit.add(feature);
-					if (!featureNameSet.contains(feature.getName())) {
-						featureNameSet.add(feature.getName());
-						featureSet.add(feature);
-					}
-				}
-				if (!alreadyAddedUnit && !featuresOnUnit.isEmpty()) {
-					uaf.add(new Object[] { nextUnit, nodesTakenFromUnit, featuresOnUnit });
-					alreadyAddedUnit = true;
-				}
-			}
-
-			/*
-			 * If the unit has not been added to the uaf, then we'll keep track
-			 * of them for later use
-			 */
-			if (!alreadyAddedUnit) {
-				colorlessUnits.add(nextUnit);
-			}
-		}
-
-		featurePowerSet = SetUtil.powerSet(featureSet);
-		featureNamePowerSet = new HashSet<Set<String>>(featurePowerSet.size());
-		for (Set<IFeature> config : featurePowerSet) {
-			boolean valid = false;
-			try {
-				valid = extracter.isValid(config);
-			} catch (FeatureModelNotFoundException e) {
+				WriterFacadeForAnalysingMM.write(WriterFacadeForAnalysingMM.INSTRUMENTATION_COLUMN, Double.toString(((double) delta) / 1000000));
+			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			if (valid) {
-				Set<String> strConfig = new HashSet<String>(config.size());
-				for (IFeature feat : config) {
-					strConfig.add(feat.getName());
-				}
-				featureNamePowerSet.add(strConfig);
-			}
+			// #endif
 		}
-
-		/*
-		 * Now, in this second iteration, the units will be tagged with their
-		 * valid configurations. Since we have separated the Units that have
-		 * colors and the ones that don't, we'll iterate each of them
-		 * separetely.
-		 */
-
-		/*
-		 * Create a single FeatureTag that will be added to all units that have
-		 * no color and the Body. This object should not be modified.
-		 */
-		FeatureTag<Set<String>> powerSetTag = new FeatureTag<Set<String>>();
-		powerSetTag.addAll(featureNamePowerSet);
-
-		// #ifdef METRICS
-		FeatureModelInstrumentorTransformer.totalBodies++;
-		// if the body has more than one color
-		if (featureNamePowerSet.size() > 1) {
-			FeatureModelInstrumentorTransformer.totalColoredBodies++;
-		}
-		// #endif
-
-		/*
-		 * All colorless units will have a full feature power set tag, meaning
-		 * that all configurations are valid. Additionally, the Body will have
-		 * this same object, so that the powerset of a given body is easily
-		 * retrieved.
-		 */
-		body.addTag(powerSetTag);
-		Iterator<Unit> iterator = colorlessUnits.iterator();
-		while (iterator.hasNext()) {
-			Unit colorlessUnit = (Unit) iterator.next();
-			colorlessUnit.addTag(powerSetTag);
-		}
-
-		/*
-		 * Now iterate over the colored units and produce a valid configuration
-		 * set for each of them
-		 */
-
-		/*
-		 * FIXME: possible bottleneck, measure it (BDDS!)
-		 * 
-		 */
-		Iterator<Object[]> uafIterator = uaf.iterator();
-		while (uafIterator.hasNext()) {
-			Object[] tripleObject = (Object[]) uafIterator.next();
-			Unit unitInUaf = (Unit) tripleObject[0];
-			Collection<ASTNode> ASTNodesInUaf = (Collection<ASTNode>) tripleObject[1];
-			Set<IFeature> featuresInUaf = (Set<IFeature>) tripleObject[2];
-
-			FeatureTag<Set<String>> validConfigurationsTag = new FeatureTag<Set<String>>();
-
-			Set<Set<String>> validConfigurationsPowerSet = SetUtil.configurationSet(featureNamePowerSet, featuresInUaf);
-			Iterator<Set<String>> validConfigurationsIterator = validConfigurationsPowerSet.iterator();
-			while (validConfigurationsIterator.hasNext()) {
-				Set<String> set = (Set<String>) validConfigurationsIterator.next();
-				validConfigurationsTag.add(set);
-			}
-
-			unitInUaf.addTag(validConfigurationsTag);
-
-		}
-
-		long endTransform = System.nanoTime();
-		long delta = endTransform - startTransform;
-		FeatureModelInstrumentorTransformer.transformationTime += delta;
-
-		// #ifdef METRICS
-		try {
-			WriterFacadeForAnalysingMM.write(WriterFacadeForAnalysingMM.INSTRUMENTATION_COLUMN, Double.toString(((double) delta) / 1000000));
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		// #endif
-		// #ifdef METRICS_INSTRUMENTATION_BOTTLENECK
-		try {
-			WriterFacadeForAnalysingMM.write(WriterFacadeForAnalysingMM.INSTRUMENTATION_UNITTOASTNODE_COLUMN, Double.toString(((double) unitToASTNodeDelta) / 1000000));
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		// #endif
+		
+		Set<Set<String>> localPowerSet = SetUtil.powerSet(allPresentFeatures);
+		FeatureTag powerSetTag = new FeatureTag<Set<String>>();
+		powerSetTag.addAll(localPowerSet);
 	}
 
 	/**
@@ -352,7 +185,7 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 		 * 
 		 * Yes, this is ugly.
 		 */
-		SourceFileTag tag = (SourceFileTag) body.getMethod().getDeclaringClass().getTag("SourceFileTag");
+		SourceFileTag sourceFileTag = (SourceFileTag) body.getMethod().getDeclaringClass().getTag("SourceFileTag");
 
 		/*
 		 * package name
@@ -371,13 +204,14 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 		 * that.
 		 */
 		absolutePath = absolutePath.replaceAll(Pattern.quote("."), Matcher.quoteReplacement(File.separator));
-		absolutePath = classPath + File.separator + absolutePath + File.separator + tag.getSourceFile();
-		tag.setAbsolutePath(absolutePath);
+		absolutePath = classPath + File.separator + absolutePath + File.separator + sourceFileTag.getSourceFile();
+		sourceFileTag.setAbsolutePath(absolutePath);
 
-		IPath path = new Path(tag.getAbsolutePath());
+		IPath path = new Path(sourceFileTag.getAbsolutePath());
 		this.file = org.eclipse.core.resources.ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(path);
 
 		CompilationUnit jdtCompilationUnit = cachedParser.parse(file);
+		this.currentColorMap = cachedLineColorMapper.makeAccept(jdtCompilationUnit, file, extracter, jdtCompilationUnit);
 
 		/*
 		 * The CIDE feature extractor depends on this object.

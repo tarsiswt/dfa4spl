@@ -9,8 +9,13 @@ import org.eclipse.jdt.core.dom.CompilationUnit;
 
 public class CachedICompilationUnitParser {
 
+	// Caching key
 	private IFile file = null;
+
+	// Caching target
 	private CompilationUnit cu = null;
+
+	// Expensive to create, reuse it.
 	private ASTParser parser = null;
 
 	public CompilationUnit parse(IFile aFile) {
@@ -35,11 +40,9 @@ public class CachedICompilationUnitParser {
 			/*
 			 * Caches the result
 			 */
-			this.cu = jdtCompilationUnit;
 			this.file = aFile;
-			
-			return jdtCompilationUnit;
-		} // HIT 
+			return this.cu = jdtCompilationUnit;
+		} // HIT
 		else {
 			return this.cu;
 		}

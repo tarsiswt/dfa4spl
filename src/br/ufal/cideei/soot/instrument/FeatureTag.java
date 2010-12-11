@@ -4,8 +4,10 @@ import java.util.AbstractCollection;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import soot.tagkit.AttributeValueException;
 import soot.tagkit.Tag;
@@ -23,8 +25,14 @@ public class FeatureTag<E> extends AbstractCollection<E> implements Tag {
 	/** The Constant FEAT_TAG_NAME. */
 	private static final String FEAT_TAG_NAME = "FeatureTag";
 
-	/** The feature are kept in this list */
-	private List<E> features = new ArrayList<E>();
+	/** The features are kept in this list */
+	private Set<E> features = new HashSet<E>();
+	
+	public static <E> FeatureTag<E> emptyFeatureTag(){
+		FeatureTag emptyTag = new FeatureTag<E>();
+		emptyTag.features = Collections.<E>emptySet();
+		return emptyTag;
+	}
 
 	/**
 	 * Adds a feature to the list.
@@ -34,6 +42,11 @@ public class FeatureTag<E> extends AbstractCollection<E> implements Tag {
 	 */
 	public boolean add(E ft) {
 		return features.add(ft);
+	}
+	
+	@Override
+	public boolean contains(Object o) {
+		return features.contains(o);
 	}
 
 	/**
@@ -48,23 +61,12 @@ public class FeatureTag<E> extends AbstractCollection<E> implements Tag {
 	}
 
 	/**
-	 * Checks for feature.
-	 * 
-	 * @param ft
-	 *            the feature
-	 * @return true, if the feature is contained in this Tag.
-	 */
-	public boolean hasFeature(E ft) {
-		return features.contains(ft);
-	}
-
-	/**
 	 * Gets the features as an unmodifiable List.
 	 * 
 	 * @return the features
 	 */
 	public Collection<E> getFeatures() {
-		return Collections.unmodifiableList(this.features);
+		return Collections.unmodifiableSet(this.features);
 	}
 
 	/*

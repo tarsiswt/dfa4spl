@@ -10,7 +10,6 @@ import org.eclipse.jdt.core.dom.CompilationUnit;
 import soot.Unit;
 import soot.tagkit.SourceLnPosTag;
 
-// TODO: Auto-generated Javadoc
 /**
  * The Class ASTNodesAtRangeFinder maps ASTNodes to Units using their positions
  * (line and column) in the source code as a parameter.
