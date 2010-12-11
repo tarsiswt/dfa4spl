@@ -45,6 +45,11 @@ public class FeatureTag<E> extends AbstractCollection<E> implements Tag {
 	}
 	
 	@Override
+	public boolean addAll(Collection<? extends E> c) {
+		return features.addAll(c);
+	}
+	
+	@Override
 	public boolean contains(Object o) {
 		return features.contains(o);
 	}

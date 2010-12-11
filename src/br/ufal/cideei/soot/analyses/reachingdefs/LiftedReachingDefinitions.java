@@ -102,8 +102,8 @@ public class LiftedReachingDefinitions extends ForwardFlowAnalysis<Unit, LiftedF
 		flowThroughCounter++;
 		//#endif
 		
-		FeatureTag<Set<String>> tag = (FeatureTag<Set<String>>) unit.getTag("FeatureTag");
-		Collection<Set<String>> features = tag.getFeatures();
+		FeatureTag<String> tag = (FeatureTag<String>) unit.getTag("FeatureTag");
+		Collection<String> features = tag.getFeatures();
 		
 		List<Set<String>> configurations = source.getConfigurations();
 		
@@ -115,8 +115,8 @@ public class LiftedReachingDefinitions extends ForwardFlowAnalysis<Unit, LiftedF
 			Set<String> configuration = configurations.get(i);
 			FlowSet sourceFlowSet = sourceLattices.get(i);
 			FlowSet destFlowSet = destLattices.get(i);
-			
-			if (features.contains(configuration)) {
+
+			if (configuration.containsAll(features)) {
 				kill(sourceFlowSet, unit, destFlowSet);
 				gen(destFlowSet, unit);
 			} else {

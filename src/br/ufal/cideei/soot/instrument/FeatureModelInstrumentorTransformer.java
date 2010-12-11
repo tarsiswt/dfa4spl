@@ -132,9 +132,14 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 			} else {
 				int unitLine = lineTag.startLn();
 				Set<String> nextUnitColors = currentColorMap.get(unitLine);
-				allPresentFeatures.addAll(nextUnitColors);
-				FeatureTag<String> featureTag = new FeatureTag<String>();
-				featureTag.addAll(nextUnitColors);
+				if(nextUnitColors != null){
+					allPresentFeatures.addAll(nextUnitColors);
+					FeatureTag<String> featureTag = new FeatureTag<String>();
+					featureTag.addAll(nextUnitColors);
+					nextUnit.addTag(featureTag);
+				} else {
+					nextUnit.addTag(FeatureTag.<Set<String>> emptyFeatureTag());
+				}
 			}
 			
 			// #ifdef METRICS
@@ -154,6 +159,7 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 		Set<Set<String>> localPowerSet = SetUtil.powerSet(allPresentFeatures);
 		FeatureTag powerSetTag = new FeatureTag<Set<String>>();
 		powerSetTag.addAll(localPowerSet);
+		body.addTag(powerSetTag);
 	}
 
 	/**
