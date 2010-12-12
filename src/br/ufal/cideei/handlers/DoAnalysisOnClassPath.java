@@ -35,7 +35,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import br.ufal.cideei.features.CIDEFeatureExtracterFactory;
 import br.ufal.cideei.features.IFeatureExtracter;
 import br.ufal.cideei.soot.SootManager;
-import br.ufal.cideei.soot.analyses.FowardFlowAnalysis;
+import br.ufal.cideei.soot.analyses.FeatureSensitiveFowardFlowAnalysis;
 import br.ufal.cideei.soot.analyses.reachingdefs.LiftedReachingDefinitions;
 import br.ufal.cideei.soot.analyses.wholeline.WholeLineLiftedReachingDefinitions;
 import br.ufal.cideei.soot.analyses.wholeline.WholeLineLiftedUninitializedVariableAnalysis;
@@ -250,11 +250,11 @@ public class DoAnalysisOnClassPath extends AbstractHandler {
 		Transform reachingDefLifted = new Transform("jap.rdlifted", WholeLineLiftedReachingDefinitions.v());
 		PackManager.v().getPack("jap").add(reachingDefLifted);
 
-//		Transform uninitVarsLifted = new Transform("jap.uninitvarlifted", WholeLineLiftedUninitializedVariableAnalysis.v());
-//		PackManager.v().getPack("jap").add(uninitVarsLifted);
-//
-//		Transform uninitVarsRunner = new Transform("jap.uninitvarrunner", WholeLineRunnerUninitializedVariable.v());
-//		PackManager.v().getPack("jap").add(uninitVarsRunner);
+		Transform uninitVarsLifted = new Transform("jap.uninitvarlifted", WholeLineLiftedUninitializedVariableAnalysis.v());
+		PackManager.v().getPack("jap").add(uninitVarsLifted);
+
+		Transform uninitVarsRunner = new Transform("jap.uninitvarrunner", WholeLineRunnerUninitializedVariable.v());
+		PackManager.v().getPack("jap").add(uninitVarsRunner);
 
 		// #ifdef METRICS
 		Transform assignmentsCounter = new Transform("jap.counter.assgnmt", AssignmentsCounter.v());
@@ -263,7 +263,7 @@ public class DoAnalysisOnClassPath extends AbstractHandler {
 		Transform cBodyCounter = new Transform("jap.counter.coloredbody", ColoredBodyCounter.v());
 		PackManager.v().getPack("jap").add(cBodyCounter);
 
-		Transform localCounter = new Transform("jap.counter.local", LocalCounter.v(true));
+		Transform localCounter = new Transform("jap.counter.local", LocalCounter.v());
 		PackManager.v().getPack("jap").add(localCounter);
 
 		// #endif
@@ -299,7 +299,7 @@ public class DoAnalysisOnClassPath extends AbstractHandler {
 		// DoAnalysisOnClassPath.totalRDRunnerTime /
 		// DoAnalysisOnClassPath.totalRDLiftedTime);
 
-		long runnerFlowThroughCounter = FowardFlowAnalysis.getFlowThroughCounter();
+		long runnerFlowThroughCounter = FeatureSensitiveFowardFlowAnalysis.getFlowThroughCounter();
 		// System.out.format(format, "Runner no. of flowThroughs called: ",
 		// runnerFlowThroughCounter);
 		long liftedFlowThroughCounter = LiftedReachingDefinitions.getFlowThroughCounter();
@@ -326,7 +326,7 @@ public class DoAnalysisOnClassPath extends AbstractHandler {
 		FeatureModelInstrumentorTransformer.v().reset();
 		AssignmentsCounter.v().reset();
 		LocalCounter.v().reset();
-		FowardFlowAnalysis.reset();
+		FeatureSensitiveFowardFlowAnalysis.reset();
 		LiftedReachingDefinitions.reset();
 		ColoredBodyCounter.v().reset();
 		// #endif

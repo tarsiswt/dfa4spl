@@ -39,14 +39,14 @@ public class WholeLineRunnerUninitializedVariable extends BodyTransformer {
 	protected void internalTransform(Body body, String phase, Map options) {
 		BriefUnitGraph bodyGraph = new BriefUnitGraph(body);
 		FeatureTag<Set<String>> featureTag = (FeatureTag<Set<String>>) body.getTag("FeatureTag");
-
-		FeatureSensitiveAnalysisRunner runner = new FeatureSensitiveAnalysisRunner(bodyGraph, featureTag.getFeatures(),
-				FeatureSensitiveUninitializedVariablesFactory.getInstance(), new HashMap<Object, Object>());
+//
+//		FeatureSensitiveAnalysisRunner runner = new FeatureSensitiveAnalysisRunner(bodyGraph, featureTag.getFeatures(),
+//				FeatureSensitiveUninitializedVariablesFactory.getInstance(), new HashMap<Object, Object>());
 		try {
 			//#ifdef METRICS
 			long beforeRunner = System.nanoTime();
 			//#endif
-			runner.execute2();
+//			runner.execute2();
 			//#ifdef METRICS
 			long afterRunner = System.nanoTime();
 			long delta = afterRunner - beforeRunner;

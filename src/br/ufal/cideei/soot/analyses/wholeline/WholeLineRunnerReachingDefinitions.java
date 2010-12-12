@@ -42,9 +42,6 @@ public class WholeLineRunnerReachingDefinitions extends BodyTransformer {
 	protected void internalTransform(Body body, String phase, Map options) {
 		BriefUnitGraph bodyGraph = new BriefUnitGraph(body);
 		FeatureTag<Set<String>> featureTag = (FeatureTag<Set<String>>) body.getTag("FeatureTag");
-
-		FeatureSensitiveAnalysisRunner runner = new FeatureSensitiveAnalysisRunner(bodyGraph, featureTag.getFeatures(),
-				FeatureSensitiveReachingDefinitionsFactory.getInstance(), new HashMap<Object, Object>());
 			
 		try {
 			//#ifdef METRICS

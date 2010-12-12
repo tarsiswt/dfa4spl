@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.Set;
 
 import br.ufal.cideei.algorithms.assignment.ReachedByDefinitionVisitor;
-import br.ufal.cideei.soot.analyses.FowardFlowAnalysis;
+import br.ufal.cideei.soot.analyses.FeatureSensitiveFowardFlowAnalysis;
 
 import soot.Unit;
 import soot.jimple.AssignStmt;

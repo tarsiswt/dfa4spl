@@ -17,13 +17,14 @@ import soot.toolkits.graph.DirectedGraph;
 import soot.toolkits.graph.UnitGraph;
 import soot.toolkits.scalar.ArraySparseSet;
 import soot.toolkits.scalar.FlowSet;
+import soot.toolkits.scalar.ForwardFlowAnalysis;
 import soot.util.Chain;
-import br.ufal.cideei.soot.analyses.FowardFlowAnalysis;
+import br.ufal.cideei.soot.analyses.FeatureSensitiveFowardFlowAnalysis;
 
 /**
  * The Class FeatureSensitiveUninitializedVariables.
  */
-public class FeatureSensitiveUninitializedVariables extends FowardFlowAnalysis<Unit, FlowSet, Collection> {
+public class FeatureSensitiveUninitializedVariables extends FeatureSensitiveFowardFlowAnalysis<Unit, FlowSet, Collection> {
 
 	/** The empty set. */
 	private FlowSet emptySet = new ArraySparseSet();
