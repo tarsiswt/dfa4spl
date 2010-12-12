@@ -48,13 +48,13 @@ public class WholeLineRunnerReachingDefinitions extends BodyTransformer {
 			// #ifdef METRICS
 			long beforeRunner = System.nanoTime();
 			// #endif
-			if (featureTag.size() == 1) {
-				new SimpleReachedDefinitionsAnalysis(bodyGraph);
-			} else {
+//			if (featureTag.size() == 1) {
+//				new SimpleReachedDefinitionsAnalysis(bodyGraph);
+//			} else {
 				for (Set<String> configuration : featureTag) {
 					new UnliftedReachingDefinitions(bodyGraph, configuration);
 				}
-			}
+//			}
 			// #ifdef METRICS
 			long afterRunner = System.nanoTime();
 			long delta = afterRunner - beforeRunner;

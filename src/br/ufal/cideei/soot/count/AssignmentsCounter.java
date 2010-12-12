@@ -8,8 +8,10 @@ import br.ufal.cideei.util.WriterFacadeForAnalysingMM;
 
 import soot.Body;
 import soot.BodyTransformer;
+import soot.Local;
 import soot.PatchingChain;
 import soot.Unit;
+import soot.Value;
 import soot.jimple.AssignStmt;
 
 public class AssignmentsCounter extends BodyTransformer implements ICounter<Long>, IResettable {
@@ -18,6 +20,9 @@ public class AssignmentsCounter extends BodyTransformer implements ICounter<Long
 
 	private AssignmentsCounter() {
 	}
+
+	// ignore assignments that have $tempN on the LHS.
+	private boolean ignoreTemp = true;
 
 	public static AssignmentsCounter v() {
 		if (instance == null)
@@ -34,10 +39,19 @@ public class AssignmentsCounter extends BodyTransformer implements ICounter<Long
 		int counterChunk = 0;
 		for (Unit unit : units) {
 			if (unit instanceof AssignStmt) {
-				counterChunk++;
+				if (ignoreTemp) {
+					AssignStmt assignment = (AssignStmt) unit;
+					Value leftOp = assignment.getLeftOp();
+					Local assignee = (Local) leftOp;
+					if (!assignee.getName().contains("$")) {
+						counterChunk++;
+					}
+				} else {
+					counterChunk++;
+				}
 			}
 		}
-		
+
 		// #ifdef METRICS
 		try {
 			WriterFacadeForAnalysingMM.write(WriterFacadeForAnalysingMM.ASSIGNMENT_COLUMN, Integer.toString(counterChunk));

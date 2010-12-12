@@ -1,51 +1,81 @@
-package br.ufal.cideei.soot.analyses.reachingdefs;
+package br.ufal.cideei.soot.analyses.uninitvars;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import soot.Local;
 import soot.Unit;
 import soot.jimple.AssignStmt;
 import soot.toolkits.graph.DirectedGraph;
+import soot.toolkits.graph.UnitGraph;
 import soot.toolkits.scalar.ArraySparseSet;
 import soot.toolkits.scalar.FlowSet;
 import soot.toolkits.scalar.ForwardFlowAnalysis;
+import soot.util.Chain;
 import br.ufal.cideei.soot.analyses.LiftedFlowSet;
 import br.ufal.cideei.soot.instrument.FeatureTag;
 
-// TODO: Auto-generated Javadoc
 /**
- * This implementation of the Reaching Definitions analysis uses a LiftedFlowSet
+ * This implementation of the Initialized variable analysis uses a LiftedFlowSet
  * as a lattice element. The only major change is how it's KILL method is
- * implemented. Everything else is quite similar to a 'regular' FlowSet-based
- * analysis.
+ * implemented. Also, the gen method is empty. We fill the lattice with local
+ * variables at the class constructor.
  */
-public class LiftedReachingDefinitions extends ForwardFlowAnalysis<Unit, LiftedFlowSet<Collection<Set<Object>>>> {
+public class LiftedUninitializedVariableAnalysis extends ForwardFlowAnalysis<Unit, LiftedFlowSet> {
 
+	/** The empty set. */
+	/*
+	 * FIXME: the clone method of LiftedFlowSet is not working properly right
+	 * now.
+	 */
+	private LiftedFlowSet emptySet;
 	private Collection<Set<String>> configurations;
 
-	// #ifdef METRICS
+	//#ifdef METRICS
 	private static long flowThroughCounter = 0;
 
 	public static long getFlowThroughCounter() {
-		return flowThroughCounter;
+		return flowThroughCounter;		
 	}
-
+	
 	public static void reset() {
 		flowThroughCounter = 0;
 	}
-
-	// #endif
-
+	//#endif
+	
 	/**
 	 * Instantiates a new TestReachingDefinitions.
 	 * 
 	 * @param graph
 	 *            the graph
+	 * @param configs
+	 *            the configurations.
 	 */
-	public LiftedReachingDefinitions(DirectedGraph<Unit> graph, Collection<Set<String>> configs) {
+	public LiftedUninitializedVariableAnalysis(DirectedGraph<Unit> graph, Collection<Set<String>> configs) {
 		super(graph);
 		this.configurations = configs;
+		this.emptySet = new LiftedFlowSet(configs);
+
+		if (graph instanceof UnitGraph) {
+			UnitGraph ug = (UnitGraph) graph;
+
+			Chain locals = ug.getBody().getLocals();
+
+			for (Object object : locals) {
+				Local local = (Local) object;
+
+				if (!local.getName().contains("$")) {
+					
+					FlowSet[] lattices = this.emptySet.getLattices();
+					
+					for (int i = 0; i < lattices.length; i++) {
+						FlowSet flowSet = lattices[i];
+						flowSet.add(local);
+					}	
+				}
+			}
+		}
 		super.doAnalysis();
 	}
 
@@ -78,7 +108,11 @@ public class LiftedReachingDefinitions extends ForwardFlowAnalysis<Unit, LiftedF
 	 */
 	@Override
 	protected LiftedFlowSet entryInitialFlow() {
-		return new LiftedFlowSet<Collection<Set<String>>>(configurations);
+//		return new LiftedFlowSet<Collection<Set<String>>>(configurations);
+//		List<FlowSet> lattices = this.emptySet.getLattices();
+//		LiftedFlowSet<Collection<Set<String>>> liftedFlowSet = new LiftedFlowSet<Collection<Set<String>>>(configurations);
+//		liftedFlowSet.
+		return this.emptySet.clone();
 	}
 
 	/*
@@ -88,7 +122,8 @@ public class LiftedReachingDefinitions extends ForwardFlowAnalysis<Unit, LiftedF
 	 */
 	@Override
 	protected LiftedFlowSet newInitialFlow() {
-		return new LiftedFlowSet<Collection<Set<String>>>(configurations);
+//		return new LiftedFlowSet<Collection<Set<String>>>(configurations);
+		return this.emptySet.clone();
 	}
 
 	/*
@@ -99,29 +134,26 @@ public class LiftedReachingDefinitions extends ForwardFlowAnalysis<Unit, LiftedF
 	 */
 	@Override
 	protected void flowThrough(LiftedFlowSet source, Unit unit, LiftedFlowSet dest) {
-		// #ifdef METRICS
+		//#ifdef METRICS
 		flowThroughCounter++;
-		// #endif
-
-		FeatureTag<String> tag = (FeatureTag<String>) unit.getTag("FeatureTag");
-		Collection<String> features = tag.getFeatures();
-
+		//#endif
+		
+		FeatureTag<Set<String>> tag = (FeatureTag<Set<String>>) unit.getTag("FeatureTag");
+		Collection<Set<String>> features = tag.getFeatures();
+		
 		Set<String>[] configurations = source.getConfigurations();
-
-//		System.out.println(unit + " :: " + features + " :: " + configurations);
-
+		
 		FlowSet[] sourceLattices = source.getLattices();
 		FlowSet[] destLattices = dest.getLattices();
-
+		
 		for (int i = 0; i < configurations.length; i++) {
-
+			
 			Set<String> configuration = configurations[i];
 			FlowSet sourceFlowSet = sourceLattices[i];
 			FlowSet destFlowSet = destLattices[i];
-
-			if (configuration.containsAll(features)) {
+			
+			if (features.contains(configuration)) {
 				kill(sourceFlowSet, unit, destFlowSet);
-				gen(destFlowSet, unit);
 			} else {
 				sourceFlowSet.copy(destFlowSet);
 			}
@@ -132,32 +164,16 @@ public class LiftedReachingDefinitions extends ForwardFlowAnalysis<Unit, LiftedF
 		FlowSet kills = new ArraySparseSet();
 		if (unit instanceof AssignStmt) {
 			AssignStmt assignStmt = (AssignStmt) unit;
-			for (Object earlierAssignment : source.toList()) {
-				if (earlierAssignment instanceof AssignStmt) {
-					AssignStmt stmt = (AssignStmt) earlierAssignment;
-					if (stmt.getLeftOp().equivTo(assignStmt.getLeftOp())) {
-						kills.add(earlierAssignment);
+			for (Object declaredVariable : source.toList()) {
+				if (declaredVariable instanceof Local) {
+					Local local = (Local) declaredVariable;
+					if (local.equivTo(assignStmt.getLeftOp())) {
+						kills.add(local);
 					}
 				}
 			}
 		}
 		source.difference(kills, dest);
-	}
-
-	/**
-	 * Creates a GEN set for a given Unit and it to the FlowSet dest. In this
-	 * case, our GEN set are all the definitions present in the unit.
-	 * 
-	 * @param dest
-	 *            the dest
-	 * @param unit
-	 *            the unit
-	 */
-	// TODO: MUST ITERATE THROUGH ALL DEFBOXES!!!
-	private void gen(FlowSet dest, Unit unit) {
-		if (unit instanceof AssignStmt) {
-			dest.add(unit);
-		}
 	}
 
 }

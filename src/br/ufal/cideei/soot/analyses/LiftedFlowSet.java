@@ -1,8 +1,6 @@
 package br.ufal.cideei.soot.analyses;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -13,32 +11,36 @@ import soot.toolkits.scalar.FlowSet;
 /**
  * The Class LiftedFlowSet.
  * 
- * TODO: Explicar próposito e função desta classe.
- * 
  * @param <T>
  *            the generic type
  */
-public class LiftedFlowSet<T> extends AbstractFlowSet implements Cloneable {
+public class LiftedFlowSet<T> extends AbstractFlowSet {
 
-	private List<Set<String>> configurations;
-	
-	private List<FlowSet> lattices;
+	private int liftedFlowSetSize;
+
+	private Set<String>[] configurations;
+
+	private FlowSet[] lattices;
 
 	/**
 	 * Instantiates a new LiftedFlowSet.
 	 */
 	public LiftedFlowSet(Collection<Set<String>> configs) {
-		
-		//Both lists have the same size...
-		//Configurations = [ {}, {A}, {B}, {A, B} ]
-		//Lattices       = [ l1, l2, l3, l4 ]
-		
-		this.configurations = new ArrayList<Set<String>>();
-		this.lattices = new ArrayList<FlowSet>();
-		
+		this.liftedFlowSetSize = configs.size();
+
+		// Both lists have the same size...
+		// Configurations = [ {}, {A}, {B}, {A, B} ]
+		// Lattices = [ l1, l2, l3, l4 ]
+
+		this.configurations = new Set[liftedFlowSetSize];
+		this.lattices = new FlowSet[liftedFlowSetSize];
+
+		// Ugly... configs does not have a get method... :-(
+		int i = 0;
 		for (Set<String> configuration : configs) {
-			this.configurations.add(configuration);
-			this.lattices.add(new ArraySparseSet());
+			this.configurations[i] = configuration;
+			this.lattices[i] = new ArraySparseSet();
+			i++;
 		}
 	}
 
@@ -50,32 +52,30 @@ public class LiftedFlowSet<T> extends AbstractFlowSet implements Cloneable {
 	 *            the other
 	 */
 	public LiftedFlowSet(LiftedFlowSet other) {
-		
-		List<Set<String>> otherConfigurations = other.getConfigurations();
-		List<FlowSet> otherLattices = other.getLattices();
-		
-		this.configurations = new ArrayList<Set<String>>();
-		this.lattices = new ArrayList<FlowSet>();
-		
-		this.configurations.addAll(otherConfigurations);
-		this.lattices.addAll(otherLattices);
+		this.configurations = other.getConfigurations();
+		this.lattices = other.getLattices();
 	}
 
-	public List<Set<String>> getConfigurations() {
-		return Collections.unmodifiableList(configurations);
+	/**
+	 * @return the configurations of this lifted lattice.
+	 */
+	public Set<String>[] getConfigurations() {
+		return configurations;
 	}
-	
-	public List<FlowSet> getLattices() {
-		return Collections.unmodifiableList(lattices);
+
+	/**
+	 * @return the normal lattices contained in this lifted lattice.
+	 */
+	public FlowSet[] getLattices() {
+		return lattices;
 	}
-	
+
 	/*
 	 * (non-Javadoc)
 	 * 
 	 * @see soot.toolkits.scalar.AbstractFlowSet#clone()
 	 */
-	// FIXME: não está funcionando como esperado. É preciso rever esta
-	// implementação.
+	// FIXME: nao esta funcionando. Por outro lado, RD nao chama este metodo.
 	@Override
 	public LiftedFlowSet clone() {
 		return new LiftedFlowSet(this);
@@ -96,12 +96,20 @@ public class LiftedFlowSet<T> extends AbstractFlowSet implements Cloneable {
 			return true;
 		// If their maps are equals, then the objects are considered equal.
 		LiftedFlowSet other = (LiftedFlowSet) obj;
+//
+//		if (other.configurations.equals(this.configurations) && other.lattices.equals(this.lattices)) {
+//			return true;
+//		}
 		
-		if (other.configurations.equals(this.configurations) && other.lattices.equals(this.lattices)) {
-			return true;
+		boolean returnFlag = true;
+		for (int i = 0; i < liftedFlowSetSize; i++) {
+			if (!other.configurations[i].equals(this.configurations[i]) || !other.lattices[i].equals(this.lattices[i])) { 
+				returnFlag = false;
+				break;
+			}
 		}
 
-		return false;
+		return returnFlag;
 	}
 
 	/*
@@ -111,43 +119,25 @@ public class LiftedFlowSet<T> extends AbstractFlowSet implements Cloneable {
 	 */
 	@Override
 	public void clear() {
-		this.configurations.clear();
-		this.lattices.clear();
+		this.configurations = null;
+		this.lattices = null;
 	}
 
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * TODO: explicar semântica da função
-	 * 
 	 * @see soot.toolkits.scalar.AbstractFlowSet#add(java.lang.Object)
 	 */
 	@Override
-	/*
-	 * FIXME: SUGESTÃO: Este método deve adicionar o object à todos os FlowSets
-	 * contidos no map, sem checar pelo FeatureTag. Um outro método que cheque
-	 * pelo conteúdo do FeatureTag deve ser implementado. Desta maneira teremos
-	 * uma api completa para adicionar elementos de diferentes maneiras ao
-	 * LiftedFlowSet.
-	 */
 	public void add(Object object) {
 	}
 
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * TODO: explicar semântica da função
-	 * 
 	 * @see soot.toolkits.scalar.AbstractFlowSet#contains(java.lang.Object)
 	 */
 	@Override
-	/*
-	 * TODO: SUGESTÃO: mudar a semântica deste método. Retornar true se existe o
-	 * objecto existe em QUALQUER um dos FlowSets, false caso contrário. Criar
-	 * um novo método com a seguinte assinatura:
-	 * LiftedFlowSet#contains(Set<String>,Object). A semântica deste novo método
-	 * deve ser óbvia.
-	 */
 	public boolean contains(Object object) {
 		throw new UnsupportedOperationException("This method is not defined for a LiftedFlowSet");
 	}
@@ -155,32 +145,19 @@ public class LiftedFlowSet<T> extends AbstractFlowSet implements Cloneable {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * TODO: explicar semântica da função
-	 * 
 	 * @see soot.toolkits.scalar.AbstractFlowSet#isEmpty()
 	 */
 	@Override
-	/*
-	 * TODO: SUGESTÃO: retornar true caso o map esteja vazio, false caso
-	 * contrário. Criar um novo método com a seguinte assinatura:
-	 * LiftedFlowSet#isEmpty(Set<String>). A semântica deste novo método deve
-	 * ser óbvia.
-	 */
 	public boolean isEmpty() {
-		return configurations.isEmpty() && lattices.isEmpty();
+		return ((configurations.length == 0) && (lattices.length == 0));
 	}
 
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * TODO: explicar semântica da função
-	 * 
 	 * @see soot.toolkits.scalar.AbstractFlowSet#remove(java.lang.Object)
 	 */
 	@Override
-	/*
-	 * TODO: SUGESTÃO: Vide os comentários, TO-DO e FIX-ME do método add.
-	 */
 	public void remove(Object object) {
 	}
 
@@ -191,7 +168,7 @@ public class LiftedFlowSet<T> extends AbstractFlowSet implements Cloneable {
 	 */
 	@Override
 	public int size() {
-		return this.configurations.size();
+		return this.liftedFlowSetSize;
 	}
 
 	/*
@@ -210,96 +187,23 @@ public class LiftedFlowSet<T> extends AbstractFlowSet implements Cloneable {
 	 * @see soot.toolkits.scalar.AbstractFlowSet#copy(soot.toolkits.scalar.FlowSet)
 	 */
 	@Override
-	/*
-	 * TODO: O copy como implementado no AbstracFlowSet limpa o dest antes de
-	 * realizar a cópia. Talvez devessémos fazer o mesmo, só que no nosso nível.
-	 * Ou seja, limpar o map do dest, antes de realizar a cópia? Deve ser o
-	 * clear() ou o clearFlowSets()?
-	 */
 	public void copy(FlowSet dest) {
 		LiftedFlowSet destLifted = (LiftedFlowSet) dest;
 
-		int size = this.size();
-		
-		for (int i = 0; i < size; i++) {
-			FlowSet otherNormal = (FlowSet) destLifted.lattices.get(i);
-			FlowSet thisNormal = (FlowSet) lattices.get(i);
-			
-			thisNormal.copy(otherNormal);
+		for (int i = 0; i < this.liftedFlowSetSize; i++) {
+			FlowSet destNormal = (FlowSet) destLifted.lattices[i];
+			FlowSet thisNormal = (FlowSet) lattices[i];
+
+			thisNormal.copy(destNormal);
 		}
 	}
-
-	/**
-	 * The difference between LiftedFlowSets is defined as the difference
-	 * between every FlowSets in @code{this} and the FlowSets in @code{other}
-	 * with the same configuration.
-	 * 
-	 * The result is placed on @code{dest}. It`s keys are preserverd, but its
-	 * flowsets are cleared.
-	 * 
-	 * @see soot.toolkits.scalar.AbstractFlowSet#difference(soot.toolkits.scalar.
-	 *      FlowSet, soot.toolkits.scalar.FlowSet)
-	 */
-//	@Override
-//	public void difference(FlowSet other, FlowSet dest) {
-//		LiftedFlowSet otherLifted = (LiftedFlowSet) other;
-//		LiftedFlowSet destLifted = (LiftedFlowSet) dest;
-//
-//		destLifted.clearFlowSets();
-//
-//		/*
-//		 * If they are the same object, or equal, then the resulting difference
-//		 * must be empty.
-//		 */
-//		if (this.equals(other)) {
-//			return;
-//		}
-//
-//		for (int i = 0; i < this.size(); i++) {
-//			FlowSet otherNormal = (FlowSet) otherLifted.lattices.get(i);
-//			FlowSet thisNormal = (FlowSet) lattices.get(i);
-//			
-//			FlowSet destNewFlowSet = new ArraySparseSet();
-//			destLifted.lattices.add(i, destNewFlowSet);
-//			thisNormal.difference(otherNormal, destNewFlowSet);
-//		}
-//	}
-
-	/**
-	 * The intersection between LiftedFlowSets is defined as the intersection
-	 * between every FlowSets in @code{this} and the FlowSets in @code{other}
-	 * with the same configuration.
-	 * 
-	 * The result is placed on @code{dest}. It`s keys are preserverd, but its
-	 * flowsets are cleared.
-	 * 
-	 * 
-	 * @see soot.toolkits.scalar.AbstractFlowSet#intersection(soot.toolkits.scalar
-	 *      .FlowSet, soot.toolkits.scalar.FlowSet)
-	 */
-//	@Override
-//	public void intersection(FlowSet other, FlowSet dest) {
-//		LiftedFlowSet otherLifted = (LiftedFlowSet) other;
-//		LiftedFlowSet destLifted = (LiftedFlowSet) dest;
-//
-//		destLifted.clearFlowSets();
-//
-//		for (int i = 0; i < this.size(); i++) {
-//			FlowSet otherNormal = (FlowSet) otherLifted.lattices.get(i);
-//			FlowSet thisNormal = (FlowSet) lattices.get(i);
-//			
-//			FlowSet destNewFlowSet = new ArraySparseSet();
-//			destLifted.lattices.add(i, destNewFlowSet);
-//			thisNormal.intersection(otherNormal, destNewFlowSet);
-//		}
-//	}
 
 	/**
 	 * The union between LiftedFlowSets is defined as the union between every
 	 * FlowSets in @code{this} and the FlowSets in @code{other} with the same
 	 * configuration.
 	 * 
-	 * The result is placed on @code{dest}. It`s keys are preserverd, but its
+	 * The result is placed on @code{dest}. It`s keys are preserved, but its
 	 * flowsets are cleared.
 	 * 
 	 * @see soot.toolkits.scalar.AbstractFlowSet#union(soot.toolkits.scalar.FlowSet,
@@ -310,26 +214,14 @@ public class LiftedFlowSet<T> extends AbstractFlowSet implements Cloneable {
 		LiftedFlowSet otherLifted = (LiftedFlowSet) other;
 		LiftedFlowSet destLifted = (LiftedFlowSet) dest;
 
-		destLifted.clearFlowSets();
+		for (int i = 0; i < this.liftedFlowSetSize; i++) {
+			FlowSet otherNormal = (FlowSet) otherLifted.lattices[i];
+			FlowSet thisNormal = (FlowSet) lattices[i];
 
-		int size = this.size();
-		
-		for (int i = 0; i < size; i++) {
-			FlowSet otherNormal = (FlowSet) otherLifted.lattices.get(i);
-			FlowSet thisNormal = (FlowSet) lattices.get(i);
-			
 			FlowSet destNewFlowSet = new ArraySparseSet();
-			destLifted.lattices.add(i, destNewFlowSet);
+			destLifted.lattices[i] = destNewFlowSet;
 			thisNormal.union(otherNormal, destNewFlowSet);
 		}
-	}
-
-	/**
-	 * Clear only the FlowSets inside the map, the keys remain.
-	 */
-	private void clearFlowSets() {
-		//TODO isso est‡ errado... o limpar dele Ž colocar o ArraySparseSet...
-		this.lattices.clear();
 	}
 
 	/**
@@ -341,13 +233,11 @@ public class LiftedFlowSet<T> extends AbstractFlowSet implements Cloneable {
 	@Override
 	public String toString() {
 		StringBuffer result = new StringBuffer();
-		
-		int size = this.size();
-		
-		for (int i = 0; i < size; i++) {
-			result.append(this.configurations.get(i).toString());
+
+		for (int i = 0; i < this.liftedFlowSetSize; i++) {
+			result.append(this.configurations[i].toString());
 			result.append("=");
-			result.append(this.lattices.get(i).toString());
+			result.append(this.lattices[i].toString());
 			result.append("; ");
 		}
 		return result.toString();

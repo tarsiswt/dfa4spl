@@ -34,5 +34,4 @@ public class FieldCounter extends SceneTransformer implements ICounter<Long> {
 			counter += sootClass.getFieldCount();
 		}
 	}
-
 }
