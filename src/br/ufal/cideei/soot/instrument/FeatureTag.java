@@ -28,9 +28,14 @@ public class FeatureTag<E> extends AbstractCollection<E> implements Tag {
 	/** The features are kept in this list */
 	private Set<E> features = new HashSet<E>();
 	
+	private static FeatureTag emptyTag = null;
+	
+	static {
+		emptyTag = new FeatureTag();
+		emptyTag.features = Collections.emptySet();
+	}
+	
 	public static <E> FeatureTag<E> emptyFeatureTag(){
-		FeatureTag emptyTag = new FeatureTag<E>();
-		emptyTag.features = Collections.<E>emptySet();
 		return emptyTag;
 	}
 
@@ -72,6 +77,15 @@ public class FeatureTag<E> extends AbstractCollection<E> implements Tag {
 	 */
 	public Collection<E> getFeatures() {
 		return Collections.unmodifiableSet(this.features);
+	}
+	
+	public void setFeatures(Set<E> features) {
+		this.features = features;
+	}
+	
+	@Override
+	public boolean isEmpty() {
+		return this.features.isEmpty();
 	}
 
 	/*

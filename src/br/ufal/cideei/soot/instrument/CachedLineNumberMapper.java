@@ -22,11 +22,13 @@ public class CachedLineNumberMapper {
 		// itialized and cached: HIT
 		if (visitee != null && node.equals(visitee)) {
 			return cachedResult;
+		} else {
+			//MISS
+//			System.out.println("CachedLineNumberMapper: miss");
+			colorMapper = new LineNumberColorMapper(compilationUnit, file, extracter);
+			visitee = node;
+			visitee.accept(colorMapper);
+			return this.cachedResult = colorMapper.getLineToColors();
 		}
-
-		colorMapper = new LineNumberColorMapper(compilationUnit, file, extracter);
-		visitee = node;
-		visitee.accept(colorMapper);
-		return this.cachedResult = colorMapper.getLineToColors();
 	}
 }

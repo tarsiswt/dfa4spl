@@ -21,6 +21,7 @@ public class CachedICompilationUnitParser {
 	public CompilationUnit parse(IFile aFile) {
 		// MISS
 		if (!aFile.equals(this.file)) {
+//			System.out.println("CachedICompilationUnitParser: miss");
 			/*
 			 * Lazy initializes the member ASTParser
 			 */

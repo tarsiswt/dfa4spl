@@ -72,6 +72,8 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 	private static long totalBodies = 0;
 	private static long totalColoredBodies = 0;
 	private static long transformationTime = 0;
+	private static long parsingTime = 0;
+	private static long colorLookupTableBuildingTime = 0;
 
 	// #endif
 
@@ -106,11 +108,7 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 	 */
 	@Override
 	protected void internalTransform(Body body, String phase, Map options) {
-		try {
-			preTransform(body);
-		} catch (IllegalStateException ex) {
-			System.out.println(body.getMethod().getName() + " :" + ex.getMessage());
-		}
+		preTransform(body);
 
 		// #ifdef METRICS
 		try {
@@ -119,45 +117,48 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		
 		long startTransform = System.nanoTime();
 		// #endif
 		Iterator<Unit> unitIt = body.getUnits().iterator();
 		Set<String> allPresentFeatures = new HashSet<String>();
-
+		FeatureTag<Set<String>> emptyFeatureTag = FeatureTag.<Set<String>> emptyFeatureTag();
+		
 		while (unitIt.hasNext()) {
 			Unit nextUnit = unitIt.next();
 			SourceLnPosTag lineTag = (SourceLnPosTag) nextUnit.getTag("SourceLnPosTag");
 			if (lineTag == null) {
-				nextUnit.addTag(FeatureTag.<Set<String>> emptyFeatureTag());
+				nextUnit.addTag(emptyFeatureTag);
 			} else {
 				int unitLine = lineTag.startLn();
 				Set<String> nextUnitColors = currentColorMap.get(unitLine);
-				if(nextUnitColors != null){
+				if (nextUnitColors != null) {
 					allPresentFeatures.addAll(nextUnitColors);
 					FeatureTag<String> featureTag = new FeatureTag<String>();
-					featureTag.addAll(nextUnitColors);
+					featureTag.setFeatures(nextUnitColors);
 					nextUnit.addTag(featureTag);
 				} else {
-					nextUnit.addTag(FeatureTag.<Set<String>> emptyFeatureTag());
+					nextUnit.addTag(emptyFeatureTag);
 				}
 			}
-			
-			// #ifdef METRICS
-			long endTransform = System.nanoTime();
-			long delta = endTransform - startTransform;
-			FeatureModelInstrumentorTransformer.transformationTime += delta;
-
-			try {
-				WriterFacadeForAnalysingMM.write(WriterFacadeForAnalysingMM.INSTRUMENTATION_COLUMN, Double.toString(((double) delta) / 1000000));
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			// #endif
 		}
 		
+
+		// #ifdef METRICS
+		long endTransform = System.nanoTime();
+		long delta = endTransform - startTransform;
+		FeatureModelInstrumentorTransformer.transformationTime += delta;
+
+		try {
+			WriterFacadeForAnalysingMM.write(WriterFacadeForAnalysingMM.INSTRUMENTATION_COLUMN, Double.toString(((double) delta) / 1000000));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		// #endif
+
 		Set<Set<String>> localPowerSet = SetUtil.powerSet(allPresentFeatures);
-		FeatureTag powerSetTag = new FeatureTag<Set<String>>();
+		FeatureTag<Set<String>> powerSetTag = new FeatureTag<Set<String>>();
 		powerSetTag.addAll(localPowerSet);
 		body.addTag(powerSetTag);
 	}
@@ -216,13 +217,30 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 		IPath path = new Path(sourceFileTag.getAbsolutePath());
 		this.file = org.eclipse.core.resources.ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(path);
 
-		CompilationUnit jdtCompilationUnit = cachedParser.parse(file);
-		this.currentColorMap = cachedLineColorMapper.makeAccept(jdtCompilationUnit, file, extracter, jdtCompilationUnit);
+		long startCompilationUnitParser = System.nanoTime();
+		CompilationUnit compilationUnit = cachedParser.parse(file);
+		long endCompilationUnitParser = System.nanoTime();
+		FeatureModelInstrumentorTransformer.parsingTime += endCompilationUnitParser - startCompilationUnitParser;
+		
+		long startBuilderColorLookUpTable = System.nanoTime();
+		this.currentColorMap = cachedLineColorMapper.makeAccept(compilationUnit, file, extracter, compilationUnit);
+		long endBuilderColorLookUpTable = System.nanoTime();
+		FeatureModelInstrumentorTransformer.colorLookupTableBuildingTime += endBuilderColorLookUpTable - startBuilderColorLookUpTable;
+		
+		// #ifdef METRICS
+		try {
+			WriterFacadeForAnalysingMM.write(WriterFacadeForAnalysingMM.INSTRUMENTATION_UNITTOASTNODE_COLUMN,    Double.toString(((double) (endBuilderColorLookUpTable  - startBuilderColorLookUpTable )/ 1000000)));
+			WriterFacadeForAnalysingMM.write(WriterFacadeForAnalysingMM.INSTRUMENTATION_COMPILATIONUNIT_PARSING, Double.toString(((double) (endCompilationUnitParser  - startCompilationUnitParser )    / 1000000)));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		// #endif
 
 		/*
 		 * The CIDE feature extractor depends on this object.
 		 */
-		this.currentCompilationUnit = jdtCompilationUnit;
+		this.currentCompilationUnit = compilationUnit;
 	}
 
 	// #ifdef METRICS
@@ -237,11 +255,23 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 	public static long getTotalColoredBodies() {
 		return FeatureModelInstrumentorTransformer.totalColoredBodies;
 	}
+	
+	public static double getParsingTime() {
+		return FeatureModelInstrumentorTransformer.parsingTime;
+	}
+	
+	public static double getColorLookupTableBuildingTime() {
+		return FeatureModelInstrumentorTransformer.colorLookupTableBuildingTime;
+	}
 
 	public void reset() {
 		FeatureModelInstrumentorTransformer.totalColoredBodies = 0;
 		FeatureModelInstrumentorTransformer.totalBodies = 0;
 		FeatureModelInstrumentorTransformer.transformationTime = 0;
+		FeatureModelInstrumentorTransformer.parsingTime = 0;
+		FeatureModelInstrumentorTransformer.colorLookupTableBuildingTime = 0;
 	}
 	// #endif
+
+	
 }

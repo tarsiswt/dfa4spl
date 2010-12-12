@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Set;
 
 import br.ufal.cideei.soot.analyses.reachingdefs.LiftedReachingDefinitions;
+import br.ufal.cideei.soot.analyses.reachingdefs.SimpleReachedDefinitionsAnalysis;
 import br.ufal.cideei.soot.instrument.FeatureTag;
 import br.ufal.cideei.util.WriterFacadeForAnalysingMM;
 
@@ -41,20 +42,25 @@ public class WholeLineLiftedReachingDefinitions extends BodyTransformer {
 		// #ifdef METRICS
 		long beforeRunner = System.nanoTime();
 		// #endif
-		new LiftedReachingDefinitions(bodyGraph, featureTag.getFeatures());
+		if (featureTag.size() == 1) {
+			new SimpleReachedDefinitionsAnalysis(bodyGraph);
+		} else {
+			new LiftedReachingDefinitions(bodyGraph, featureTag.getFeatures());
+		}
 		// #ifdef METRICS
 		long afterRunner = System.nanoTime();
 		long delta = afterRunner - beforeRunner;
 		this.analysisTime += delta;
-		
+
 		try {
-			WriterFacadeForAnalysingMM.write(WriterFacadeForAnalysingMM.RD_LIFTED_COLUMN, Double.toString(((double)delta)/1000000));
+			WriterFacadeForAnalysingMM.write(WriterFacadeForAnalysingMM.RD_LIFTED_COLUMN, Double.toString(((double) delta) / 1000000));
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-//		System.out.println("[Lifted Lattice]" + body.getMethod() + " with " + body.getTag("FeatureTag") + " took "
-//				+ ((double) (afterRunner - beforeRunner) / 1000000));
+		// System.out.println("[Lifted Lattice]" + body.getMethod() + " with " +
+		// body.getTag("FeatureTag") + " took "
+		// + ((double) (afterRunner - beforeRunner) / 1000000));
 		// #endif
 	}
 

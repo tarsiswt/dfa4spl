@@ -19,7 +19,7 @@ import org.eclipse.ui.dialogs.ListSelectionDialog;
  * 
  */
 public class WriterFacadeForAnalysingMM {
-	private static final short MAX_COLUMN = 11;
+	private static final short MAX_COLUMN = 12;
 
 	/*
 	 * Make this a dynamic-growing list(or map)
@@ -35,6 +35,7 @@ public class WriterFacadeForAnalysingMM {
 	public static final int UV_RUNNER_COLUMN = 8;
 	public static final int INSTRUMENTATION_COLUMN = 9;
 	public static final int INSTRUMENTATION_UNITTOASTNODE_COLUMN = 10;
+	public static final int INSTRUMENTATION_COMPILATIONUNIT_PARSING = 11;
 
 	private static PrintWriter writer = null;
 	private static File file = null;
@@ -61,7 +62,7 @@ public class WriterFacadeForAnalysingMM {
 			// assigments] [rd lifted time] [uv lifted time] [rd runner time]
 			// [uv runner time]
 			writer
-					.println("method;no of features;features interactions;locals;assignments;rd lifted time;uv liftedtime;rd runner time;uv runner time;instrumentation;unit to ast");
+					.println("Method;Local PSET;Feat. Interation(*);Locals;Assignments;V3 RD;V3 UV;V2 RD;V2 UV;Instrumentation;Color Lookup Table;.java Parsing");
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -122,7 +123,7 @@ public class WriterFacadeForAnalysingMM {
 		 * This println must reflect the information stored dynamically
 		 */
 		writer
-				.println("method;no of features;features interactions;locals;assignments;rd lifted time;uv liftedtime;rd runner time;uv runner time;instrumentation;unit to ast");
+				.println("Method;Local PSET;Feat. Interation(*);Locals;Assignments;V3 RD;V3 UV;V2 RD;V2 UV;Instrumentation;Color Lookup Table;.java Parsing");
 	}
 
 }

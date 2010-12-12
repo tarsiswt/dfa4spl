@@ -45,6 +45,7 @@ import br.ufal.cideei.soot.count.AssignmentsCounter;
 import br.ufal.cideei.soot.count.ColoredBodyCounter;
 import br.ufal.cideei.soot.count.LocalCounter;
 import br.ufal.cideei.soot.instrument.FeatureModelInstrumentorTransformer;
+import br.ufal.cideei.soot.instrument.LineNumberColorMapper;
 import br.ufal.cideei.util.ExecutionResultWrapper;
 import br.ufal.cideei.util.MethodDeclarationSootMethodBridge;
 import br.ufal.cideei.util.WriterFacadeForAnalysingMM;
@@ -66,6 +67,9 @@ public class DoAnalysisOnClassPath extends AbstractHandler {
 	private static ExecutionResultWrapper<Double> rdLiftedResults = new ExecutionResultWrapper<Double>();
 	private static ExecutionResultWrapper<Double> uvLiftedResults = new ExecutionResultWrapper<Double>();
 	private static ExecutionResultWrapper<Double> instrumentationResults = new ExecutionResultWrapper<Double>();
+	private static ExecutionResultWrapper<Double> parsingTimeResults = new ExecutionResultWrapper<Double>();
+	private static ExecutionResultWrapper<Double> colorLookupTableBuildingTimeResults = new ExecutionResultWrapper<Double>();
+	private static ExecutionResultWrapper<Double> CIDEExtractingTime = new ExecutionResultWrapper<Double>();
 	private static ExecutionResultWrapper<Double> jimplificationResults = new ExecutionResultWrapper<Double>();
 	private static ExecutionResultWrapper<Long> coloredBodyResults = new ExecutionResultWrapper<Long>();
 
@@ -135,6 +139,8 @@ public class DoAnalysisOnClassPath extends AbstractHandler {
 					}
 				}
 				G.reset();
+				System.out.println("=============" + (i+1) + "/" + times + "=============");
+				
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -162,8 +168,9 @@ public class DoAnalysisOnClassPath extends AbstractHandler {
 			System.out.format(format, "[UV-LIFTED] results: ", uvLiftedResults.toString());
 			System.out.format(format, "[UV-RUNNER] results: ", uvRunnerResults.toString());
 			System.out.format(format, "[INSTRUMNT] results: ", instrumentationResults.toString());
+			System.out.format(format, "[COLORTABL] results: ", colorLookupTableBuildingTimeResults.toString());
+			System.out.format(format, "[CIDEEXTRC] results: ", CIDEExtractingTime.toString());
 			System.out.format(format, "[JIMPLFCTN] results: ", jimplificationResults.toString());
-			System.out.format(format, "[COLORBODY] results: ", ColoredBodyCounter.v().toString());
 
 			rdLiftedResults = new ExecutionResultWrapper<Double>();
 			rdRunnerResults = new ExecutionResultWrapper<Double>();
@@ -172,6 +179,9 @@ public class DoAnalysisOnClassPath extends AbstractHandler {
 			instrumentationResults = new ExecutionResultWrapper<Double>();
 			jimplificationResults = new ExecutionResultWrapper<Double>();
 			coloredBodyResults = new ExecutionResultWrapper<Long>();
+			parsingTimeResults = new ExecutionResultWrapper<Double>();
+			colorLookupTableBuildingTimeResults = new ExecutionResultWrapper<Double>();
+			CIDEExtractingTime = new ExecutionResultWrapper<Double>();
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -272,13 +282,16 @@ public class DoAnalysisOnClassPath extends AbstractHandler {
 
 		// #ifdef METRICS
 		String format = "|%1$-50s|%2$-50s|\n";
-		double rdRunnerTime = ((double) WholeLineRunnerReachingDefinitions.v().getAnalysesTime()) / 1000000;
 		double rdLiftedTime = ((double) WholeLineLiftedReachingDefinitions.v().getAnalysesTime()) / 1000000;
-
-		double uvRunnerTime = ((double) WholeLineRunnerUninitializedVariable.v().getAnalysesTime()) / 1000000;
+		double rdRunnerTime = ((double) WholeLineRunnerReachingDefinitions.v().getAnalysesTime()) / 1000000;
 		double uvLiftedTime = ((double) WholeLineLiftedUninitializedVariableAnalysis.v().getAnalysesTime()) / 1000000;
-
+		double uvRunnerTime = ((double) WholeLineRunnerUninitializedVariable.v().getAnalysesTime()) / 1000000;
 		double instrumentationTime = ((double) FeatureModelInstrumentorTransformer.getTransformationTime()) / 1000000;
+		
+		double parsingTime = ((double) FeatureModelInstrumentorTransformer.getParsingTime()) / 1000000;
+		double colorLookupTableBuildingTime = ((double) FeatureModelInstrumentorTransformer.getColorLookupTableBuildingTime()) / 1000000;
+		double CIDEExtractingTime = ((double) LineNumberColorMapper.getExtractTime()) / 1000000;
+		
 
 		DoAnalysisOnClassPath.rdLiftedResults.add(rdLiftedTime);
 		DoAnalysisOnClassPath.rdRunnerResults.add(rdRunnerTime);
@@ -286,8 +299,10 @@ public class DoAnalysisOnClassPath extends AbstractHandler {
 		DoAnalysisOnClassPath.uvRunnerResults.add(uvRunnerTime);
 		DoAnalysisOnClassPath.instrumentationResults.add(instrumentationTime);
 		DoAnalysisOnClassPath.jimplificationResults.add(((double) (endJimplification - startJimplification)) / 1000000);
-		coloredBodyResults.add(ColoredBodyCounter.v().getCount());
-
+		DoAnalysisOnClassPath.coloredBodyResults.add(ColoredBodyCounter.v().getCount());
+		DoAnalysisOnClassPath.parsingTimeResults.add(parsingTime);
+		DoAnalysisOnClassPath.colorLookupTableBuildingTimeResults.add(colorLookupTableBuildingTime);
+		DoAnalysisOnClassPath.CIDEExtractingTime.add(CIDEExtractingTime);
 		DoAnalysisOnClassPath.totalRDRunnerTime += rdRunnerTime;
 		DoAnalysisOnClassPath.totalRDLiftedTime += rdLiftedTime;
 		DoAnalysisOnClassPath.totalUVRunnerTime += uvRunnerTime;
@@ -329,6 +344,7 @@ public class DoAnalysisOnClassPath extends AbstractHandler {
 		FeatureSensitiveFowardFlowAnalysis.reset();
 		LiftedReachingDefinitions.reset();
 		ColoredBodyCounter.v().reset();
+		LineNumberColorMapper.reset();
 		// #endif
 	}
 }

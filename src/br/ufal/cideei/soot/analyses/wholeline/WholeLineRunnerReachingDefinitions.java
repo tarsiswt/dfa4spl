@@ -10,6 +10,7 @@ import soot.BodyTransformer;
 import soot.toolkits.graph.BriefUnitGraph;
 import br.ufal.cideei.soot.analyses.FeatureSensitiveAnalysisRunner;
 import br.ufal.cideei.soot.analyses.reachingdefs.FeatureSensitiveReachingDefinitionsFactory;
+import br.ufal.cideei.soot.analyses.reachingdefs.SimpleReachedDefinitionsAnalysis;
 import br.ufal.cideei.soot.analyses.reachingdefs.UnliftedReachingDefinitions;
 import br.ufal.cideei.soot.instrument.FeatureTag;
 import br.ufal.cideei.util.WriterFacadeForAnalysingMM;
@@ -20,7 +21,7 @@ public class WholeLineRunnerReachingDefinitions extends BodyTransformer {
 
 	private WholeLineRunnerReachingDefinitions() {
 	}
-	
+
 	public static WholeLineRunnerReachingDefinitions v() {
 		return instance;
 	}
@@ -42,25 +43,29 @@ public class WholeLineRunnerReachingDefinitions extends BodyTransformer {
 	protected void internalTransform(Body body, String phase, Map options) {
 		BriefUnitGraph bodyGraph = new BriefUnitGraph(body);
 		FeatureTag<Set<String>> featureTag = (FeatureTag<Set<String>>) body.getTag("FeatureTag");
-			
+
 		try {
-			//#ifdef METRICS
+			// #ifdef METRICS
 			long beforeRunner = System.nanoTime();
-			//#endif
-			for (Set<String> configuration : featureTag) {
-				UnliftedReachingDefinitions urd = new UnliftedReachingDefinitions(bodyGraph, configuration);
+			// #endif
+			if (featureTag.size() == 1) {
+				new SimpleReachedDefinitionsAnalysis(bodyGraph);
+			} else {
+				for (Set<String> configuration : featureTag) {
+					new UnliftedReachingDefinitions(bodyGraph, configuration);
+				}
 			}
-			//#ifdef METRICS
+			// #ifdef METRICS
 			long afterRunner = System.nanoTime();
 			long delta = afterRunner - beforeRunner;
 			this.analysisTime += delta;
-			
+
 			try {
-				WriterFacadeForAnalysingMM.write(WriterFacadeForAnalysingMM.RD_RUNNER_COLUMN, Double.toString(((double)delta)/1000000));
+				WriterFacadeForAnalysingMM.write(WriterFacadeForAnalysingMM.RD_RUNNER_COLUMN, Double.toString(((double) delta) / 1000000));
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			//#endif
+			// #endif
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
