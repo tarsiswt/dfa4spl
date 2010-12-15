@@ -1,7 +1,6 @@
 package br.ufal.cideei.soot.analyses.reachingdefs;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Set;
 
 import soot.Unit;

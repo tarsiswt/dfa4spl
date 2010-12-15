@@ -1,16 +1,11 @@
 package br.ufal.cideei.util;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-
-import org.eclipse.ui.dialogs.ListSelectionDialog;
 
 /*
  * TODO: Make this a general approach to making row-by-row tables that we do not know the order in which information is provided.

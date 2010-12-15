@@ -1,19 +1,16 @@
 package br.ufal.cideei.soot.analyses;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 
-import br.ufal.cideei.soot.instrument.FeatureTag;
 import soot.Unit;
 import soot.toolkits.graph.DirectedGraph;
 import soot.toolkits.scalar.ArraySparseSet;
-import soot.toolkits.scalar.FlowAnalysis;
 import soot.toolkits.scalar.FlowSet;
 import soot.toolkits.scalar.ForwardFlowAnalysis;
+import br.ufal.cideei.soot.instrument.FeatureTag;
 
 // TODO: Auto-generated Javadoc
 /**

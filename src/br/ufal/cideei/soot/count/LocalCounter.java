@@ -3,12 +3,11 @@ package br.ufal.cideei.soot.count;
 import java.io.IOException;
 import java.util.Map;
 
-import br.ufal.cideei.util.WriterFacadeForAnalysingMM;
-
 import soot.Body;
 import soot.BodyTransformer;
 import soot.Local;
 import soot.util.Chain;
+import br.ufal.cideei.util.WriterFacadeForAnalysingMM;
 
 public class LocalCounter extends BodyTransformer implements ICounter<Long>, IResettable {
 

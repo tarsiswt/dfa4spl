@@ -1,19 +1,15 @@
 package br;
 
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 
 import soot.ArrayType;
 import soot.Local;
-import soot.MethodOrMethodContext;
 import soot.Modifier;
 import soot.RefType;
 import soot.Scene;
@@ -23,31 +19,19 @@ import soot.SourceLocator;
 import soot.Type;
 import soot.Unit;
 import soot.VoidType;
-import soot.dava.toolkits.base.AST.structuredAnalysis.ReachingDefs;
-import soot.jimple.Constant;
 import soot.jimple.JasminClass;
 import soot.jimple.Jimple;
 import soot.jimple.JimpleBody;
 import soot.jimple.StringConstant;
-import soot.jimple.spark.SparkTransformer;
-import soot.jimple.toolkits.callgraph.CHATransformer;
-import soot.jimple.toolkits.callgraph.CallGraph;
-import soot.jimple.toolkits.callgraph.ExplicitEdgesPred;
-import soot.jimple.toolkits.callgraph.Filter;
-import soot.jimple.toolkits.callgraph.Sources;
-import soot.jimple.toolkits.callgraph.TransitiveTargets;
 import soot.options.Options;
 import soot.toolkits.graph.BriefUnitGraph;
 import soot.toolkits.graph.UnitGraph;
-import soot.toolkits.scalar.BackwardFlowAnalysis;
 import soot.toolkits.scalar.InitAnalysis;
 import soot.toolkits.scalar.SimpleLiveLocals;
 import soot.toolkits.scalar.SimpleLocalDefs;
 import soot.toolkits.scalar.SimpleLocalUses;
-import soot.toolkits.scalar.UnitValueBoxPair;
 import soot.util.Chain;
 import soot.util.JasminOutputStream;
-import soot.util.queue.QueueReader;
 
 public class Main {
 

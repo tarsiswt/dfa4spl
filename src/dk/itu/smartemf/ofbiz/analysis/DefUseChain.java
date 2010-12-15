@@ -16,8 +16,17 @@
  * $Id: DefUseChain.java,v 1.1 2008/01/17 18:48:18 hessellund Exp $
  */
 package dk.itu.smartemf.ofbiz.analysis;
-import java.util.*;
-import org.eclipse.jdt.core.dom.*;
+import java.util.HashSet;
+import java.util.Set;
+
+import org.eclipse.jdt.core.dom.ASTNode;
+import org.eclipse.jdt.core.dom.ASTVisitor;
+import org.eclipse.jdt.core.dom.Assignment;
+import org.eclipse.jdt.core.dom.IVariableBinding;
+import org.eclipse.jdt.core.dom.MethodDeclaration;
+import org.eclipse.jdt.core.dom.SimpleName;
+import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
+import org.eclipse.jdt.core.dom.Statement;
 public class DefUseChain {
 
 	private ReachingDefinitionAnalysis rda;

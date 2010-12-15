@@ -7,7 +7,6 @@ import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.SimpleName;
 
-//import de.ovgu.cide.features.source.ColoredSourceFile;
 import br.ufal.cideei.algorithms.BaseAlgorithm;
 
 public class UniqueUsesAlgorithm extends BaseAlgorithm {

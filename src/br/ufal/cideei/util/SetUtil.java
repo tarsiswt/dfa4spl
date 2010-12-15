@@ -8,13 +8,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.eclipse.core.resources.IFile;
-
-import br.ufal.cideei.features.IFeatureExtracter;
-
-import de.ovgu.cide.features.FeatureModelNotFoundException;
 import de.ovgu.cide.features.IFeature;
-import de.ovgu.cide.features.IFeatureModel;
 
 // TODO: Auto-generated Javadoc
 /**

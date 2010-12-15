@@ -16,8 +16,16 @@
  * $Id: MonotonicDataFlowFramework.java,v 1.1 2008/01/17 18:48:19 hessellund Exp $
  */
 package dk.itu.smartemf.ofbiz.analysis;
-import java.util.*;
-import org.eclipse.jdt.core.dom.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+
+import org.eclipse.jdt.core.dom.ASTNode;
+import org.eclipse.jdt.core.dom.Statement;
 //inspired by source code from a compiler course by Robby
 public abstract class MonotonicDataFlowFramework<E> {
 	protected ControlFlowGraph cfg;

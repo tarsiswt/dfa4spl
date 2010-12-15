@@ -28,7 +28,6 @@ import br.ufal.cideei.soot.analyses.wholeline.WholeLineSimpleUninitializedVariab
 import br.ufal.cideei.soot.count.AssignmentsCounter;
 import br.ufal.cideei.soot.count.BodyCounter;
 import br.ufal.cideei.soot.count.LocalCounter;
-import br.ufal.cideei.soot.count.MethodCounter;
 import br.ufal.cideei.util.ExecutionResultWrapper;
 
 public class DoFeatureObliviousAnalysisOnClassPath extends AbstractHandler {

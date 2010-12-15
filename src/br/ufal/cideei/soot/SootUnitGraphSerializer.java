@@ -19,17 +19,22 @@
 
 package br.ufal.cideei.soot;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
 
-import br.ufal.cideei.soot.instrument.FeatureTag;
-
-import soot.*;
+import soot.Body;
+import soot.BriefUnitPrinter;
+import soot.LabeledUnitPrinter;
+import soot.Unit;
 import soot.tagkit.SourceLnPosTag;
 import soot.toolkits.exceptions.ThrowableSet;
-import soot.toolkits.graph.DirectedGraph;
-import soot.toolkits.graph.BlockGraph;
-import soot.toolkits.graph.ExceptionalGraph;
 import soot.toolkits.graph.Block;
+import soot.toolkits.graph.BlockGraph;
+import soot.toolkits.graph.DirectedGraph;
+import soot.toolkits.graph.ExceptionalGraph;
 import soot.toolkits.graph.UnitGraph;
 import soot.util.cfgcmd.CFGToDotGraph;
 import soot.util.dot.DotGraph;
@@ -37,6 +42,7 @@ import soot.util.dot.DotGraphAttribute;
 import soot.util.dot.DotGraphConstants;
 import soot.util.dot.DotGraphEdge;
 import soot.util.dot.DotGraphNode;
+import br.ufal.cideei.soot.instrument.FeatureTag;
 
 /**
  * Warning: this source code along with its Javadoc was completely copied from the Soot framework, as it was impossible, since it was package-visible.

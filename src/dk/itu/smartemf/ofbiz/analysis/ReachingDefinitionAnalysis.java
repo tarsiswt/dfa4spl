@@ -17,8 +17,19 @@
  */
 package dk.itu.smartemf.ofbiz.analysis;
 
-import java.util.*;
-import org.eclipse.jdt.core.dom.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import org.eclipse.jdt.core.dom.ASTNode;
+import org.eclipse.jdt.core.dom.Assignment;
+import org.eclipse.jdt.core.dom.Expression;
+import org.eclipse.jdt.core.dom.ExpressionStatement;
+import org.eclipse.jdt.core.dom.SimpleName;
+import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
+import org.eclipse.jdt.core.dom.Statement;
+import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
+import org.eclipse.jdt.core.dom.VariableDeclarationStatement;
 
 //inspired by source code from a compiler course by Robby
 public class ReachingDefinitionAnalysis extends MonotonicDataFlowFramework<Pair<String, ASTNode>> {

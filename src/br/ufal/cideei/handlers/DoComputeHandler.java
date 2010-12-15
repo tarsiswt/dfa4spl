@@ -1,7 +1,6 @@
 package br.ufal.cideei.handlers;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -31,7 +30,6 @@ import soot.toolkits.graph.BriefUnitGraph;
 import br.ufal.cideei.features.CIDEFeatureExtracterFactory;
 import br.ufal.cideei.features.IFeatureExtracter;
 import br.ufal.cideei.soot.SootManager;
-import br.ufal.cideei.soot.analyses.LiftedFlowSet;
 import br.ufal.cideei.soot.analyses.reachingdefs.UnliftedReachingDefinitions;
 import br.ufal.cideei.soot.instrument.FeatureModelInstrumentorTransformer;
 import br.ufal.cideei.soot.instrument.FeatureTag;

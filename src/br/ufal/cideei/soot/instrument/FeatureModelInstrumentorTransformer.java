@@ -2,44 +2,25 @@ package br.ufal.cideei.soot.instrument;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
-import org.eclipse.jdt.core.ICompilationUnit;
-import org.eclipse.jdt.core.JavaCore;
-import org.eclipse.jdt.core.dom.AST;
-import org.eclipse.jdt.core.dom.ASTNode;
-import org.eclipse.jdt.core.dom.ASTParser;
-import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.CompilationUnit;
-
-import de.ovgu.cide.features.FeatureModelNotFoundException;
-import de.ovgu.cide.features.IFeature;
 
 import soot.Body;
 import soot.BodyTransformer;
 import soot.SootClass;
-import soot.SourceLocator;
 import soot.Unit;
-import soot.javaToJimple.InitialResolver;
-import soot.options.Options;
 import soot.tagkit.SourceFileTag;
 import soot.tagkit.SourceLnPosTag;
-import soot.tagkit.Tag;
 import br.ufal.cideei.features.IFeatureExtracter;
-import br.ufal.cideei.soot.UnitUtil;
-import br.ufal.cideei.soot.instrument.asttounit.ASTNodeUnitBridge;
 import br.ufal.cideei.util.CachedICompilationUnitParser;
 import br.ufal.cideei.util.SetUtil;
 import br.ufal.cideei.util.WriterFacadeForAnalysingMM;

@@ -1,8 +1,5 @@
 package br.ufal.cideei.soot.analyses.uninitvars;
 
-import java.util.Map;
-import java.util.Set;
-
 import soot.Local;
 import soot.Unit;
 import soot.Value;

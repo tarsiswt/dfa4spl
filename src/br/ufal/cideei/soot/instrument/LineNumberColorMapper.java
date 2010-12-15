@@ -10,8 +10,6 @@ import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 
-import de.ovgu.cide.features.IFeature;
-
 import br.ufal.cideei.features.IFeatureExtracter;
 
 // TODO: Auto-generated Javadoc

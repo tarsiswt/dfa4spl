@@ -1,16 +1,12 @@
 package br.ufal.cideei.soot.analyses.wholeline;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
 import soot.Body;
 import soot.BodyTransformer;
 import soot.toolkits.graph.BriefUnitGraph;
-import br.ufal.cideei.soot.analyses.FeatureSensitiveAnalysisRunner;
-import br.ufal.cideei.soot.analyses.reachingdefs.FeatureSensitiveReachingDefinitionsFactory;
-import br.ufal.cideei.soot.analyses.reachingdefs.SimpleReachedDefinitionsAnalysis;
 import br.ufal.cideei.soot.analyses.reachingdefs.UnliftedReachingDefinitions;
 import br.ufal.cideei.soot.instrument.FeatureTag;
 import br.ufal.cideei.util.WriterFacadeForAnalysingMM;

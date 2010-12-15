@@ -3,12 +3,10 @@ package br.ufal.cideei.soot.count;
 import java.io.IOException;
 import java.util.Map;
 
-import br.ufal.cideei.soot.instrument.FeatureTag;
-import br.ufal.cideei.util.WriterFacadeForAnalysingMM;
-
 import soot.Body;
 import soot.BodyTransformer;
-import soot.tagkit.Tag;
+import br.ufal.cideei.soot.instrument.FeatureTag;
+import br.ufal.cideei.util.WriterFacadeForAnalysingMM;
 
 public class ColoredBodyCounter extends BodyTransformer implements ICounter<Long>, IResettable {
 

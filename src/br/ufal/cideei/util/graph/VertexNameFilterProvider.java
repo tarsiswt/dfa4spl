@@ -3,12 +3,9 @@ package br.ufal.cideei.util.graph;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.jgrapht.ext.VertexNameProvider;
 
-import br.ufal.cideei.soot.instrument.FeatureTag;
-
 import soot.Unit;
-import soot.tagkit.Base64;
 import soot.tagkit.SourceLnPosTag;
-import soot.tagkit.StringTag;
+import br.ufal.cideei.soot.instrument.FeatureTag;
 
 // TODO: Auto-generated Javadoc
 /**

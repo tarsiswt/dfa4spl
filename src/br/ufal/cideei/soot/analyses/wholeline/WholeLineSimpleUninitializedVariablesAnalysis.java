@@ -1,17 +1,13 @@
 package br.ufal.cideei.soot.analyses.wholeline;
 
 import java.util.Map;
-import java.util.Set;
-
-import br.ufal.cideei.soot.analyses.reachingdefs.LiftedReachingDefinitions;
-import br.ufal.cideei.soot.analyses.uninitvars.SimpleUninitializedVariableAnalysis;
-import br.ufal.cideei.soot.instrument.FeatureTag;
 
 import soot.Body;
 import soot.BodyTransformer;
 import soot.Unit;
 import soot.toolkits.graph.BriefUnitGraph;
 import soot.toolkits.graph.DirectedGraph;
+import br.ufal.cideei.soot.analyses.uninitvars.SimpleUninitializedVariableAnalysis;
 
 public class WholeLineSimpleUninitializedVariablesAnalysis extends BodyTransformer {
 

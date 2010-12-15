@@ -2,7 +2,6 @@ package br.ufal.cideei.soot.analyses.reachingdefs;
 
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import soot.Unit;
@@ -11,7 +10,6 @@ import soot.toolkits.graph.DirectedGraph;
 import soot.toolkits.scalar.ArraySparseSet;
 import soot.toolkits.scalar.FlowSet;
 import soot.toolkits.scalar.ForwardFlowAnalysis;
-import br.ufal.cideei.soot.analyses.LiftedFlowSet;
 import br.ufal.cideei.soot.instrument.FeatureTag;
 
 // TODO: Auto-generated Javadoc
