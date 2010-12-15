@@ -82,9 +82,6 @@ public class LiftedFlowSet<T> extends AbstractFlowSet {
 	// FIXME: nao esta funcionando. Por outro lado, RD nao chama este metodo.
 	@Override
 	public LiftedFlowSet clone() {
-		if (true)
-			throw new RuntimeException();
-		// return new LiftedFlowSet(this);
 		LiftedFlowSet other = new LiftedFlowSet();
 		other.configurations = this.configurations.clone();
 
