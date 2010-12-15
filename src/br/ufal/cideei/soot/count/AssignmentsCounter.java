@@ -41,9 +41,11 @@ public class AssignmentsCounter extends BodyTransformer implements ICounter<Long
 				if (ignoreTemp) {
 					AssignStmt assignment = (AssignStmt) unit;
 					Value leftOp = assignment.getLeftOp();
-					Local assignee = (Local) leftOp;
-					if (!assignee.getName().contains("$")) {
-						counterChunk++;
+					if (leftOp instanceof Local) {
+						Local assignee = (Local) leftOp;
+						if (!assignee.getName().contains("$")) {
+							counterChunk++;
+						}
 					}
 				} else {
 					counterChunk++;

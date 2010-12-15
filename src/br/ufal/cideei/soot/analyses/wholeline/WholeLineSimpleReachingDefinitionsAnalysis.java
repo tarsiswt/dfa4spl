@@ -7,6 +7,7 @@ import soot.BodyTransformer;
 import soot.Unit;
 import soot.toolkits.graph.BriefUnitGraph;
 import soot.toolkits.graph.DirectedGraph;
+import br.ufal.cideei.soot.analyses.reachingdefs.SimpleReachedDefinitionsAnalysis;
 import br.ufal.cideei.soot.analyses.uninitvars.SimpleUninitializedVariableAnalysis;
 
 public class WholeLineSimpleReachingDefinitionsAnalysis extends BodyTransformer {
@@ -40,7 +41,7 @@ public class WholeLineSimpleReachingDefinitionsAnalysis extends BodyTransformer 
 		// #ifdef METRICS
 		long beforeRunner = System.nanoTime();
 		// #endif
-		new SimpleUninitializedVariableAnalysis(bodyGraph);
+		new SimpleReachedDefinitionsAnalysis(bodyGraph);
 		// #ifdef METRICS
 		long afterRunner = System.nanoTime();
 		this.analysisTime += afterRunner - beforeRunner;
