@@ -107,8 +107,6 @@ public class LiftedReachingDefinitions extends ForwardFlowAnalysis<Unit, LiftedF
 
 		Set<String>[] configurations = source.getConfigurations();
 
-//		System.out.println(unit + " :: " + features + " :: " + configurations);
-
 		FlowSet[] sourceLattices = source.getLattices();
 		FlowSet[] destLattices = dest.getLattices();
 

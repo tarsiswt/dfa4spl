@@ -14,7 +14,7 @@ import java.util.List;
  * 
  */
 public class WriterFacadeForAnalysingMM {
-	private static final short MAX_COLUMN = 12;
+	private static final short MAX_COLUMN = 13;
 
 	/*
 	 * Make this a dynamic-growing list(or map)
@@ -31,6 +31,8 @@ public class WriterFacadeForAnalysingMM {
 	public static final int INSTRUMENTATION_COLUMN = 9;
 	public static final int INSTRUMENTATION_UNITTOASTNODE_COLUMN = 10;
 	public static final int INSTRUMENTATION_COMPILATIONUNIT_PARSING = 11;
+
+	public static final int LOCAL_PSET_SIZE_COLUMN = 12;
 
 	private static PrintWriter writer = null;
 	private static File file = null;

@@ -142,6 +142,15 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 		FeatureTag<Set<String>> powerSetTag = new FeatureTag<Set<String>>();
 		powerSetTag.addAll(localPowerSet);
 		body.addTag(powerSetTag);
+		
+		// #ifdef METRICS
+		try {
+			WriterFacadeForAnalysingMM.write(WriterFacadeForAnalysingMM.LOCAL_PSET_SIZE_COLUMN, Integer.toString(powerSetTag.size()));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		// #endif
 	}
 
 	/**

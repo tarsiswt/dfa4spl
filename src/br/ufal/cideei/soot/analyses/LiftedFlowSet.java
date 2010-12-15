@@ -52,8 +52,12 @@ public class LiftedFlowSet<T> extends AbstractFlowSet {
 	 *            the other
 	 */
 	public LiftedFlowSet(LiftedFlowSet other) {
-		this.configurations = other.getConfigurations();
-		this.lattices = other.getLattices();
+		this.configurations = other.configurations.clone();
+		this.lattices = other.lattices.clone();
+		this.liftedFlowSetSize = other.liftedFlowSetSize;
+	}
+
+	private LiftedFlowSet() {
 	}
 
 	/**
@@ -78,7 +82,19 @@ public class LiftedFlowSet<T> extends AbstractFlowSet {
 	// FIXME: nao esta funcionando. Por outro lado, RD nao chama este metodo.
 	@Override
 	public LiftedFlowSet clone() {
-		return new LiftedFlowSet(this);
+		if (true)
+			throw new RuntimeException();
+		// return new LiftedFlowSet(this);
+		LiftedFlowSet other = new LiftedFlowSet();
+		other.configurations = this.configurations.clone();
+
+		other.lattices = new FlowSet[this.lattices.length];
+		for (int index = 0; index < lattices.length; index++) {
+			other.lattices[index] = this.lattices[index].clone();
+		}
+
+		other.liftedFlowSetSize = this.liftedFlowSetSize;
+		return other;
 	}
 
 	/*
@@ -94,16 +110,12 @@ public class LiftedFlowSet<T> extends AbstractFlowSet {
 		// Test for self-equality
 		if (obj == this)
 			return true;
-		// If their maps are equals, then the objects are considered equal.
+
 		LiftedFlowSet other = (LiftedFlowSet) obj;
-//
-//		if (other.configurations.equals(this.configurations) && other.lattices.equals(this.lattices)) {
-//			return true;
-//		}
-		
+
 		boolean returnFlag = true;
 		for (int i = 0; i < liftedFlowSetSize; i++) {
-			if (!other.configurations[i].equals(this.configurations[i]) || !other.lattices[i].equals(this.lattices[i])) { 
+			if (!other.configurations[i].equals(this.configurations[i]) || !other.lattices[i].equals(this.lattices[i])) {
 				returnFlag = false;
 				break;
 			}

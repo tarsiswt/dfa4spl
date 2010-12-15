@@ -19,8 +19,6 @@ public class SimpleUninitializedVariableAnalysis extends ForwardFlowAnalysis<Uni
 	/** The empty set. */
 	private FlowSet emptySet = new ArraySparseSet();
 
-	private FlowSet newInitialFlowSet = new ArraySparseSet();
-
 	/**
 	 * Instantiates a new feature sensitive reaching definitions.
 	 * 
@@ -73,11 +71,7 @@ public class SimpleUninitializedVariableAnalysis extends ForwardFlowAnalysis<Uni
 	 */
 	@Override
 	protected FlowSet newInitialFlow() {
-		if (newInitialFlowSet.isEmpty()) {
-			return this.emptySet.clone();
-		} else {
-			return newInitialFlowSet.clone();
-		}
+		return this.emptySet.clone();
 	}
 
 	/**
@@ -128,8 +122,7 @@ public class SimpleUninitializedVariableAnalysis extends ForwardFlowAnalysis<Uni
 		/*
 		 * GEN = {}
 		 */
-//		gen(dest, unit);
-		
+		// gen(dest, unit);
+
 	}
 }
-

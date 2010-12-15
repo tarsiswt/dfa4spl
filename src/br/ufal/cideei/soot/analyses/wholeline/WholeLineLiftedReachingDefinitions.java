@@ -8,6 +8,7 @@ import soot.Body;
 import soot.BodyTransformer;
 import soot.toolkits.graph.BriefUnitGraph;
 import br.ufal.cideei.soot.analyses.reachingdefs.LiftedReachingDefinitions;
+import br.ufal.cideei.soot.analyses.reachingdefs.SimpleReachedDefinitionsAnalysis;
 import br.ufal.cideei.soot.instrument.FeatureTag;
 import br.ufal.cideei.util.WriterFacadeForAnalysingMM;
 
@@ -45,7 +46,7 @@ public class WholeLineLiftedReachingDefinitions extends BodyTransformer {
 //		} else {
 			new LiftedReachingDefinitions(bodyGraph, featureTag.getFeatures());
 //		}
-		// #ifdef METRICS
+//		 #ifdef METRICS
 		long afterRunner = System.nanoTime();
 		long delta = afterRunner - beforeRunner;
 		this.analysisTime += delta;
