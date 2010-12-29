@@ -34,7 +34,7 @@ public class LocalCounter extends BodyTransformer implements ICounter<Long>, IRe
 	}
 
 	private long counter = 0;
-	private boolean excludeTemp = false;
+	private boolean excludeTemp = true;
 
 	public Long getCount() {
 		return counter;
@@ -42,7 +42,7 @@ public class LocalCounter extends BodyTransformer implements ICounter<Long>, IRe
 
 	@Override
 	protected void internalTransform(Body body, String phase, Map opt) {
-		if (!excludeTemp) {
+		if (excludeTemp) {
 			excludeTmp(body);
 		} else {
 			long counterChunk = body.getLocalCount();
@@ -63,7 +63,8 @@ public class LocalCounter extends BodyTransformer implements ICounter<Long>, IRe
 		Chain<Local> locals = body.getLocals();
 		int counterChunk = 0; 
 		for (Local local : locals) {
-			if (local.getName().indexOf("$") != -1) {
+			String name = local.getName();
+			if (name != "this" && name.indexOf("$") == -1) {
 				counterChunk++;
 			}
 		}

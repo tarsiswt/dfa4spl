@@ -41,12 +41,9 @@ public class WholeLineLiftedReachingDefinitions extends BodyTransformer {
 		// #ifdef METRICS
 		long beforeRunner = System.nanoTime();
 		// #endif
-//		if (featureTag.size() == 1) {
-//			new SimpleReachedDefinitionsAnalysis(bodyGraph);
-//		} else {
-			new LiftedReachingDefinitions(bodyGraph, featureTag.getFeatures());
-//		}
-//		 #ifdef METRICS
+
+		new LiftedReachingDefinitions(bodyGraph, featureTag.getFeatures());
+		// #ifdef METRICS
 		long afterRunner = System.nanoTime();
 		long delta = afterRunner - beforeRunner;
 		this.analysisTime += delta;

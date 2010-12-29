@@ -30,7 +30,6 @@ public class LiftedUninitializedVariableAnalysis extends ForwardFlowAnalysis<Uni
 	 * now.
 	 */
 	private LiftedFlowSet allLocals;
-	private LiftedFlowSet emptySet;
 	private Collection<Set<String>> configurations;
 
 	// #ifdef METRICS
@@ -58,7 +57,6 @@ public class LiftedUninitializedVariableAnalysis extends ForwardFlowAnalysis<Uni
 		super(graph);
 		this.configurations = configs;
 		this.allLocals = new LiftedFlowSet(configs);
-		this.emptySet = new LiftedFlowSet(configs);
 
 		if (graph instanceof UnitGraph) {
 			UnitGraph ug = (UnitGraph) graph;

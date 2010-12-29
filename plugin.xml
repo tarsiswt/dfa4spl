@@ -8,16 +8,6 @@
 		</category>
 
 		<command categoryId="br.ufal.cideei.categories.ComputeEI"
-			description="Computes emergent interface" id="br.ufal.cideei.commands.DoCompute"
-			name="RD com Runner">
-		</command>
-
-		<command categoryId="br.ufal.cideei.categories.ComputeEI"
-			description=""
-			id="br.ufal.cideei.commands.DoIFSRD" name="RD com Lifted">
-		</command>
-
-		<command categoryId="br.ufal.cideei.categories.ComputeEI"
 			id="br.ufal.cideei.commands.DoAnalysisOnClassPath" name="Run FSA">
 		</command>
 		
@@ -27,14 +17,6 @@
 	</extension>
 
 	<extension point="org.eclipse.ui.handlers">
-		<handler class="br.ufal.cideei.handlers.DoComputeHandler"
-			commandId="br.ufal.cideei.commands.DoCompute" name="Handler for DoCompute command">
-		</handler>
-
-		<handler class="br.ufal.cideei.handlers.DoIFSRDHandler"
-			commandId="br.ufal.cideei.commands.DoIFSRD" name="Handler for DoIFSRD command">
-		</handler>
-		
 		<handler class="br.ufal.cideei.handlers.DoAnalysisOnClassPath"
 			commandId="br.ufal.cideei.commands.DoAnalysisOnClassPath" name="Handler for DoAnalysisOnClassPath command">
 		</handler>
@@ -45,17 +27,6 @@
 	</extension>
 
 	<extension point="org.eclipse.ui.menus">
-		<menuContribution locationURI="popup:#CompilationUnitEditorContext">
-			<command commandId="br.ufal.cideei.commands.DoCompute">
-			</command>
-		</menuContribution>
-
-		<menuContribution locationURI="popup:#CompilationUnitEditorContext">
-			
-			<command commandId="br.ufal.cideei.commands.DoIFSRD">
-			</command>
-		</menuContribution>
-
 		<menuContribution locationURI="popup:org.eclipse.jdt.ui.PackageExplorer">
 			<command commandId="br.ufal.cideei.commands.DoAnalysisOnClassPath">
 			</command>
