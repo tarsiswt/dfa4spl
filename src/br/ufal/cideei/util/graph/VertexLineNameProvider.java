@@ -24,6 +24,7 @@ public class VertexLineNameProvider<V extends Unit> implements VertexNameProvide
 	 *            the compilation unit
 	 */
 	public VertexLineNameProvider(CompilationUnit compilationUnit) {
+		super();
 	}
 
 	/**

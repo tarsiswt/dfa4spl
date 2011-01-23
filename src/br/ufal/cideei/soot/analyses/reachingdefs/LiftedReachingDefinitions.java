@@ -1,10 +1,14 @@
 package br.ufal.cideei.soot.analyses.reachingdefs;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 import soot.Unit;
 import soot.jimple.AssignStmt;
+import soot.jimple.NopStmt;
 import soot.toolkits.graph.DirectedGraph;
 import soot.toolkits.scalar.ArraySparseSet;
 import soot.toolkits.scalar.FlowSet;
@@ -24,7 +28,7 @@ public class LiftedReachingDefinitions extends ForwardFlowAnalysis<Unit, LiftedF
 	private Collection<Set<String>> configurations;
 
 	// #ifdef METRICS
-	private static long flowThroughCounter = 0;
+	protected static long flowThroughCounter = 0;
 
 	public static long getFlowThroughCounter() {
 		return flowThroughCounter;
@@ -45,7 +49,6 @@ public class LiftedReachingDefinitions extends ForwardFlowAnalysis<Unit, LiftedF
 	public LiftedReachingDefinitions(DirectedGraph<Unit> graph, Collection<Set<String>> configs) {
 		super(graph);
 		this.configurations = configs;
-		super.doAnalysis();
 	}
 
 	/*
@@ -117,15 +120,15 @@ public class LiftedReachingDefinitions extends ForwardFlowAnalysis<Unit, LiftedF
 			FlowSet destFlowSet = destLattices[i];
 
 			if (configuration.containsAll(features)) {
-				kill(sourceFlowSet, unit, destFlowSet);
-				gen(destFlowSet, unit);
+				kill(sourceFlowSet, unit, destFlowSet, configuration);
+				gen(sourceFlowSet, unit, destFlowSet, configuration);
 			} else {
 				sourceFlowSet.copy(destFlowSet);
 			}
 		}
 	}
 
-	private void kill(FlowSet source, Unit unit, FlowSet dest) {
+	protected void kill(FlowSet source, Unit unit, FlowSet dest, Set<String> configuration) {
 		FlowSet kills = new ArraySparseSet();
 		if (unit instanceof AssignStmt) {
 			AssignStmt assignStmt = (AssignStmt) unit;
@@ -149,12 +152,40 @@ public class LiftedReachingDefinitions extends ForwardFlowAnalysis<Unit, LiftedF
 	 *            the dest
 	 * @param unit
 	 *            the unit
+	 * @param configuration 
 	 */
 	// TODO: MUST ITERATE THROUGH ALL DEFBOXES!!!
-	private void gen(FlowSet dest, Unit unit) {
+	protected void gen(FlowSet source, Unit unit, FlowSet dest, Set<String> configuration) {
 		if (unit instanceof AssignStmt) {
 			dest.add(unit);
 		}
+	}
+
+	public List<Unit> getReachedUses(Unit target, Set<String> configuration) {
+		int index = 0;
+		for (Set<String> configuration1 : configurations) {
+			if (configuration.equals(configuration1)) {
+				Iterator<Unit> unitIterator = graph.iterator();
+				List<Unit> reached = new ArrayList<Unit>();
+				while (unitIterator.hasNext()) {
+					Unit nextUnit = unitIterator.next();
+
+					LiftedFlowSet reachingDefSet = this.getFlowAfter(nextUnit);
+					FlowSet flowSet = reachingDefSet.getLattices()[index];
+					Iterator<? extends Unit> flowIterator = flowSet.toList().iterator();
+					if (flowSet.contains(target)) {
+						reached.add(nextUnit);
+					}
+				}
+				return reached;
+			}
+		}
+		index++;
+		return null;
+	}
+
+	public void execute() {
+		this.doAnalysis();
 	}
 
 }

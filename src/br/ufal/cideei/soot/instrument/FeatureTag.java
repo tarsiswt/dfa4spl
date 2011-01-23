@@ -1,6 +1,7 @@
 package br.ufal.cideei.soot.instrument;
 
 import java.util.AbstractCollection;
+import java.util.AbstractSet;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -18,22 +19,22 @@ import soot.tagkit.Tag;
  * @param <E>
  *            the element type
  */
-public class FeatureTag<E> extends AbstractCollection<E> implements Tag {
+public class FeatureTag<E> extends AbstractSet<E> implements Tag {
 
 	/** The Constant FEAT_TAG_NAME. */
 	private static final String FEAT_TAG_NAME = "FeatureTag";
 
 	/** The features are kept in this list */
 	private Set<E> features = new HashSet<E>();
-	
+
 	private static FeatureTag emptyTag = null;
-	
+
 	static {
 		emptyTag = new FeatureTag();
 		emptyTag.features = Collections.emptySet();
 	}
-	
-	public static <E> FeatureTag<E> emptyFeatureTag(){
+
+	public static <E> FeatureTag<E> emptyFeatureTag() {
 		return emptyTag;
 	}
 
@@ -46,12 +47,12 @@ public class FeatureTag<E> extends AbstractCollection<E> implements Tag {
 	public boolean add(E ft) {
 		return features.add(ft);
 	}
-	
+
 	@Override
 	public boolean addAll(Collection<? extends E> c) {
 		return features.addAll(c);
 	}
-	
+
 	@Override
 	public boolean contains(Object o) {
 		return features.contains(o);
@@ -62,7 +63,7 @@ public class FeatureTag<E> extends AbstractCollection<E> implements Tag {
 	 * 
 	 * @param ft
 	 *            the feature to be removed.
-	 * @return 
+	 * @return
 	 */
 	public boolean remove(Object ft) {
 		return features.remove(ft);
@@ -76,11 +77,11 @@ public class FeatureTag<E> extends AbstractCollection<E> implements Tag {
 	public Collection<E> getFeatures() {
 		return Collections.unmodifiableSet(this.features);
 	}
-	
+
 	public void setFeatures(Set<E> features) {
 		this.features = features;
 	}
-	
+
 	@Override
 	public boolean isEmpty() {
 		return this.features.isEmpty();
@@ -105,7 +106,7 @@ public class FeatureTag<E> extends AbstractCollection<E> implements Tag {
 	public byte[] getValue() throws AttributeValueException {
 		return null;
 	}
-	
+
 	@Override
 	public String toString() {
 		return features.toString();
@@ -119,6 +120,10 @@ public class FeatureTag<E> extends AbstractCollection<E> implements Tag {
 	@Override
 	public int size() {
 		return features.size();
+	}
+
+	public boolean belongsToConfiguration(Collection<E> configuration) {
+		return configuration.containsAll(this);
 	}
 
 }

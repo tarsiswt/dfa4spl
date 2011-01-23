@@ -11,19 +11,17 @@ import br.ufal.cideei.features.IFeatureExtracter;
 
 public class SootManager {
 	public static void configure(String classpath) {
-
 		Options.v().set_allow_phantom_refs(true);
 		// Options.v().set_whole_program(true);
-
-//		Options.v().set_verbose(true);
+		Options.v().set_verbose(true);
 		Options.v().set_keep_line_number(true);
 		Options.v().set_src_prec(Options.src_prec_java);
 		Options.v().set_soot_classpath(classpath);
 		Options.v().set_prepend_classpath(true);
-
 		PhaseOptions.v().setPhaseOption("bb", "off");
-
-		PhaseOptions.v().setPhaseOption("tag.ln", "on");
+		PhaseOptions.v().setPhaseOption("tag.ln", "off");
+		PhaseOptions.v().setPhaseOption("jj.a", "on");
+		PhaseOptions.v().setPhaseOption("jj.ule", "on");
 		// PhaseOptions.v().setPhaseOption("cg.cha", "off");
 		// PhaseOptions.v().setPhaseOption("cg.spark", "on");
 	}

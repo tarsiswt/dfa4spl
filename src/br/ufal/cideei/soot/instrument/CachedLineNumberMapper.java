@@ -24,7 +24,6 @@ public class CachedLineNumberMapper {
 			return cachedResult;
 		} else {
 			//MISS
-//			System.out.println("CachedLineNumberMapper: miss");
 			colorMapper = new LineNumberColorMapper(compilationUnit, file, extracter);
 			visitee = node;
 			visitee.accept(colorMapper);
