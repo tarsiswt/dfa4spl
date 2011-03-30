@@ -3,19 +3,24 @@ package br.ufal.cideei.soot;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 
 import soot.Body;
+import soot.MethodOrMethodContext;
 import soot.Printer;
 import soot.SourceLocator;
 import soot.Unit;
+import soot.jimple.toolkits.callgraph.CallGraph;
+import soot.jimple.toolkits.callgraph.Edge;
 import soot.options.Options;
 import soot.toolkits.graph.DirectedGraph;
 import soot.util.cfgcmd.CFGGraphType;
 import soot.util.dot.DotGraph;
+import soot.util.queue.QueueReader;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -91,6 +96,28 @@ public class UnitUtil {
 			fileName = fileName + methodName.replace(java.io.File.separatorChar, '.') + DotGraph.DOT_EXTENSION;
 		}
 
+		canvas.plot(fileName);
+		return new File(fileName);
+	}
+	
+	public static File serializeCallGraph(CallGraph graph, String fileName) {
+		if (fileName == null) {
+			fileName = soot.SourceLocator.v().getOutputDir();
+			if (fileName.length() > 0) {
+				fileName = fileName + java.io.File.separator;
+			}
+			fileName = fileName + "call-graph" + DotGraph.DOT_EXTENSION;
+		}
+		DotGraph canvas = new DotGraph("call-graph");
+		QueueReader<Edge> listener = graph.listener();
+		while(listener.hasNext()) {
+			Edge next = listener.next();
+			MethodOrMethodContext src = next.getSrc();
+			MethodOrMethodContext tgt = next.getTgt();
+			canvas.drawNode(src.toString());
+			canvas.drawNode(tgt.toString());
+			canvas.drawEdge(src.toString(), tgt.toString());			
+		}
 		canvas.plot(fileName);
 		return new File(fileName);
 	}

@@ -19,7 +19,7 @@ import soot.toolkits.scalar.ForwardFlowAnalysis;
 public class SimpleReachedDefinitionsAnalysis extends AbstractReachedDefinitions {
 
 	/** The reaching definitions. */
-	private SimpleReachingDefinitions reachingDefinitions;
+	private final SimpleReachingDefinitions reachingDefinitions;
 
 	/**
 	 * Instantiates a new simple reaching definitions analysis.
@@ -60,6 +60,10 @@ public class SimpleReachedDefinitionsAnalysis extends AbstractReachedDefinitions
 			}
 		}
 		return reached;
+	}
+
+	public FlowSet getFlowAfter(Unit unit) {
+		return this.reachingDefinitions.getFlowAfter(unit);
 	}
 
 }
