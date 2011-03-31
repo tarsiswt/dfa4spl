@@ -14,6 +14,7 @@ public class FeatureObliviousEstimative extends BodyTransformer {
 	private long rdTotal = 0;
 	private long uvTotal = 0;
 	private long jimplificationTotal = 0;
+	private long preprocessingTotal = 0;
 	
 	public static FeatureObliviousEstimative v() {
 		if (instance == null)
@@ -34,6 +35,7 @@ public class FeatureObliviousEstimative extends BodyTransformer {
 		long rdAnalysisTime     = profilingTag.getRdAnalysisTime();
 		long uvAnalysisTime     = profilingTag.getUvAnalysisTime();
 		long jimplificationTime = profilingTag.getJimplificationTime();
+		long preprocessingTime = profilingTag.getPreprocessingTime();
 		
 		// if contains color
 		if (size > 1) {
@@ -42,11 +44,13 @@ public class FeatureObliviousEstimative extends BodyTransformer {
 			this.rdTotal += (numberOfConfigurations * rdAnalysisTime);
 			this.uvTotal += (numberOfConfigurations * uvAnalysisTime);
 			this.jimplificationTotal += (numberOfConfigurations * jimplificationTime);
+			this.preprocessingTotal += (numberOfConfigurations * preprocessingTime);
 			
 		} else {
 			this.rdTotal += rdAnalysisTime;
 			this.uvTotal += uvAnalysisTime;
 			this.jimplificationTotal += jimplificationTime;
+			this.preprocessingTotal += preprocessingTime;
 		}
 	}
 
@@ -62,10 +66,15 @@ public class FeatureObliviousEstimative extends BodyTransformer {
 		return jimplificationTotal;
 	}
 
+	public long getPreprocessingTotal() {
+		return preprocessingTotal;
+	}
+
 	public void reset() {
 		this.rdTotal = 0;
 		this.uvTotal = 0;
 		this.jimplificationTotal = 0;
+		this.preprocessingTotal = 0;
 	}
 
 }

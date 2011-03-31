@@ -29,6 +29,7 @@ import br.ufal.cideei.soot.count.AssignmentsCounter;
 import br.ufal.cideei.soot.count.BodyCounter;
 import br.ufal.cideei.soot.count.FeatureObliviousEstimative;
 import br.ufal.cideei.soot.count.LocalCounter;
+import br.ufal.cideei.soot.count.PreprocessingJimpleCode;
 import br.ufal.cideei.soot.instrument.FeatureModelInstrumentorTransformer;
 import br.ufal.cideei.util.ExecutionResultWrapper;
 
@@ -36,6 +37,7 @@ public class DoFeatureObliviousAnalysisOnClassPath extends AbstractHandler {
 	private static ExecutionResultWrapper<Double> jimplificationResults = new ExecutionResultWrapper<Double>();
 	private static ExecutionResultWrapper<Double> simpleRDResults = new ExecutionResultWrapper<Double>();
 	private static ExecutionResultWrapper<Double> simpleUVResults = new ExecutionResultWrapper<Double>();
+	private static ExecutionResultWrapper<Double> preprocessingResults = new ExecutionResultWrapper<Double>();
 
 	private Long assignmentsCount;
 	private Long bodyCount;
@@ -116,6 +118,7 @@ public class DoFeatureObliviousAnalysisOnClassPath extends AbstractHandler {
 			System.out.format(format, "[JIMPLFCTN] results: ", jimplificationResults.toString());
 			System.out.format(format, "[RD-SIMPLE] results: ", simpleRDResults.toString());
 			System.out.format(format, "[UV-SIMPLE] results: ", simpleUVResults.toString());
+			System.out.format(format, "[PREPROCES] results: ", preprocessingResults.toString());
 
 			System.out.format(format, "[ASSGNMNT-COUNT] results: ", assignmentsCount);
 			System.out.format(format, "[BODY-COUNT] results: ", bodyCount);
@@ -204,6 +207,9 @@ public class DoFeatureObliviousAnalysisOnClassPath extends AbstractHandler {
 		Transform localCounter = new Transform("jap.counter.local", LocalCounter.v());
 		PackManager.v().getPack("jap").add(localCounter);
 
+		Transform preprocessingCounter = new Transform("jap.counter.preprocessing", PreprocessingJimpleCode.v());
+		PackManager.v().getPack("jap").add(preprocessingCounter);
+		
 		Transform estimativeCounter = new Transform("jap.counter.estimative", FeatureObliviousEstimative.v());
 		PackManager.v().getPack("jap").add(estimativeCounter);
 		//#endif
@@ -214,10 +220,12 @@ public class DoFeatureObliviousAnalysisOnClassPath extends AbstractHandler {
 		double simpleRDTime = ((double) FeatureObliviousEstimative.v().getRdTotal()) / 1000000;
 		double simpleUVTime = ((double) FeatureObliviousEstimative.v().getUvTotal()) / 1000000;
 		double jimplificationTime = ((double) FeatureObliviousEstimative.v().getJimplificationTotal()) / 1000000;
+		double preprocessingTime = ((double) FeatureObliviousEstimative.v().getPreprocessingTotal()) / 1000000;
 		
 		DoFeatureObliviousAnalysisOnClassPath.simpleRDResults.add(simpleRDTime);
 		DoFeatureObliviousAnalysisOnClassPath.simpleUVResults.add(simpleUVTime);
 		DoFeatureObliviousAnalysisOnClassPath.jimplificationResults.add(jimplificationTime);
+		DoFeatureObliviousAnalysisOnClassPath.preprocessingResults.add(preprocessingTime);
 		
 		assignmentsCount = AssignmentsCounter.v().getCount();
 		bodyCount = BodyCounter.v().getCount();
