@@ -23,11 +23,13 @@ import soot.Transform;
 import br.ufal.cideei.features.CIDEFeatureExtracterFactory;
 import br.ufal.cideei.features.IFeatureExtracter;
 import br.ufal.cideei.soot.SootManager;
-import br.ufal.cideei.soot.analyses.wholeline.WholeLineSimpleReachingDefinitionsAnalysis;
-import br.ufal.cideei.soot.analyses.wholeline.WholeLineSimpleUninitializedVariablesAnalysis;
+import br.ufal.cideei.soot.analyses.wholeline.WholeLineObliviousReachingDefinitionsAnalysis;
+import br.ufal.cideei.soot.analyses.wholeline.WholeLineObliviousUninitializedVariablesAnalysis;
 import br.ufal.cideei.soot.count.AssignmentsCounter;
 import br.ufal.cideei.soot.count.BodyCounter;
+import br.ufal.cideei.soot.count.FeatureObliviousEstimative;
 import br.ufal.cideei.soot.count.LocalCounter;
+import br.ufal.cideei.soot.instrument.FeatureModelInstrumentorTransformer;
 import br.ufal.cideei.util.ExecutionResultWrapper;
 
 public class DoFeatureObliviousAnalysisOnClassPath extends AbstractHandler {
@@ -48,7 +50,7 @@ public class DoFeatureObliviousAnalysisOnClassPath extends AbstractHandler {
 				Object firstElement = selection.getFirstElement();
 				if (firstElement instanceof IJavaProject) {
 					IJavaProject javaProject = (IJavaProject) firstElement;
-
+	
 					IClasspathEntry[] classPathEntries = null;
 					try {
 						classPathEntries = javaProject.getResolvedClasspath(true);
@@ -56,26 +58,26 @@ public class DoFeatureObliviousAnalysisOnClassPath extends AbstractHandler {
 						e.printStackTrace();
 						throw new ExecutionException("No source classpath identified");
 					}
-
+	
 					/*
-					 * To build the path string variable that will represent
-					 * Soot's classpath we will first iterate through all libs
-					 * (.jars) files, then through all source classpaths.
+					 * To build the path string variable that will represent Soot's
+					 * classpath we will first iterate through all libs (.jars)
+					 * files, then through all source classpaths.
 					 * 
 					 * FIXME: WARNING: A bug was found on Soot, in which the
-					 * FileSourceTag would contain incorrect information
-					 * regarding the absolute localtion of the source file. In
-					 * order to workaround this, the classpath must be injected
-					 * into the FeatureModelInstrumentorTransformer class (it is
-					 * done though its constructor).
+					 * FileSourceTag would contain incorrect information regarding
+					 * the absolute localtion of the source file. In order to
+					 * workaround this, the classpath must be injected into the
+					 * FeatureModelInstrumentorTransformer class (it is done though
+					 * its constructor).
 					 * 
 					 * As a consequence, we CANNOT build an string with all
-					 * classpaths that contains source code for the project and
-					 * thus one only source code classpath can be analysed at a
-					 * given time.
+					 * classpaths that contains source code for the project and thus
+					 * one only source code classpath can be analysed at a given
+					 * time.
 					 * 
-					 * This seriously restricts the range of projects that can
-					 * be analysed with this tool.
+					 * This seriously restricts the range of projects that can be
+					 * analysed with this tool.
 					 */
 					StringBuilder libsPaths = new StringBuilder();
 					for (IClasspathEntry entry : classPathEntries) {
@@ -84,8 +86,7 @@ public class DoFeatureObliviousAnalysisOnClassPath extends AbstractHandler {
 							if (file.isAbsolute()) {
 								libsPaths.append(file.getAbsolutePath() + File.pathSeparator);
 							} else {
-								libsPaths.append(ResourcesPlugin.getWorkspace().getRoot().getFile(entry.getPath()).getLocation().toOSString()
-										+ File.pathSeparator);
+								libsPaths.append(ResourcesPlugin.getWorkspace().getRoot().getFile(entry.getPath()).getLocation().toOSString() + File.pathSeparator);
 							}
 						}
 					}
@@ -96,8 +97,9 @@ public class DoFeatureObliviousAnalysisOnClassPath extends AbstractHandler {
 					}
 				}
 				G.reset();
+				System.out.println("=============" + (i+1) + "/" + times + "=============");
 			}
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			e.printStackTrace();
 		} finally {
 			G.reset();
@@ -139,10 +141,6 @@ public class DoFeatureObliviousAnalysisOnClassPath extends AbstractHandler {
 		} else {
 			classPath = ResourcesPlugin.getWorkspace().getRoot().getFolder(entry.getPath()).getLocation().toOSString();
 		}
-
-		// #ifdef METRICS
-		long startJimplification = System.nanoTime();
-		// #endif
 
 		SootManager.configure(classPath + File.pathSeparator + libs);
 
@@ -187,16 +185,16 @@ public class DoFeatureObliviousAnalysisOnClassPath extends AbstractHandler {
 		}
 		Scene.v().loadNecessaryClasses();
 
-		// #ifdef METRICS
-		long endJimplification = System.nanoTime();
-		// #endif
+		Transform instrumentation = new Transform("jtp.fminst", FeatureModelInstrumentorTransformer.v(extracter, classPath));
+		PackManager.v().getPack("jtp").add(instrumentation);
 
-		Transform reachingDef = new Transform("jap.simplerd", WholeLineSimpleReachingDefinitionsAnalysis.v());
+		Transform reachingDef = new Transform("jap.simplerd", WholeLineObliviousReachingDefinitionsAnalysis.v());
 		PackManager.v().getPack("jap").add(reachingDef);
 
-		Transform uninitVars = new Transform("jap.simpleuv", WholeLineSimpleUninitializedVariablesAnalysis.v());
+		Transform uninitVars = new Transform("jap.simpleuv", WholeLineObliviousUninitializedVariablesAnalysis.v());
 		PackManager.v().getPack("jap").add(uninitVars);
 
+		//#ifdef METRICS
 		Transform assignmentsCounter = new Transform("jap.counter.assgnmt", AssignmentsCounter.v());
 		PackManager.v().getPack("jap").add(assignmentsCounter);
 
@@ -206,14 +204,20 @@ public class DoFeatureObliviousAnalysisOnClassPath extends AbstractHandler {
 		Transform localCounter = new Transform("jap.counter.local", LocalCounter.v());
 		PackManager.v().getPack("jap").add(localCounter);
 
+		Transform estimativeCounter = new Transform("jap.counter.estimative", FeatureObliviousEstimative.v());
+		PackManager.v().getPack("jap").add(estimativeCounter);
+		//#endif
+		
 		SootManager.runPacks(extracter);
 
-		double simpleRDTime = ((double) WholeLineSimpleReachingDefinitionsAnalysis.v().getAnalysesTime()) / 1000000;
-		double simpleUVTime = ((double) WholeLineSimpleUninitializedVariablesAnalysis.v().getAnalysesTime()) / 1000000;
-
-		DoFeatureObliviousAnalysisOnClassPath.jimplificationResults.add(((double) (endJimplification - startJimplification)) / 1000000);
+		//#ifdef METRICS
+		double simpleRDTime = ((double) FeatureObliviousEstimative.v().getRdTotal()) / 1000000;
+		double simpleUVTime = ((double) FeatureObliviousEstimative.v().getUvTotal()) / 1000000;
+		double jimplificationTime = ((double) FeatureObliviousEstimative.v().getJimplificationTotal()) / 1000000;
+		
 		DoFeatureObliviousAnalysisOnClassPath.simpleRDResults.add(simpleRDTime);
 		DoFeatureObliviousAnalysisOnClassPath.simpleUVResults.add(simpleUVTime);
+		DoFeatureObliviousAnalysisOnClassPath.jimplificationResults.add(jimplificationTime);
 		
 		assignmentsCount = AssignmentsCounter.v().getCount();
 		bodyCount = BodyCounter.v().getCount();
@@ -222,8 +226,8 @@ public class DoFeatureObliviousAnalysisOnClassPath extends AbstractHandler {
 		AssignmentsCounter.v().reset();
 		BodyCounter.v().reset();
 		LocalCounter.v().reset();
-		WholeLineSimpleReachingDefinitionsAnalysis.v().reset();
-		WholeLineSimpleUninitializedVariablesAnalysis.v().reset();
-
+		FeatureObliviousEstimative.v().reset();
+		//#endif
 	}
+
 }

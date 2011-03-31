@@ -1,7 +1,6 @@
 package br.ufal.cideei.handlers;
 
 import java.io.File;
-import java.io.IOException;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -32,11 +31,11 @@ import br.ufal.cideei.soot.analyses.wholeline.WholeLineRunnerReachingDefinitions
 import br.ufal.cideei.soot.analyses.wholeline.WholeLineRunnerUninitializedVariable;
 import br.ufal.cideei.soot.count.AssignmentsCounter;
 import br.ufal.cideei.soot.count.ColoredBodyCounter;
+import br.ufal.cideei.soot.count.FeatureSensitiveEstimative;
 import br.ufal.cideei.soot.count.LocalCounter;
 import br.ufal.cideei.soot.instrument.FeatureModelInstrumentorTransformer;
 import br.ufal.cideei.soot.instrument.LineNumberColorMapper;
 import br.ufal.cideei.util.ExecutionResultWrapper;
-import br.ufal.cideei.util.WriterFacadeForAnalysingMM;
 
 public class DoAnalysisOnClassPath extends AbstractHandler {
 	private static double totalRDRunnerTime;
@@ -60,12 +59,12 @@ public class DoAnalysisOnClassPath extends AbstractHandler {
 		try {
 			for (int i = 0; i < times; i++) {
 				// #ifdef METRICS
-				try {
-					WriterFacadeForAnalysingMM.renew();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+//				try {
+//					WriterFacadeForAnalysingMM.renew();
+//				} catch (IOException e) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//				}
 				// #endif
 
 				IStructuredSelection selection = (IStructuredSelection) HandlerUtil.getActiveMenuSelection(event);
@@ -121,19 +120,18 @@ public class DoAnalysisOnClassPath extends AbstractHandler {
 				}
 				G.reset();
 				System.out.println("=============" + (i+1) + "/" + times + "=============");
-				
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
 			G.reset();
 			// #ifdef METRICS
-			try {
-				WriterFacadeForAnalysingMM.close();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+//			try {
+//				WriterFacadeForAnalysingMM.close();
+//			} catch (IOException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
 			// #endif
 		}
 		String format = "|%1$-50s|%2$-80s|\n";
@@ -181,10 +179,6 @@ public class DoAnalysisOnClassPath extends AbstractHandler {
 			classPath = ResourcesPlugin.getWorkspace().getRoot().getFolder(entry.getPath()).getLocation().toOSString();
 		}
 
-		// #ifdef METRICS
-		long startJimplification = System.nanoTime();
-		// #endif
-
 		SootManager.configure(classPath + File.pathSeparator + libs);
 
 		IFeatureExtracter extracter = CIDEFeatureExtracterFactory.getInstance().newExtracter(javaProject);
@@ -228,10 +222,6 @@ public class DoAnalysisOnClassPath extends AbstractHandler {
 		}
 		Scene.v().loadNecessaryClasses();
 
-		// #ifdef METRICS
-		long endJimplification = System.nanoTime();
-		// #endif
-
 		Transform instrumentation = new Transform("jtp.fminst", FeatureModelInstrumentorTransformer.v(extracter, classPath));
 		PackManager.v().getPack("jtp").add(instrumentation);
 
@@ -256,30 +246,33 @@ public class DoAnalysisOnClassPath extends AbstractHandler {
 
 		Transform localCounter = new Transform("jap.counter.local", LocalCounter.v());
 		PackManager.v().getPack("jap").add(localCounter);
-
+		
+		Transform estimativeCounter = new Transform("jap.counter.estimative", FeatureSensitiveEstimative.v());
+		PackManager.v().getPack("jap").add(estimativeCounter);
 		// #endif
 
 		SootManager.runPacks(extracter);
 
 		// #ifdef METRICS
 		String format = "|%1$-50s|%2$-50s|\n";
-		double rdLiftedTime = ((double) WholeLineLiftedReachingDefinitions.v().getAnalysesTime()) / 1000000;
-		double rdRunnerTime = ((double) WholeLineRunnerReachingDefinitions.v().getAnalysesTime()) / 1000000;
-		double uvLiftedTime = ((double) WholeLineLiftedUninitializedVariableAnalysis.v().getAnalysesTime()) / 1000000;
-		double uvRunnerTime = ((double) WholeLineRunnerUninitializedVariable.v().getAnalysesTime()) / 1000000;
-		double instrumentationTime = ((double) FeatureModelInstrumentorTransformer.getTransformationTime()) / 1000000;
 		
+		double rdLiftedTime = ((double) FeatureSensitiveEstimative.v().getRdTotal2()) / 1000000;
+		double rdRunnerTime = ((double) FeatureSensitiveEstimative.v().getRdTotal()) / 1000000;
+		double uvLiftedTime = ((double) FeatureSensitiveEstimative.v().getUvTotal2()) / 1000000;
+		double uvRunnerTime = ((double) FeatureSensitiveEstimative.v().getUvTotal()) / 1000000;
+		double jimplificationTime = ((double) FeatureSensitiveEstimative.v().getJimplificationTotal()) / 1000000;
+		
+		double instrumentationTime = ((double) FeatureModelInstrumentorTransformer.getTransformationTime()) / 1000000;
 		double parsingTime = ((double) FeatureModelInstrumentorTransformer.getParsingTime()) / 1000000;
 		double colorLookupTableBuildingTime = ((double) FeatureModelInstrumentorTransformer.getColorLookupTableBuildingTime()) / 1000000;
 		double CIDEExtractingTime = ((double) LineNumberColorMapper.getExtractTime()) / 1000000;
 		
-
 		DoAnalysisOnClassPath.rdLiftedResults.add(rdLiftedTime);
 		DoAnalysisOnClassPath.rdRunnerResults.add(rdRunnerTime);
 		DoAnalysisOnClassPath.uvLiftedResults.add(uvLiftedTime);
 		DoAnalysisOnClassPath.uvRunnerResults.add(uvRunnerTime);
 		DoAnalysisOnClassPath.instrumentationResults.add(instrumentationTime);
-		DoAnalysisOnClassPath.jimplificationResults.add(((double) (endJimplification - startJimplification)) / 1000000);
+		DoAnalysisOnClassPath.jimplificationResults.add(jimplificationTime);
 		DoAnalysisOnClassPath.coloredBodyResults.add(ColoredBodyCounter.v().getCount());
 		DoAnalysisOnClassPath.parsingTimeResults.add(parsingTime);
 		DoAnalysisOnClassPath.colorLookupTableBuildingTimeResults.add(colorLookupTableBuildingTime);
@@ -289,36 +282,7 @@ public class DoAnalysisOnClassPath extends AbstractHandler {
 		DoAnalysisOnClassPath.totalUVRunnerTime += uvRunnerTime;
 		DoAnalysisOnClassPath.totalUVLiftedTime += uvLiftedTime;
 
-		// System.out.format(format, "[RD]runner took:", rdRunnerTime + "ms");
-		// System.out.format(format, "[RD]lifted took:", rdLiftedTime + "ms");
-		// System.out.format(format, "[RD]runner/lifted:",
-		// DoAnalysisOnClassPath.totalRDRunnerTime /
-		// DoAnalysisOnClassPath.totalRDLiftedTime);
-
-		long runnerFlowThroughCounter = FeatureSensitiveFowardFlowAnalysis.getFlowThroughCounter();
-		// System.out.format(format, "Runner no. of flowThroughs called: ",
-		// runnerFlowThroughCounter);
-		long liftedFlowThroughCounter = LiftedReachingDefinitions.getFlowThroughCounter();
-		// System.out.format(format, "Lifted no. of flowThroughs called: ",
-		// liftedFlowThroughCounter);
-
-		long totalBodies = FeatureModelInstrumentorTransformer.getTotalBodies();
-		long coloredBodies = FeatureModelInstrumentorTransformer.getTotalColoredBodies();
-
-		// System.out.format(format, "Total bodies: ", totalBodies);
-		// System.out.format(format, "Bodies with at least 1 ft.: ",
-		// coloredBodies);
-		// System.out.format(format, "Percentage: ", ((((double) coloredBodies)
-		// / ((double) (totalBodies))) * 100) + "%");
-		// System.out.format(format, "Total of assignments: ",
-		// AssignmentsCounter.v().getCounter());
-		// System.out.format(format, "Average assignments/bodies: ",
-		// AssignmentsCounter.v().getCounter() / totalBodies);
-
-		WholeLineLiftedReachingDefinitions.v().reset();
-		WholeLineRunnerReachingDefinitions.v().reset();
-		WholeLineRunnerUninitializedVariable.v().reset();
-		WholeLineLiftedUninitializedVariableAnalysis.v().reset();
+		FeatureSensitiveEstimative.v().reset();
 		FeatureModelInstrumentorTransformer.v().reset();
 		AssignmentsCounter.v().reset();
 		LocalCounter.v().reset();

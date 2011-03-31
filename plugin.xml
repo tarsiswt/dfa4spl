@@ -21,7 +21,7 @@
 			commandId="br.ufal.cideei.commands.DoAnalysisOnClassPath" name="Handler for DoAnalysisOnClassPath command">
 		</handler>
 		
-		<handler class="br.ufal.cideei.handlers.CopyOfDoFeatureObliviousAnalysisOnClassPath"
+		<handler class="br.ufal.cideei.handlers.DoFeatureObliviousAnalysisOnClassPath"
 			commandId="br.ufal.cideei.commands.DoFeatureObliviousAnalysisOnClassPath" name="Handler for DoFeatureObliviousAnalysisOnClassPath command">
 		</handler>
 	</extension>
