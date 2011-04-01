@@ -68,7 +68,7 @@ public class FeatureObliviousEstimative extends BodyTransformer {
 
 		// if contains color
 		if (size > 1) {
-			this.rdTotal += (numberOfConfigurations * rdAnalysisTime);
+			this.rdTotal += rdAnalysisTime;
 			this.uvTotal += (numberOfConfigurations * uvAnalysisTime);
 			this.jimplificationTotal += (numberOfConfigurations * jimplificationTime);
 			this.preprocessingTotal += (numberOfConfigurations * preprocessingTime);
@@ -84,21 +84,29 @@ public class FeatureObliviousEstimative extends BodyTransformer {
 			Sheet sheet = workBook.getSheet(sheetName + "-" + times);
 
 			Row methodRow = sheet.createRow(methodCount);
-			methodRow.createCell(this.CLASS_COL).setCellValue(body.getMethod().getDeclaringClass().getName());
-			methodRow.createCell(this.METHOD_COL).setCellValue(body.getMethod().getName());
+			methodRow.createCell(this.CLASS_COL).setCellValue(
+					body.getMethod().getDeclaringClass().getName());
+			methodRow.createCell(this.METHOD_COL).setCellValue(
+					body.getMethod().getName());
 			methodRow.createCell(this.CONFIGS_COL).setCellValue(size);
-			methodRow.createCell(this.UNITS_COL).setCellValue(body.getUnits().size());
+			methodRow.createCell(this.UNITS_COL).setCellValue(
+					body.getUnits().size());
 
 			if (size > 1) {
-				methodRow.createCell(this.RD_COL).setCellValue(numberOfConfigurations * rdAnalysisTime);
-				methodRow.createCell(this.UV_COL).setCellValue(numberOfConfigurations * uvAnalysisTime);
-				methodRow.createCell(this.PP_COL).setCellValue(numberOfConfigurations * preprocessingTime);
-				methodRow.createCell(this.JIMPLIFICATION_COL).setCellValue(numberOfConfigurations * jimplificationTime);
+				methodRow.createCell(this.RD_COL).setCellValue(rdAnalysisTime);
+				methodRow.createCell(this.UV_COL).setCellValue(
+						numberOfConfigurations * uvAnalysisTime);
+				methodRow.createCell(this.PP_COL).setCellValue(
+						numberOfConfigurations * preprocessingTime);
+				methodRow.createCell(this.JIMPLIFICATION_COL).setCellValue(
+						numberOfConfigurations * jimplificationTime);
 			} else {
 				methodRow.createCell(this.RD_COL).setCellValue(rdAnalysisTime);
 				methodRow.createCell(this.UV_COL).setCellValue(uvAnalysisTime);
-				methodRow.createCell(this.PP_COL).setCellValue(preprocessingTime);
-				methodRow.createCell(this.JIMPLIFICATION_COL).setCellValue(jimplificationTime);
+				methodRow.createCell(this.PP_COL).setCellValue(
+						preprocessingTime);
+				methodRow.createCell(this.JIMPLIFICATION_COL).setCellValue(
+						jimplificationTime);
 			}
 		}
 	}
@@ -131,7 +139,7 @@ public class FeatureObliviousEstimative extends BodyTransformer {
 	private void openMetricsFile() {
 		methodCount = 1;
 		workBook = new XSSFWorkbook();
-		
+
 		String workBookFilePath = "fo-metrics.xls";
 		File file = new File(workBookFilePath);
 		try {
@@ -140,15 +148,15 @@ public class FeatureObliviousEstimative extends BodyTransformer {
 			e.printStackTrace();
 		}
 	}
-	
+
 	private void createNewSheet() {
 		methodCount = 1;
 		times++;
-		
+
 		Sheet sheet = workBook.createSheet(sheetName + "-" + times);
-		
+
 		Row headerRow = sheet.createRow((short) 0);
-		
+
 		headerRow.createCell(this.CLASS_COL).setCellValue("Class");
 		headerRow.createCell(this.METHOD_COL).setCellValue("Method");
 		headerRow.createCell(this.CONFIGS_COL).setCellValue("No. Configs");
@@ -158,7 +166,7 @@ public class FeatureObliviousEstimative extends BodyTransformer {
 		headerRow.createCell(this.JIMPLIFICATION_COL).setCellValue("j12n");
 		headerRow.createCell(this.UNITS_COL).setCellValue("Units");
 	}
-	
+
 	public void closeMetricsFile() {
 		try {
 			workBook.write(fileOut);
