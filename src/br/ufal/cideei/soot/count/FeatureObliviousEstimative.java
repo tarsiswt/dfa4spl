@@ -6,7 +6,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Map;
 
-import org.apache.poi.ss.usermodel.CreationHelper;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -20,9 +19,15 @@ import br.ufal.cideei.soot.instrument.FeatureTag;
 public class FeatureObliviousEstimative extends BodyTransformer {
 
 	private static FeatureObliviousEstimative instance = null;
+
+	private long rdTotal = 0;
+	private long uvTotal = 0;
+	private long jimplificationTotal = 0;
+	private long preprocessingTotal = 0;
+
 	private Workbook workBook = null;
 	private FileOutputStream fileOut = null;
-	private String sheetName = "method-by-method metrics";
+	private String sheetName = "fo-metrics";
 	private final short CLASS_COL = 0;
 	private final short METHOD_COL = 1;
 	private final short CONFIGS_COL = 2;
@@ -30,12 +35,10 @@ public class FeatureObliviousEstimative extends BodyTransformer {
 	private final short UV_COL = 4;
 	private final short PP_COL = 5;
 	private final short JIMPLIFICATION_COL = 6;
+	private final short UNITS_COL = 7;
+
 	private int methodCount = 1;
-	
-	private long rdTotal = 0;
-	private long uvTotal = 0;
-	private long jimplificationTotal = 0;
-	private long preprocessingTotal = 0;
+	private int times = 0;
 
 	public static FeatureObliviousEstimative v() {
 		if (instance == null)
@@ -44,33 +47,8 @@ public class FeatureObliviousEstimative extends BodyTransformer {
 	}
 
 	private FeatureObliviousEstimative() {
-		init();
-	}
-	
-	protected void init() {
-		try {
-			methodCount = 1;
-			workBook = new XSSFWorkbook();
-			Sheet sheet = workBook.createSheet(sheetName);
-			String workBookFilePath = System.getProperty("java.home") + File.separator + "workbook.xlsx";
-			fileOut = new FileOutputStream(workBookFilePath);
-
-			// CreationHelper createHelper = workBook.getCreationHelper();
-			Row headerRow = sheet.createRow((short) 0);
-
-			headerRow.createCell(0).setCellValue("Class");
-			headerRow.createCell(1).setCellValue("Method");
-			headerRow.createCell(2).setCellValue("No. Configs");
-			headerRow.createCell(3).setCellValue("RD");
-			headerRow.createCell(4).setCellValue("UV");
-			headerRow.createCell(5).setCellValue("PP");
-			headerRow.createCell(6).setCellValue("j12n");
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		openMetricsFile();
+		createNewSheet();
 	}
 
 	@Override
@@ -86,33 +64,42 @@ public class FeatureObliviousEstimative extends BodyTransformer {
 		long jimplificationTime = profilingTag.getJimplificationTime();
 		long preprocessingTime = profilingTag.getPreprocessingTime();
 
+		long numberOfConfigurations = (long) (Math.log(size) / Math.log(2));
+
 		// if contains color
 		if (size > 1) {
-			long numberOfConfigurations = (long) (Math.log(size) / Math.log(2));
-
 			this.rdTotal += (numberOfConfigurations * rdAnalysisTime);
 			this.uvTotal += (numberOfConfigurations * uvAnalysisTime);
 			this.jimplificationTotal += (numberOfConfigurations * jimplificationTime);
 			this.preprocessingTotal += (numberOfConfigurations * preprocessingTime);
-
 		} else {
 			this.rdTotal += rdAnalysisTime;
 			this.uvTotal += uvAnalysisTime;
 			this.jimplificationTotal += jimplificationTime;
 			this.preprocessingTotal += preprocessingTime;
 		}
+
 		// write row to excel file
 		{
-			Sheet sheet = workBook.getSheet(sheetName);
+			Sheet sheet = workBook.getSheet(sheetName + "-" + times);
+
 			Row methodRow = sheet.createRow(methodCount);
-			methodRow.createCell(this.CLASS_COL);
-			methodRow.createCell(this.METHOD_COL);
-			methodRow.createCell(this.CONFIGS_COL);
-			methodRow.createCell(this.RD_COL);
-			methodRow.createCell(this.UV_COL);
-			methodRow.createCell(this.PP_COL);
-			methodRow.createCell(this.JIMPLIFICATION_COL);
-			
+			methodRow.createCell(this.CLASS_COL).setCellValue(body.getMethod().getDeclaringClass().getName());
+			methodRow.createCell(this.METHOD_COL).setCellValue(body.getMethod().getName());
+			methodRow.createCell(this.CONFIGS_COL).setCellValue(size);
+			methodRow.createCell(this.UNITS_COL).setCellValue(body.getUnits().size());
+
+			if (size > 1) {
+				methodRow.createCell(this.RD_COL).setCellValue(numberOfConfigurations * rdAnalysisTime);
+				methodRow.createCell(this.UV_COL).setCellValue(numberOfConfigurations * uvAnalysisTime);
+				methodRow.createCell(this.PP_COL).setCellValue(numberOfConfigurations * preprocessingTime);
+				methodRow.createCell(this.JIMPLIFICATION_COL).setCellValue(numberOfConfigurations * jimplificationTime);
+			} else {
+				methodRow.createCell(this.RD_COL).setCellValue(rdAnalysisTime);
+				methodRow.createCell(this.UV_COL).setCellValue(uvAnalysisTime);
+				methodRow.createCell(this.PP_COL).setCellValue(preprocessingTime);
+				methodRow.createCell(this.JIMPLIFICATION_COL).setCellValue(jimplificationTime);
+			}
 		}
 	}
 
@@ -137,12 +124,46 @@ public class FeatureObliviousEstimative extends BodyTransformer {
 		this.uvTotal = 0;
 		this.jimplificationTotal = 0;
 		this.preprocessingTotal = 0;
+
+		createNewSheet();
+	}
+
+	private void openMetricsFile() {
+		methodCount = 1;
+		workBook = new XSSFWorkbook();
+		
+		String workBookFilePath = "fo-metrics.xls";
+		File file = new File(workBookFilePath);
+		try {
+			fileOut = new FileOutputStream(file);
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private void createNewSheet() {
+		methodCount = 1;
+		times++;
+		
+		Sheet sheet = workBook.createSheet(sheetName + "-" + times);
+		
+		Row headerRow = sheet.createRow((short) 0);
+		
+		headerRow.createCell(this.CLASS_COL).setCellValue("Class");
+		headerRow.createCell(this.METHOD_COL).setCellValue("Method");
+		headerRow.createCell(this.CONFIGS_COL).setCellValue("No. Configs");
+		headerRow.createCell(this.RD_COL).setCellValue("RD");
+		headerRow.createCell(this.UV_COL).setCellValue("UV");
+		headerRow.createCell(this.PP_COL).setCellValue("PP");
+		headerRow.createCell(this.JIMPLIFICATION_COL).setCellValue("j12n");
+		headerRow.createCell(this.UNITS_COL).setCellValue("Units");
+	}
+	
+	public void closeMetricsFile() {
 		try {
 			workBook.write(fileOut);
 			fileOut.close();
-			init();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}

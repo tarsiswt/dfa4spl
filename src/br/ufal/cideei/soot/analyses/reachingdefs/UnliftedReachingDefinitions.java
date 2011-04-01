@@ -1,7 +1,10 @@
 package br.ufal.cideei.soot.analyses.reachingdefs;
 
+import java.io.ObjectOutputStream.PutField;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import soot.Unit;
@@ -15,32 +18,36 @@ import br.ufal.cideei.soot.instrument.FeatureTag;
 // TODO: Auto-generated Javadoc
 /**
  */
-public class UnliftedReachingDefinitions extends ForwardFlowAnalysis<Unit, FlowSet> {
+public class UnliftedReachingDefinitions extends
+		ForwardFlowAnalysis<Unit, FlowSet> {
 
 	/** The empty set. */
 	protected final Set<?> configuration;
-	
+//	protected Map<Collection<String>, Boolean> cache = new HashMap<Collection<String>, Boolean>();
+
 	private FlowSet emptySet = new ArraySparseSet();
 
 	private FlowSet newInitialFlowSet = new ArraySparseSet();
-	
+
 	private Set<Unit> unitBin = new HashSet<Unit>();
 
-	//#ifdef METRICS
+	// #ifdef METRICS
 	private static long flowThroughCounter = 0;
 
 	public static long getFlowThroughCounter() {
-		return flowThroughCounter;		
+		return flowThroughCounter;
 	}
-	
+
 	public static void reset() {
 		flowThroughCounter = 0;
 	}
-	//#endif
+
+	// #endif
 
 	/**
 	 */
-	public UnliftedReachingDefinitions(DirectedGraph<Unit> graph, Set<String> configuration) {
+	public UnliftedReachingDefinitions(DirectedGraph<Unit> graph,
+			Set<String> configuration) {
 		super(graph);
 		this.configuration = configuration;
 		super.doAnalysis();
@@ -96,19 +103,32 @@ public class UnliftedReachingDefinitions extends ForwardFlowAnalysis<Unit, FlowS
 	 */
 	@Override
 	protected void flowThrough(FlowSet source, Unit unit, FlowSet dest) {
-		//#ifdef METRICS
+		// #ifdef METRICS
 		flowThroughCounter++;
-		//#endif
-		
+		// #endif
+
 		FeatureTag<String> tag = (FeatureTag<String>) unit.getTag("FeatureTag");
 		Collection<String> features = tag.getFeatures();
+//		Boolean cacheResult = cache.get(features);
 
-		if (configuration.containsAll(features)) {
-			kill(source, unit, dest);
-			gen(dest, unit);
-		} else {
-			source.copy(dest);
-		}
+		// cache miss
+//		if (cacheResult == null) {
+			boolean containsAll = configuration.containsAll(features);
+//			cache.put(features, containsAll);
+			if (containsAll) {
+				kill(source, unit, dest);
+				gen(dest, unit);
+			} else {
+				source.copy(dest);
+			}
+//		} else
+//		// cache hit
+//		if (cacheResult) {
+//			kill(source, unit, dest);
+//			gen(dest, unit);
+//		} else {
+//			source.copy(dest);
+//		}
 	}
 
 	private void kill(FlowSet src, Unit unit, FlowSet dest) {
@@ -126,7 +146,7 @@ public class UnliftedReachingDefinitions extends ForwardFlowAnalysis<Unit, FlowS
 		}
 		src.difference(kills, dest);
 	}
-	
+
 	/**
 	 * Creates a GEN set for a given Unit and it to the FlowSet dest. In this
 	 * case, our GEN set are all the definitions present in the unit.

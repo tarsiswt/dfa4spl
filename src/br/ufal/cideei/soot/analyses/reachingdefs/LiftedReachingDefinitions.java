@@ -2,8 +2,10 @@ package br.ufal.cideei.soot.analyses.reachingdefs;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import soot.Unit;
@@ -19,7 +21,7 @@ import br.ufal.cideei.soot.instrument.FeatureTag;
 // TODO: Auto-generated Javadoc
 /**
  * This implementation of the Reaching Definitions analysis uses a LiftedFlowSet
- * as a lattice element. The only major change is how it's KILL method is
+ * as a lattice element. The only major change is how its KILL method is
  * implemented. Everything else is quite similar to a 'regular' FlowSet-based
  * analysis.
  */
@@ -93,6 +95,8 @@ public class LiftedReachingDefinitions extends ForwardFlowAnalysis<Unit, LiftedF
 		return new LiftedFlowSet<Collection<Set<String>>>(configurations);
 	}
 
+//	private Map<Set<String>, Boolean> cache = new HashMap<Set<String>, Boolean>();
+	
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -113,13 +117,20 @@ public class LiftedReachingDefinitions extends ForwardFlowAnalysis<Unit, LiftedF
 		FlowSet[] sourceLattices = source.getLattices();
 		FlowSet[] destLattices = dest.getLattices();
 
+		boolean contains;
 		for (int i = 0; i < configurations.length; i++) {
 
 			Set<String> configuration = configurations[i];
 			FlowSet sourceFlowSet = sourceLattices[i];
 			FlowSet destFlowSet = destLattices[i];
 
-			if (configuration.containsAll(features)) {
+//			if (cache.containsKey(configuration)) {
+//				contains = cache.get(configuration);
+//			} else {
+//				contains = configuration.containsAll(features);
+//				cache.put(configuration, contains);
+//			}
+			if (configuration.containsAll(features)) {	
 				kill(sourceFlowSet, unit, destFlowSet, configuration);
 				gen(sourceFlowSet, unit, destFlowSet, configuration);
 			} else {

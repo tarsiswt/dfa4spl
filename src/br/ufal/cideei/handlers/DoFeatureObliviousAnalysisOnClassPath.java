@@ -132,6 +132,9 @@ public class DoFeatureObliviousAnalysisOnClassPath extends AbstractHandler {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		
+		FeatureObliviousEstimative.v().closeMetricsFile();
+		
 		return null;
 	}
 

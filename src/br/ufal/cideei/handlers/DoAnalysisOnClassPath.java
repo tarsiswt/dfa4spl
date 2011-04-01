@@ -165,6 +165,9 @@ public class DoAnalysisOnClassPath extends AbstractHandler {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		
+		FeatureSensitiveEstimative.v().closeMetricsFile();
+		
 		return null;
 	}
 
