@@ -127,6 +127,7 @@ public class DoFeatureObliviousAnalysisOnClassPath extends AbstractHandler {
 			jimplificationResults = new ExecutionResultWrapper<Double>();
 			simpleRDResults = new ExecutionResultWrapper<Double>();
 			simpleUVResults = new ExecutionResultWrapper<Double>();
+			preprocessingResults  = new ExecutionResultWrapper<Double>();
 
 		} catch (Exception e) {
 			e.printStackTrace();
