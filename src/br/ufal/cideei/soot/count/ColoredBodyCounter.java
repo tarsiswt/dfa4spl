@@ -41,13 +41,13 @@ public class ColoredBodyCounter extends BodyTransformer implements ICounter<Long
 			coloredCounter++;
 		
 		// #ifdef METRICS
-		try {
-			WriterFacadeForAnalysingMM.write(WriterFacadeForAnalysingMM.NO_OF_FEATURES_COLUMN, Integer.toString(tag.getFeatures().size()));
-			WriterFacadeForAnalysingMM.write(WriterFacadeForAnalysingMM.FEAT_INT_COLUMN, "0");
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+//		try {
+//			WriterFacadeForAnalysingMM.write(WriterFacadeForAnalysingMM.NO_OF_FEATURES_COLUMN, Integer.toString(tag.getFeatures().size()));
+//			WriterFacadeForAnalysingMM.write(WriterFacadeForAnalysingMM.FEAT_INT_COLUMN, "0");
+//		} catch (IOException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
 		//#endif
 
 	}

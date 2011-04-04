@@ -54,12 +54,12 @@ public class AssignmentsCounter extends BodyTransformer implements ICounter<Long
 		}
 
 		// #ifdef METRICS
-		try {
-			WriterFacadeForAnalysingMM.write(WriterFacadeForAnalysingMM.ASSIGNMENT_COLUMN, Integer.toString(counterChunk));
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+//		try {
+//			WriterFacadeForAnalysingMM.write(WriterFacadeForAnalysingMM.ASSIGNMENT_COLUMN, Integer.toString(counterChunk));
+//		} catch (IOException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
 		// #endif
 		counter += counterChunk;
 	}

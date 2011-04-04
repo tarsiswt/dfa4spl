@@ -49,12 +49,12 @@ public class LocalCounter extends BodyTransformer implements ICounter<Long>, IRe
 			counter += counterChunk;
 			
 			// #ifdef METRICS
-			try {
-				WriterFacadeForAnalysingMM.write(WriterFacadeForAnalysingMM.LOCAL_COLUMN, Long.toString(counterChunk));
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+//			try {
+//				WriterFacadeForAnalysingMM.write(WriterFacadeForAnalysingMM.LOCAL_COLUMN, Long.toString(counterChunk));
+//			} catch (IOException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
 			// #endif
 		}
 	}
@@ -71,12 +71,12 @@ public class LocalCounter extends BodyTransformer implements ICounter<Long>, IRe
 		counter += counterChunk;
 		
 		// #ifdef METRICS
-		try {
-			WriterFacadeForAnalysingMM.write(WriterFacadeForAnalysingMM.LOCAL_COLUMN, Integer.toString(counterChunk));
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+//		try {
+//			WriterFacadeForAnalysingMM.write(WriterFacadeForAnalysingMM.LOCAL_COLUMN, Integer.toString(counterChunk));
+//		} catch (IOException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
 		// #endif
 
 	}

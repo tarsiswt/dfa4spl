@@ -95,8 +95,6 @@ public class LiftedReachingDefinitions extends ForwardFlowAnalysis<Unit, LiftedF
 		return new LiftedFlowSet<Collection<Set<String>>>(configurations);
 	}
 
-//	private Map<Set<String>, Boolean> cache = new HashMap<Set<String>, Boolean>();
-	
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -111,28 +109,25 @@ public class LiftedReachingDefinitions extends ForwardFlowAnalysis<Unit, LiftedF
 
 		FeatureTag<String> tag = (FeatureTag<String>) unit.getTag("FeatureTag");
 		Collection<String> features = tag.getFeatures();
+		int id = tag.getId();
 
 		Set<String>[] configurations = source.getConfigurations();
 
 		FlowSet[] sourceLattices = source.getLattices();
 		FlowSet[] destLattices = dest.getLattices();
 
-		boolean contains;
-		for (int i = 0; i < configurations.length; i++) {
+		for (int index = 0; index < sourceLattices.length; index++) {
+			FlowSet sourceFlowSet = sourceLattices[index];
+			FlowSet destFlowSet = destLattices[index];
 
-			Set<String> configuration = configurations[i];
-			FlowSet sourceFlowSet = sourceLattices[i];
-			FlowSet destFlowSet = destLattices[i];
-
-//			if (cache.containsKey(configuration)) {
-//				contains = cache.get(configuration);
-//			} else {
-//				contains = configuration.containsAll(features);
-//				cache.put(configuration, contains);
-//			}
-			if (configuration.containsAll(features)) {	
-				kill(sourceFlowSet, unit, destFlowSet, configuration);
-				gen(sourceFlowSet, unit, destFlowSet, configuration);
+			if ((id & index) == id) {
+				/*
+				 * TODO: a configuração não é mais a correta aqui. Estamos
+				 * usando de 0 .. (2^n)-1 para iterar sobre as possíveis
+				 * configurações, como pode ser visto no if acima.
+				 */
+				kill(sourceFlowSet, unit, destFlowSet, configurations[index]);
+				gen(sourceFlowSet, unit, destFlowSet, configurations[index]);
 			} else {
 				sourceFlowSet.copy(destFlowSet);
 			}
@@ -163,7 +158,7 @@ public class LiftedReachingDefinitions extends ForwardFlowAnalysis<Unit, LiftedF
 	 *            the dest
 	 * @param unit
 	 *            the unit
-	 * @param configuration 
+	 * @param configuration
 	 */
 	// TODO: MUST ITERATE THROUGH ALL DEFBOXES!!!
 	protected void gen(FlowSet source, Unit unit, FlowSet dest, Set<String> configuration) {

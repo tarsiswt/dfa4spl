@@ -18,12 +18,12 @@ import br.ufal.cideei.soot.instrument.FeatureTag;
 // TODO: Auto-generated Javadoc
 /**
  */
-public class UnliftedReachingDefinitions extends
-		ForwardFlowAnalysis<Unit, FlowSet> {
+public class UnliftedReachingDefinitions extends ForwardFlowAnalysis<Unit, FlowSet> {
 
 	/** The empty set. */
 	protected final Set<?> configuration;
-//	protected Map<Collection<String>, Boolean> cache = new HashMap<Collection<String>, Boolean>();
+	// protected Map<Collection<String>, Boolean> cache = new
+	// HashMap<Collection<String>, Boolean>();
 
 	private FlowSet emptySet = new ArraySparseSet();
 
@@ -46,8 +46,7 @@ public class UnliftedReachingDefinitions extends
 
 	/**
 	 */
-	public UnliftedReachingDefinitions(DirectedGraph<Unit> graph,
-			Set<String> configuration) {
+	public UnliftedReachingDefinitions(DirectedGraph<Unit> graph, Set<String> configuration) {
 		super(graph);
 		this.configuration = configuration;
 		super.doAnalysis();
@@ -109,26 +108,13 @@ public class UnliftedReachingDefinitions extends
 
 		FeatureTag<String> tag = (FeatureTag<String>) unit.getTag("FeatureTag");
 		Collection<String> features = tag.getFeatures();
-//		Boolean cacheResult = cache.get(features);
 
-		// cache miss
-//		if (cacheResult == null) {
-			boolean containsAll = configuration.containsAll(features);
-//			cache.put(features, containsAll);
-			if (containsAll) {
-				kill(source, unit, dest);
-				gen(dest, unit);
-			} else {
-				source.copy(dest);
-			}
-//		} else
-//		// cache hit
-//		if (cacheResult) {
-//			kill(source, unit, dest);
-//			gen(dest, unit);
-//		} else {
-//			source.copy(dest);
-//		}
+		if (configuration.containsAll(features)) {
+			kill(source, unit, dest);
+			gen(dest, unit);
+		} else {
+			source.copy(dest);
+		}
 	}
 
 	private void kill(FlowSet src, Unit unit, FlowSet dest) {
