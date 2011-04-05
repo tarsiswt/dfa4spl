@@ -29,7 +29,6 @@ import br.ufal.cideei.soot.count.AssignmentsCounter;
 import br.ufal.cideei.soot.count.BodyCounter;
 import br.ufal.cideei.soot.count.FeatureObliviousEstimative;
 import br.ufal.cideei.soot.count.LocalCounter;
-import br.ufal.cideei.soot.count.PreprocessingJimpleCode;
 import br.ufal.cideei.soot.instrument.FeatureModelInstrumentorTransformer;
 import br.ufal.cideei.util.ExecutionResultWrapper;
 
@@ -210,9 +209,6 @@ public class DoFeatureObliviousAnalysisOnClassPath extends AbstractHandler {
 
 		Transform localCounter = new Transform("jap.counter.local", LocalCounter.v());
 		PackManager.v().getPack("jap").add(localCounter);
-
-		Transform preprocessingCounter = new Transform("jap.counter.preprocessing", PreprocessingJimpleCode.v());
-		PackManager.v().getPack("jap").add(preprocessingCounter);
 		
 		Transform estimativeCounter = new Transform("jap.counter.estimative", FeatureObliviousEstimative.v());
 		PackManager.v().getPack("jap").add(estimativeCounter);
