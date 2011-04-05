@@ -1,7 +1,6 @@
+//#ifdef METRICS
 package br.ufal.cideei.soot.count;
 
-//#ifdef METRICS
-import java.io.IOException;
 import java.util.Map;
 
 import soot.Body;
@@ -11,7 +10,6 @@ import soot.PatchingChain;
 import soot.Unit;
 import soot.Value;
 import soot.jimple.AssignStmt;
-import br.ufal.cideei.util.WriterFacadeForAnalysingMM;
 
 public class AssignmentsCounter extends BodyTransformer implements ICounter<Long>, IResettable {
 
@@ -53,14 +51,6 @@ public class AssignmentsCounter extends BodyTransformer implements ICounter<Long
 			}
 		}
 
-		// #ifdef METRICS
-//		try {
-//			WriterFacadeForAnalysingMM.write(WriterFacadeForAnalysingMM.ASSIGNMENT_COLUMN, Integer.toString(counterChunk));
-//		} catch (IOException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-		// #endif
 		counter += counterChunk;
 	}
 

@@ -1,3 +1,4 @@
+//#ifdef METRICS
 package br.ufal.cideei.soot.count;
 
 import java.util.Map;
@@ -35,3 +36,4 @@ public class BodyCounter extends BodyTransformer implements ICounter<Long>, IRes
 		counter = 0;
 	}
 }
+//#endif

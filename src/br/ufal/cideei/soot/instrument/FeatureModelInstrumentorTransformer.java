@@ -1,7 +1,6 @@
 package br.ufal.cideei.soot.instrument;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -21,11 +20,9 @@ import soot.SootClass;
 import soot.Unit;
 import soot.tagkit.SourceFileTag;
 import soot.tagkit.SourceLnPosTag;
-import soot.tagkit.Tag;
 import br.ufal.cideei.features.IFeatureExtracter;
 import br.ufal.cideei.util.CachedICompilationUnitParser;
 import br.ufal.cideei.util.SetUtil;
-import br.ufal.cideei.util.WriterFacadeForAnalysingMM;
 
 /**
  * The Class FeatureModelInstrumentor is a Soot transformation for transcribing
@@ -94,14 +91,6 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 		preTransform(body);
 
 		// #ifdef METRICS
-		// try {
-		// WriterFacadeForAnalysingMM.write(WriterFacadeForAnalysingMM.METHOD_COLUMN,
-		// body.getMethod().toString());
-		// } catch (IOException e) {
-		// // TODO Auto-generated catch block
-		// e.printStackTrace();
-		// }
-
 		long startTransform = System.nanoTime();
 		// #endif
 		/*
@@ -147,30 +136,12 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 		long endTransform = System.nanoTime();
 		long delta = endTransform - startTransform;
 		FeatureModelInstrumentorTransformer.transformationTime += delta;
-
-		// try {
-		// WriterFacadeForAnalysingMM.write(WriterFacadeForAnalysingMM.INSTRUMENTATION_COLUMN,
-		// Double.toString(((double) delta) / 1000000));
-		// } catch (IOException e) {
-		// // TODO Auto-generated catch block
-		// e.printStackTrace();
-		// }
 		// #endif
-
+		
 		Set<Set<String>> localPowerSet = SetUtil.powerSet(allPresentFeatures);
 		FeatureTag<Set<String>> powerSetTag = new FeatureTag<Set<String>>();
 		powerSetTag.addAll(localPowerSet);
 		body.addTag(powerSetTag);
-
-		// #ifdef METRICS
-		// try {
-		// WriterFacadeForAnalysingMM.write(WriterFacadeForAnalysingMM.LOCAL_PSET_SIZE_COLUMN,
-		// Integer.toString(powerSetTag.size()));
-		// } catch (IOException e) {
-		// // TODO Auto-generated catch block
-		// e.printStackTrace();
-		// }
-		// #endif
 	}
 
 	/**
@@ -236,20 +207,6 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 		this.currentColorMap = cachedLineColorMapper.makeAccept(compilationUnit, file, extracter, compilationUnit);
 		long endBuilderColorLookUpTable = System.nanoTime();
 		FeatureModelInstrumentorTransformer.colorLookupTableBuildingTime += endBuilderColorLookUpTable - startBuilderColorLookUpTable;
-
-		// #ifdef METRICS
-		// try {
-		// WriterFacadeForAnalysingMM.write(WriterFacadeForAnalysingMM.INSTRUMENTATION_UNITTOASTNODE_COLUMN,
-		// Double.toString(((double) (endBuilderColorLookUpTable -
-		// startBuilderColorLookUpTable )/ 1000000)));
-		// WriterFacadeForAnalysingMM.write(WriterFacadeForAnalysingMM.INSTRUMENTATION_COMPILATIONUNIT_PARSING,
-		// Double.toString(((double) (endCompilationUnitParser -
-		// startCompilationUnitParser ) / 1000000)));
-		// } catch (IOException e) {
-		// // TODO Auto-generated catch block
-		// e.printStackTrace();
-		// }
-		// #endif
 
 		/*
 		 * The CIDE feature extractor depends on this object.

@@ -1,7 +1,6 @@
 package br.ufal.cideei.soot.analyses.uninitvars;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Set;
 
 import soot.Local;
@@ -42,7 +41,6 @@ public class LiftedUninitializedVariableAnalysis extends ForwardFlowAnalysis<Uni
 	public static void reset() {
 		flowThroughCounter = 0;
 	}
-
 	// #endif
 
 	/**
@@ -109,11 +107,6 @@ public class LiftedUninitializedVariableAnalysis extends ForwardFlowAnalysis<Uni
 	 */
 	@Override
 	protected LiftedFlowSet entryInitialFlow() {
-		// return new LiftedFlowSet<Collection<Set<String>>>(configurations);
-		// List<FlowSet> lattices = this.emptySet.getLattices();
-		// LiftedFlowSet<Collection<Set<String>>> liftedFlowSet = new
-		// LiftedFlowSet<Collection<Set<String>>>(configurations);
-		// liftedFlowSet.
 		return this.allLocals.clone();
 	}
 
@@ -124,7 +117,6 @@ public class LiftedUninitializedVariableAnalysis extends ForwardFlowAnalysis<Uni
 	 */
 	@Override
 	protected LiftedFlowSet newInitialFlow() {
-		// return new LiftedFlowSet<Collection<Set<String>>>(configurations);
 		return this.allLocals.clone();
 	}
 
@@ -141,20 +133,19 @@ public class LiftedUninitializedVariableAnalysis extends ForwardFlowAnalysis<Uni
 		// #endif
 
 		FeatureTag<String> tag = (FeatureTag<String>) unit.getTag("FeatureTag");
-		Collection<String> features = tag.getFeatures();
+		int id = tag.getId();
 
 		Set<String>[] configurations = source.getConfigurations();
 
 		FlowSet[] sourceLattices = source.getLattices();
 		FlowSet[] destLattices = dest.getLattices();
 
-		for (int i = 0; i < configurations.length; i++) {
+		for (int index = 0; index < configurations.length; index++) {
 
-			Set<String> configuration = configurations[i];
-			FlowSet sourceFlowSet = sourceLattices[i];
-			FlowSet destFlowSet = destLattices[i];
+			FlowSet sourceFlowSet = sourceLattices[index];
+			FlowSet destFlowSet = destLattices[index];
 
-			if (configuration.containsAll(features)) {
+			if ((id & index) == id) {
 				kill(sourceFlowSet, unit, destFlowSet);
 			} else {
 				sourceFlowSet.copy(destFlowSet);

@@ -1,15 +1,12 @@
 package br.ufal.cideei.soot.instrument;
 
 import java.util.AbstractSet;
-import java.util.BitSet;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 import soot.tagkit.AttributeValueException;
 import soot.tagkit.Tag;
@@ -29,8 +26,6 @@ public class FeatureTag<E> extends AbstractSet<E> implements Tag {
 
 	/** The features are kept in this list */
 	private Set<E> features = new HashSet<E>();
-
-	private BitSet bits;
 
 	private Integer Id = 0;
 

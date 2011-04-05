@@ -1,3 +1,4 @@
+//#ifdef METRICS
 package br.ufal.cideei.soot.count;
 
 import java.io.File;
@@ -165,3 +166,4 @@ public class FeatureSensitiveEstimative extends BodyTransformer {
 	}
 	
 }
+//#endif

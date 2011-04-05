@@ -1,13 +1,12 @@
+//#ifdef METRICS
 package br.ufal.cideei.soot.count;
 
-import java.io.IOException;
 import java.util.Map;
 
 import soot.Body;
 import soot.BodyTransformer;
 import soot.Local;
 import soot.util.Chain;
-import br.ufal.cideei.util.WriterFacadeForAnalysingMM;
 
 public class LocalCounter extends BodyTransformer implements ICounter<Long>, IResettable {
 
@@ -47,15 +46,6 @@ public class LocalCounter extends BodyTransformer implements ICounter<Long>, IRe
 		} else {
 			long counterChunk = body.getLocalCount();
 			counter += counterChunk;
-			
-			// #ifdef METRICS
-//			try {
-//				WriterFacadeForAnalysingMM.write(WriterFacadeForAnalysingMM.LOCAL_COLUMN, Long.toString(counterChunk));
-//			} catch (IOException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}
-			// #endif
 		}
 	}
 
@@ -69,16 +59,6 @@ public class LocalCounter extends BodyTransformer implements ICounter<Long>, IRe
 			}
 		}
 		counter += counterChunk;
-		
-		// #ifdef METRICS
-//		try {
-//			WriterFacadeForAnalysingMM.write(WriterFacadeForAnalysingMM.LOCAL_COLUMN, Integer.toString(counterChunk));
-//		} catch (IOException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-		// #endif
-
 	}
 
 	@Override
@@ -87,3 +67,4 @@ public class LocalCounter extends BodyTransformer implements ICounter<Long>, IRe
 	}
 
 }
+//#endif

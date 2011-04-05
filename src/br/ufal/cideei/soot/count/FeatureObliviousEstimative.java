@@ -1,3 +1,4 @@
+//#ifdef METRICS
 package br.ufal.cideei.soot.count;
 
 import java.io.File;
@@ -66,17 +67,15 @@ public class FeatureObliviousEstimative extends BodyTransformer {
 
 		long numberOfConfigurations = (long) (Math.log(size) / Math.log(2));
 
+		this.rdTotal += rdAnalysisTime;
+		this.preprocessingTotal += preprocessingTime;
+		this.uvTotal += uvAnalysisTime;
+
 		// if contains color
 		if (size > 1) {
-			this.rdTotal += rdAnalysisTime;
-			this.uvTotal += (numberOfConfigurations * uvAnalysisTime);
 			this.jimplificationTotal += (numberOfConfigurations * jimplificationTime);
-			this.preprocessingTotal += (numberOfConfigurations * preprocessingTime);
 		} else {
-			this.rdTotal += rdAnalysisTime;
-			this.uvTotal += uvAnalysisTime;
 			this.jimplificationTotal += jimplificationTime;
-			this.preprocessingTotal += preprocessingTime;
 		}
 
 		// write row to excel file
@@ -177,3 +176,4 @@ public class FeatureObliviousEstimative extends BodyTransformer {
 	}
 
 }
+//#endif

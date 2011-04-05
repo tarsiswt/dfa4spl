@@ -1,12 +1,11 @@
+//#ifdef METRICS
 package br.ufal.cideei.soot.count;
 
-import java.io.IOException;
 import java.util.Map;
 
 import soot.Body;
 import soot.BodyTransformer;
 import br.ufal.cideei.soot.instrument.FeatureTag;
-import br.ufal.cideei.util.WriterFacadeForAnalysingMM;
 
 public class ColoredBodyCounter extends BodyTransformer implements ICounter<Long>, IResettable {
 
@@ -39,17 +38,6 @@ public class ColoredBodyCounter extends BodyTransformer implements ICounter<Long
 		FeatureTag tag = (FeatureTag) body.getTag("FeatureTag");
 		if (tag.getFeatures().size() > 1)
 			coloredCounter++;
-		
-		// #ifdef METRICS
-//		try {
-//			WriterFacadeForAnalysingMM.write(WriterFacadeForAnalysingMM.NO_OF_FEATURES_COLUMN, Integer.toString(tag.getFeatures().size()));
-//			WriterFacadeForAnalysingMM.write(WriterFacadeForAnalysingMM.FEAT_INT_COLUMN, "0");
-//		} catch (IOException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-		//#endif
-
 	}
 
 	@Override
@@ -62,3 +50,4 @@ public class ColoredBodyCounter extends BodyTransformer implements ICounter<Long
 		return "(colored) body count: " + coloredCounter +" of " + counter;
 	}
 }
+//#endif

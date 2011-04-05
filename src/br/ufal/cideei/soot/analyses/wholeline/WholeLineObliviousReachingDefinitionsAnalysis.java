@@ -12,9 +12,7 @@ import soot.PatchingChain;
 import soot.Unit;
 import soot.jimple.Jimple;
 import soot.jimple.JimpleBody;
-import soot.tagkit.Tag;
 import soot.toolkits.graph.BriefUnitGraph;
-import soot.toolkits.graph.DirectedGraph;
 import br.ufal.cideei.soot.analyses.reachingdefs.SimpleReachedDefinitionsAnalysis;
 import br.ufal.cideei.soot.instrument.FeatureTag;
 
@@ -33,14 +31,24 @@ public class WholeLineObliviousReachingDefinitionsAnalysis extends
 	@Override
 	protected void internalTransform(Body body, String phase, Map options) {
 
-		// #ifdef METRICS
-		long startAnalysis = System.nanoTime();
-		// #endif
-
+		long totalAnalysis = 0;
+		long totalPreprocessing = 0;
+		
+		long startAnalysis = 0;
+		long endAnalysis = 0;
+		
+		long startPreprocessing = 0;
+		long endPreprocessing = 0;
+		
 		FeatureTag featureTag = (FeatureTag) body.getTag("FeatureTag");
 		if (featureTag.size() > 1) {
 			Collection configs = featureTag.getFeatures();
 			for (Object object : configs) {
+				
+				// #ifdef METRICS
+				startPreprocessing = System.nanoTime();
+				//#endif
+				
 				Set<String> config = (Set<String>) object;
 				JimpleBody newBody = Jimple.v().newBody(body.getMethod());
 				newBody.importBodyContentsFrom(body);
@@ -62,19 +70,37 @@ public class WholeLineObliviousReachingDefinitionsAnalysis extends
 					continue;
 				}
 				BriefUnitGraph newBodyGraph = new BriefUnitGraph(newBody);
+				
+				// #ifdef METRICS
+				endPreprocessing = System.nanoTime();
+				totalPreprocessing += (endPreprocessing - startPreprocessing);
+				//#endif
+				
+				// #ifdef METRICS
+				startAnalysis = System.nanoTime();
+				// #endif
 				new SimpleReachedDefinitionsAnalysis(newBodyGraph);
-
+				// #ifdef METRICS
+				endAnalysis = System.nanoTime();
+				totalAnalysis += (endAnalysis - startAnalysis);
+				//#endif
 			}
 		} else {
 			BriefUnitGraph bodyGraph = new BriefUnitGraph(body);
+			// #ifdef METRICS
+			startAnalysis = System.nanoTime();
+			// #endif
 			new SimpleReachedDefinitionsAnalysis(bodyGraph);
+			// #ifdef METRICS
+			endAnalysis = System.nanoTime();
+			totalAnalysis = endAnalysis - startAnalysis;
+			//#endif
 		}
 
 		// #ifdef METRICS
-		long endAnalysis = System.nanoTime();
-
 		ProfilingTag profilingTag = (ProfilingTag) body.getTag("ProfilingTag");
-		profilingTag.setRdAnalysisTime(endAnalysis - startAnalysis);
+		profilingTag.setRdAnalysisTime(totalAnalysis);
+		profilingTag.setPreprocessingTime(totalPreprocessing);
 		// #endif
 	}
 

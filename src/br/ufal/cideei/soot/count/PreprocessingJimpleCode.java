@@ -1,3 +1,4 @@
+//#ifdef METRICS
 package br.ufal.cideei.soot.count;
 
 import java.util.Map;
@@ -62,3 +63,4 @@ public class PreprocessingJimpleCode extends BodyTransformer {
 	}
 
 }
+//#endif

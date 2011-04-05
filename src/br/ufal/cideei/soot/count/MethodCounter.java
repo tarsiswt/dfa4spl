@@ -1,3 +1,4 @@
+//#ifdef METRICS
 package br.ufal.cideei.soot.count;
 
 import java.util.Collection;
@@ -47,3 +48,4 @@ public class MethodCounter extends BodyTransformer implements ICounter<Integer>,
 		methodContainer.clear();
 	}
 }
+//#endif
