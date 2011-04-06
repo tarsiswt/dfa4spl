@@ -54,7 +54,6 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 	private static long transformationTime = 0;
 	private static long parsingTime = 0;
 	private static long colorLookupTableBuildingTime = 0;
-
 	// #endif
 
 	/**

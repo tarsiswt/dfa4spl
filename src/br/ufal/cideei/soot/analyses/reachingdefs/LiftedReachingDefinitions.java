@@ -15,7 +15,6 @@ import soot.toolkits.scalar.ForwardFlowAnalysis;
 import br.ufal.cideei.soot.analyses.LiftedFlowSet;
 import br.ufal.cideei.soot.instrument.FeatureTag;
 
-// TODO: Auto-generated Javadoc
 /**
  * This implementation of the Reaching Definitions analysis uses a LiftedFlowSet
  * as a lattice element. The only major change is how its KILL method is
@@ -106,8 +105,6 @@ public class LiftedReachingDefinitions extends ForwardFlowAnalysis<Unit, LiftedF
 		FeatureTag<String> tag = (FeatureTag<String>) unit.getTag("FeatureTag");
 		int id = tag.getId();
 
-		Set<String>[] configurations = source.getConfigurations();
-
 		FlowSet[] sourceLattices = source.getLattices();
 		FlowSet[] destLattices = dest.getLattices();
 
@@ -121,8 +118,8 @@ public class LiftedReachingDefinitions extends ForwardFlowAnalysis<Unit, LiftedF
 				 * usando de 0 .. (2^n)-1 para iterar sobre as possíveis
 				 * configurações, como pode ser visto no if acima.
 				 */
-				kill(sourceFlowSet, unit, destFlowSet, configurations[index]);
-				gen(sourceFlowSet, unit, destFlowSet, configurations[index]);
+				kill(sourceFlowSet, unit, destFlowSet, null);
+				gen(sourceFlowSet, unit, destFlowSet, null);
 			} else {
 				sourceFlowSet.copy(destFlowSet);
 			}

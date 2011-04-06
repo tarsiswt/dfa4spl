@@ -13,7 +13,7 @@ import soot.Unit;
 import soot.jimple.Jimple;
 import soot.jimple.JimpleBody;
 import soot.toolkits.graph.BriefUnitGraph;
-import br.ufal.cideei.soot.analyses.reachingdefs.SimpleReachedDefinitionsAnalysis;
+import br.ufal.cideei.soot.analyses.reachingdefs.SimpleReachingDefinitions;
 import br.ufal.cideei.soot.instrument.FeatureTag;
 
 public class WholeLineObliviousReachingDefinitionsAnalysis extends
@@ -42,6 +42,7 @@ public class WholeLineObliviousReachingDefinitionsAnalysis extends
 		
 		FeatureTag featureTag = (FeatureTag) body.getTag("FeatureTag");
 		if (featureTag.size() > 1) {
+
 			Collection configs = featureTag.getFeatures();
 			for (Object object : configs) {
 				
@@ -65,10 +66,11 @@ public class WholeLineObliviousReachingDefinitionsAnalysis extends
 						newBodyUnits.remove(unit);
 					}
 				}
-
+				
 				if (newBodyUnits.size() == 0){
 					continue;
 				}
+				
 				BriefUnitGraph newBodyGraph = new BriefUnitGraph(newBody);
 				
 				// #ifdef METRICS
@@ -79,7 +81,7 @@ public class WholeLineObliviousReachingDefinitionsAnalysis extends
 				// #ifdef METRICS
 				startAnalysis = System.nanoTime();
 				// #endif
-				new SimpleReachedDefinitionsAnalysis(newBodyGraph);
+				new SimpleReachingDefinitions(newBodyGraph);
 				// #ifdef METRICS
 				endAnalysis = System.nanoTime();
 				totalAnalysis += (endAnalysis - startAnalysis);
@@ -90,7 +92,7 @@ public class WholeLineObliviousReachingDefinitionsAnalysis extends
 			// #ifdef METRICS
 			startAnalysis = System.nanoTime();
 			// #endif
-			new SimpleReachedDefinitionsAnalysis(bodyGraph);
+			new SimpleReachingDefinitions(bodyGraph);
 			// #ifdef METRICS
 			endAnalysis = System.nanoTime();
 			totalAnalysis = endAnalysis - startAnalysis;

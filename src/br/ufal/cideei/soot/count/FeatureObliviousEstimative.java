@@ -68,8 +68,8 @@ public class FeatureObliviousEstimative extends BodyTransformer {
 		long numberOfConfigurations = (long) (Math.log(size) / Math.log(2));
 
 		this.rdTotal += rdAnalysisTime;
-		this.preprocessingTotal += preprocessingTime;
 		this.uvTotal += uvAnalysisTime;
+		this.preprocessingTotal += preprocessingTime;
 
 		// if contains color
 		if (size > 1) {
@@ -83,29 +83,19 @@ public class FeatureObliviousEstimative extends BodyTransformer {
 			Sheet sheet = workBook.getSheet(sheetName + "-" + times);
 
 			Row methodRow = sheet.createRow(methodCount);
-			methodRow.createCell(this.CLASS_COL).setCellValue(
-					body.getMethod().getDeclaringClass().getName());
-			methodRow.createCell(this.METHOD_COL).setCellValue(
-					body.getMethod().getName());
+			methodRow.createCell(this.CLASS_COL).setCellValue(body.getMethod().getDeclaringClass().getName());
+			methodRow.createCell(this.METHOD_COL).setCellValue(body.getMethod().getName());
 			methodRow.createCell(this.CONFIGS_COL).setCellValue(size);
-			methodRow.createCell(this.UNITS_COL).setCellValue(
-					body.getUnits().size());
+			methodRow.createCell(this.UNITS_COL).setCellValue(body.getUnits().size());
 
+			methodRow.createCell(this.RD_COL).setCellValue(rdAnalysisTime);
+			methodRow.createCell(this.UV_COL).setCellValue(uvAnalysisTime);
+			methodRow.createCell(this.PP_COL).setCellValue(preprocessingTime);
+			
 			if (size > 1) {
-				methodRow.createCell(this.RD_COL).setCellValue(rdAnalysisTime);
-				methodRow.createCell(this.UV_COL).setCellValue(
-						numberOfConfigurations * uvAnalysisTime);
-				methodRow.createCell(this.PP_COL).setCellValue(
-						numberOfConfigurations * preprocessingTime);
-				methodRow.createCell(this.JIMPLIFICATION_COL).setCellValue(
-						numberOfConfigurations * jimplificationTime);
+				methodRow.createCell(this.JIMPLIFICATION_COL).setCellValue(numberOfConfigurations * jimplificationTime);
 			} else {
-				methodRow.createCell(this.RD_COL).setCellValue(rdAnalysisTime);
-				methodRow.createCell(this.UV_COL).setCellValue(uvAnalysisTime);
-				methodRow.createCell(this.PP_COL).setCellValue(
-						preprocessingTime);
-				methodRow.createCell(this.JIMPLIFICATION_COL).setCellValue(
-						jimplificationTime);
+				methodRow.createCell(this.JIMPLIFICATION_COL).setCellValue(jimplificationTime);
 			}
 		}
 	}
