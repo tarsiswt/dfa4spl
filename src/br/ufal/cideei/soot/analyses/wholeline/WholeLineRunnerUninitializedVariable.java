@@ -30,8 +30,9 @@ public class WholeLineRunnerUninitializedVariable extends BodyTransformer {
 		long startAnalysis = System.nanoTime();
 		// #endif
 
-		for (Set<String> configuration : featureTag) {
-			new UnliftedUnitializedVariablesAnalysis(bodyGraph, configuration);
+		int numOfConfigurations = featureTag.size();
+		for (int index = 0;index < numOfConfigurations; index++) {
+			new UnliftedUnitializedVariablesAnalysis(bodyGraph, index);
 		}
 
 		// #ifdef METRICS

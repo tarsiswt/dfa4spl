@@ -35,6 +35,7 @@ public class LiftedReachingDefinitions extends ForwardFlowAnalysis<Unit, LiftedF
 	public static void reset() {
 		flowThroughCounter = 0;
 	}
+
 	// #endif
 
 	/**

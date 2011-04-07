@@ -1,9 +1,5 @@
 package br.ufal.cideei.soot.analyses.uninitvars;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
-
 import soot.Local;
 import soot.Unit;
 import soot.Value;
@@ -21,28 +17,33 @@ import br.ufal.cideei.soot.instrument.FeatureTag;
  */
 public class UnliftedUnitializedVariablesAnalysis extends ForwardFlowAnalysis<Unit, FlowSet> {
 
-	/** The empty set. */
-	protected final Set<?> configuration;
-	
-	private FlowSet allLocals = new ArraySparseSet();
+	private FlowSet allLocals;
 
-	//#ifdef METRICS
+	/** The empty set. */
+	private FlowSet emptySet;
+
+	private final int configurationId;
+
+	// #ifdef METRICS
 	private static long flowThroughCounter = 0;
 
 	public static long getFlowThroughCounter() {
-		return flowThroughCounter;		
+		return flowThroughCounter;
 	}
-	
+
 	public static void reset() {
 		flowThroughCounter = 0;
 	}
-	//#endif
+
+	// #endif
 
 	/**
 	 */
-	public UnliftedUnitializedVariablesAnalysis(DirectedGraph<Unit> graph, Set<String> configuration) {
+	public UnliftedUnitializedVariablesAnalysis(DirectedGraph<Unit> graph, final int configurationId) {
 		super(graph);
-		this.configuration = configuration;
+		this.configurationId = configurationId;
+		this.emptySet = new ArraySparseSet();
+		this.allLocals = new ArraySparseSet();
 		if (graph instanceof UnitGraph) {
 			UnitGraph ug = (UnitGraph) graph;
 
@@ -96,7 +97,7 @@ public class UnliftedUnitializedVariablesAnalysis extends ForwardFlowAnalysis<Un
 	 */
 	@Override
 	protected FlowSet newInitialFlow() {
-		return this.allLocals.clone();
+		return this.emptySet.clone();
 	}
 
 	/*
@@ -107,14 +108,14 @@ public class UnliftedUnitializedVariablesAnalysis extends ForwardFlowAnalysis<Un
 	 */
 	@Override
 	protected void flowThrough(FlowSet source, Unit unit, FlowSet dest) {
-		//#ifdef METRICS
+		// #ifdef METRICS
 		flowThroughCounter++;
-		//#endif
-		
-		FeatureTag<String> tag = (FeatureTag<String>) unit.getTag("FeatureTag");
-		Collection<String> features = tag.getFeatures();
+		// #endif
 
-		if (configuration.containsAll(features)) {
+		FeatureTag<String> tag = (FeatureTag<String>) unit.getTag("FeatureTag");
+		int featureTagId = tag.getId();
+
+		if ((featureTagId & configurationId) == featureTagId) {
 			kill(source, unit, dest);
 		} else {
 			source.copy(dest);

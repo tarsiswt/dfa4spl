@@ -5,6 +5,7 @@ import java.util.Set;
 
 import soot.Local;
 import soot.Unit;
+import soot.Value;
 import soot.jimple.AssignStmt;
 import soot.toolkits.graph.DirectedGraph;
 import soot.toolkits.graph.UnitGraph;
@@ -30,6 +31,7 @@ public class LiftedUninitializedVariableAnalysis extends ForwardFlowAnalysis<Uni
 	 */
 	private LiftedFlowSet allLocals;
 	private Collection<Set<String>> configurations;
+	private LiftedFlowSet emptySet;
 
 	// #ifdef METRICS
 	private static long flowThroughCounter = 0;
@@ -41,6 +43,7 @@ public class LiftedUninitializedVariableAnalysis extends ForwardFlowAnalysis<Uni
 	public static void reset() {
 		flowThroughCounter = 0;
 	}
+
 	// #endif
 
 	/**
@@ -55,19 +58,15 @@ public class LiftedUninitializedVariableAnalysis extends ForwardFlowAnalysis<Uni
 		super(graph);
 		this.configurations = configs;
 		this.allLocals = new LiftedFlowSet(configs);
-
+		this.emptySet = new LiftedFlowSet(configs);
 		if (graph instanceof UnitGraph) {
 			UnitGraph ug = (UnitGraph) graph;
 
 			Chain<Local> locals = ug.getBody().getLocals();
-
 			for (Object object : locals) {
 				Local local = (Local) object;
-
 				if (!local.getName().contains("$")) {
-
 					FlowSet[] lattices = this.allLocals.getLattices();
-
 					for (int i = 0; i < lattices.length; i++) {
 						FlowSet flowSet = lattices[i];
 						flowSet.add(local);
@@ -117,7 +116,7 @@ public class LiftedUninitializedVariableAnalysis extends ForwardFlowAnalysis<Uni
 	 */
 	@Override
 	protected LiftedFlowSet newInitialFlow() {
-		return this.allLocals.clone();
+		return this.emptySet.clone();
 	}
 
 	/*
@@ -157,13 +156,9 @@ public class LiftedUninitializedVariableAnalysis extends ForwardFlowAnalysis<Uni
 		FlowSet kills = new ArraySparseSet();
 		if (unit instanceof AssignStmt) {
 			AssignStmt assignStmt = (AssignStmt) unit;
-			for (Object declaredVariable : source.toList()) {
-				if (declaredVariable instanceof Local) {
-					Local local = (Local) declaredVariable;
-					if (local.equivTo(assignStmt.getLeftOp())) {
-						kills.add(local);
-					}
-				}
+			Value leftOp = assignStmt.getLeftOp();
+			if (leftOp instanceof Local) {
+				kills.add(leftOp);
 			}
 		}
 		source.difference(kills, dest);

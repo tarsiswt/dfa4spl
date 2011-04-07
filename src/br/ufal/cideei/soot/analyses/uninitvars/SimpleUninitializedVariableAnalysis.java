@@ -17,7 +17,8 @@ import soot.util.Chain;
 public class SimpleUninitializedVariableAnalysis extends ForwardFlowAnalysis<Unit, FlowSet> {
 
 	/** The empty set. */
-	private FlowSet emptySet = new ArraySparseSet();
+	private FlowSet allLocals;
+	private FlowSet emptySet;
 
 	/**
 	 * Instantiates a new feature sensitive reaching definitions.
@@ -29,6 +30,8 @@ public class SimpleUninitializedVariableAnalysis extends ForwardFlowAnalysis<Uni
 	 */
 	public SimpleUninitializedVariableAnalysis(DirectedGraph<Unit> graph) {
 		super(graph);
+		this.allLocals = new ArraySparseSet();
+		this.emptySet = new ArraySparseSet();
 		if (graph instanceof UnitGraph) {
 			UnitGraph ug = (UnitGraph) graph;
 
@@ -36,7 +39,7 @@ public class SimpleUninitializedVariableAnalysis extends ForwardFlowAnalysis<Uni
 			for (Object object : locals) {
 				Local local = (Local) object;
 				if (!local.getName().contains("$")) {
-					emptySet.add(local);
+					allLocals.add(local);
 				}
 			}
 		}
@@ -61,7 +64,7 @@ public class SimpleUninitializedVariableAnalysis extends ForwardFlowAnalysis<Uni
 	 */
 	@Override
 	protected FlowSet entryInitialFlow() {
-		return this.emptySet.clone();
+		return this.allLocals.clone();
 	}
 
 	/*

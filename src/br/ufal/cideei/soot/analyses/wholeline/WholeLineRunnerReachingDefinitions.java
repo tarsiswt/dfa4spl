@@ -30,8 +30,9 @@ public class WholeLineRunnerReachingDefinitions extends BodyTransformer {
 		long startAnalysis = System.nanoTime();
 		// #endif
 
-		for (Set<String> configuration : featureTag) {
-			new UnliftedReachingDefinitions(bodyGraph, configuration);
+		int numOfConfigurations = featureTag.size();
+		for (int index = 0;index < numOfConfigurations; index++) {
+			new UnliftedReachingDefinitions(bodyGraph, index);
 		}
 
 		// #ifdef METRICS
@@ -41,5 +42,4 @@ public class WholeLineRunnerReachingDefinitions extends BodyTransformer {
 		profilingTag.setRdAnalysisTime(endAnalysis - startAnalysis);
 		//#endif
 	}
-
 }

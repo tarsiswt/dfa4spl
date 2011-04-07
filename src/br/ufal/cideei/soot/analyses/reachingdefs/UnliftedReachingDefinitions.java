@@ -1,12 +1,5 @@
 package br.ufal.cideei.soot.analyses.reachingdefs;
 
-import java.io.ObjectOutputStream.PutField;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
 import soot.Unit;
 import soot.jimple.AssignStmt;
 import soot.toolkits.graph.DirectedGraph;
@@ -20,16 +13,10 @@ import br.ufal.cideei.soot.instrument.FeatureTag;
  */
 public class UnliftedReachingDefinitions extends ForwardFlowAnalysis<Unit, FlowSet> {
 
+	protected final int configurationId;
+
 	/** The empty set. */
-	protected final Set<?> configuration;
-	// protected Map<Collection<String>, Boolean> cache = new
-	// HashMap<Collection<String>, Boolean>();
-
 	private FlowSet emptySet = new ArraySparseSet();
-
-	private FlowSet newInitialFlowSet = new ArraySparseSet();
-
-	private Set<Unit> unitBin = new HashSet<Unit>();
 
 	// #ifdef METRICS
 	private static long flowThroughCounter = 0;
@@ -46,9 +33,9 @@ public class UnliftedReachingDefinitions extends ForwardFlowAnalysis<Unit, FlowS
 
 	/**
 	 */
-	public UnliftedReachingDefinitions(DirectedGraph<Unit> graph, Set<String> configuration) {
+	public UnliftedReachingDefinitions(DirectedGraph<Unit> graph, int configurationId) {
 		super(graph);
-		this.configuration = configuration;
+		this.configurationId = configurationId;
 		super.doAnalysis();
 	}
 
@@ -107,9 +94,9 @@ public class UnliftedReachingDefinitions extends ForwardFlowAnalysis<Unit, FlowS
 		// #endif
 
 		FeatureTag<String> tag = (FeatureTag<String>) unit.getTag("FeatureTag");
-		Collection<String> features = tag.getFeatures();
+		int tagFeaturesId = tag.getId();
 
-		if (configuration.containsAll(features)) {
+		if ((tagFeaturesId & this.configurationId) == tagFeaturesId) {
 			kill(source, unit, dest);
 			gen(dest, unit);
 		} else {
