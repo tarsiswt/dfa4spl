@@ -9,9 +9,6 @@ import soot.toolkits.scalar.ForwardFlowAnalysis;
 
 public class SimpleReachingDefinitions extends ForwardFlowAnalysis<Unit, FlowSet> {
 
-	/** The empty set. */
-	//private FlowSet emptySet;
-
 	/**
 	 * Instantiates a new simple reaching definitions.
 	 * 
@@ -20,7 +17,6 @@ public class SimpleReachingDefinitions extends ForwardFlowAnalysis<Unit, FlowSet
 	 */
 	public SimpleReachingDefinitions(DirectedGraph<Unit> graph) {
 		super(graph);
-		//this.emptySet = new ArraySparseSet();
 		super.doAnalysis();
 	}
 
@@ -53,7 +49,7 @@ public class SimpleReachingDefinitions extends ForwardFlowAnalysis<Unit, FlowSet
 	 */
 	@Override
 	protected FlowSet entryInitialFlow() {
-		return new ArraySparseSet();//this.emptySet.clone();
+		return new ArraySparseSet();
 	}
 
 	/*
@@ -63,7 +59,7 @@ public class SimpleReachingDefinitions extends ForwardFlowAnalysis<Unit, FlowSet
 	 */
 	@Override
 	protected FlowSet newInitialFlow() {
-		return new ArraySparseSet();//this.emptySet.clone();
+		return new ArraySparseSet();
 	}
 
 	/*
@@ -92,7 +88,6 @@ public class SimpleReachingDefinitions extends ForwardFlowAnalysis<Unit, FlowSet
 	 */
 	private void kill(FlowSet source, Unit unit, FlowSet dest) {
 		FlowSet kills = new ArraySparseSet(); 
-			//emptySet.clone();
 		if (unit instanceof AssignStmt) {
 			AssignStmt assignStmt = (AssignStmt) unit;
 			for (Object earlierAssignment : source.toList()) {

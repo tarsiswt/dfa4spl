@@ -65,15 +65,13 @@ public class FeatureObliviousEstimative extends BodyTransformer {
 		long jimplificationTime = profilingTag.getJimplificationTime();
 		long preprocessingTime = profilingTag.getPreprocessingTime();
 
-		long numberOfConfigurations = (long) (Math.log(size) / Math.log(2));
-
 		this.rdTotal += rdAnalysisTime;
 		this.uvTotal += uvAnalysisTime;
 		this.preprocessingTotal += preprocessingTime;
 
 		// if contains color
 		if (size > 1) {
-			this.jimplificationTotal += (numberOfConfigurations * jimplificationTime);
+			this.jimplificationTotal += (size * jimplificationTime);
 		} else {
 			this.jimplificationTotal += jimplificationTime;
 		}
@@ -93,7 +91,7 @@ public class FeatureObliviousEstimative extends BodyTransformer {
 			methodRow.createCell(this.PP_COL).setCellValue(preprocessingTime);
 			
 			if (size > 1) {
-				methodRow.createCell(this.JIMPLIFICATION_COL).setCellValue(numberOfConfigurations * jimplificationTime);
+				methodRow.createCell(this.JIMPLIFICATION_COL).setCellValue(size * jimplificationTime);
 			} else {
 				methodRow.createCell(this.JIMPLIFICATION_COL).setCellValue(jimplificationTime);
 			}

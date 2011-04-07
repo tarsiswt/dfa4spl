@@ -98,7 +98,7 @@ public class WholeLineObliviousUninitializedVariablesAnalysis extends BodyTransf
 		// #ifdef METRICS
 		ProfilingTag profilingTag = (ProfilingTag) body.getTag("ProfilingTag");
 		profilingTag.setUvAnalysisTime(totalAnalysis);
-		profilingTag.setPreprocessingTime(totalPreprocessing);
+//		profilingTag.setPreprocessingTime(totalPreprocessing);
 		// #endif
 	}
 }
