@@ -16,8 +16,7 @@ import soot.toolkits.graph.BriefUnitGraph;
 import br.ufal.cideei.soot.analyses.reachingdefs.SimpleReachingDefinitions;
 import br.ufal.cideei.soot.instrument.FeatureTag;
 
-public class WholeLineObliviousReachingDefinitionsAnalysis extends
-		BodyTransformer {
+public class WholeLineObliviousReachingDefinitionsAnalysis extends BodyTransformer {
 
 	private static WholeLineObliviousReachingDefinitionsAnalysis instance = new WholeLineObliviousReachingDefinitionsAnalysis();
 
@@ -30,54 +29,54 @@ public class WholeLineObliviousReachingDefinitionsAnalysis extends
 
 	@Override
 	protected void internalTransform(Body body, String phase, Map options) {
-
 		long totalAnalysis = 0;
-		long totalPreprocessing = 0;
-		
+
 		long startAnalysis = 0;
 		long endAnalysis = 0;
-		
-		long startPreprocessing = 0;
-		long endPreprocessing = 0;
-		
-		FeatureTag featureTag = (FeatureTag) body.getTag("FeatureTag");
-		if (featureTag.size() > 1) {
 
+		FeatureTag featureTag = (FeatureTag) body.getTag("FeatureTag");
+
+		int maximumBodySize = 0;
+		int minimalBodySize = 0;
+
+		if (featureTag.size() > 1) {
 			Collection configs = featureTag.getFeatures();
 			for (Object object : configs) {
-				
-				// #ifdef METRICS
-				startPreprocessing = System.nanoTime();
-				//#endif
-				
+
 				Set<String> config = (Set<String>) object;
+
 				JimpleBody newBody = Jimple.v().newBody(body.getMethod());
 				newBody.importBodyContentsFrom(body);
 
 				PatchingChain<Unit> newBodyUnits = newBody.getUnits();
-				Iterator<Unit> snapshotIterator = newBodyUnits
-						.snapshotIterator();
+				Iterator<Unit> snapshotIterator = newBodyUnits.snapshotIterator();
 
 				while (snapshotIterator.hasNext()) {
 					Unit unit = (Unit) snapshotIterator.next();
-					FeatureTag unitFeatureTag = (FeatureTag) unit
-							.getTag("FeatureTag");
+					FeatureTag unitFeatureTag = (FeatureTag) unit.getTag("FeatureTag");
 					if (!unitFeatureTag.belongsToConfiguration(config)) {
 						newBodyUnits.remove(unit);
 					}
 				}
-				
-				if (newBodyUnits.size() == 0){
+
+				/*
+				 * If the body size is 0, then cannot continue. Store maximum
+				 * and minimal size.
+				 */
+				int newBodySize = newBodyUnits.size();
+				if (newBodySize == 0) {
 					continue;
+				} else {
+					if (newBodySize > maximumBodySize) {
+						maximumBodySize = newBodySize;
+					}
+					if (newBodySize < minimalBodySize) {
+						minimalBodySize = newBodySize;
+					}
 				}
-				
+
 				BriefUnitGraph newBodyGraph = new BriefUnitGraph(newBody);
-				
-				// #ifdef METRICS
-				endPreprocessing = System.nanoTime();
-				totalPreprocessing += (endPreprocessing - startPreprocessing);
-				//#endif
-				
+
 				// #ifdef METRICS
 				startAnalysis = System.nanoTime();
 				// #endif
@@ -85,7 +84,7 @@ public class WholeLineObliviousReachingDefinitionsAnalysis extends
 				// #ifdef METRICS
 				endAnalysis = System.nanoTime();
 				totalAnalysis += (endAnalysis - startAnalysis);
-				//#endif
+				// #endif
 			}
 		} else {
 			BriefUnitGraph bodyGraph = new BriefUnitGraph(body);
@@ -96,14 +95,17 @@ public class WholeLineObliviousReachingDefinitionsAnalysis extends
 			// #ifdef METRICS
 			endAnalysis = System.nanoTime();
 			totalAnalysis = endAnalysis - startAnalysis;
-			//#endif
+			// #endif
 		}
 
 		// #ifdef METRICS
 		ProfilingTag profilingTag = (ProfilingTag) body.getTag("ProfilingTag");
 		profilingTag.setRdAnalysisTime(totalAnalysis);
-		profilingTag.setPreprocessingTime(totalPreprocessing);
+		profilingTag.setPreprocessingTime(0);
+		
+		// minimal = (minSize* maxTime)/maxSize 
+		double minimalProportionalJimplificationTime = (minimalBodySize * profilingTag.getJimplificationTime())/maximumBodySize;
+		profilingTag.setJimplificationTime((profilingTag.getJimplificationTime() + Math.round(minimalProportionalJimplificationTime))/2);			
 		// #endif
 	}
-
 }
