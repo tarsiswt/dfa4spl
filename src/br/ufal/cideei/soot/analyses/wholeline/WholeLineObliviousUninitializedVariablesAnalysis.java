@@ -102,9 +102,11 @@ public class WholeLineObliviousUninitializedVariablesAnalysis extends BodyTransf
 		profilingTag.setUvAnalysisTime(totalAnalysis);
 		profilingTag.setPreprocessingTime(0);
 		
-		// minimal = (minSize* maxTime)/maxSize 
-		double minimalProportionalJimplificationTime = (minimalBodySize * profilingTag.getJimplificationTime())/maximumBodySize;
-		profilingTag.setJimplificationTime((profilingTag.getJimplificationTime() + Math.round(minimalProportionalJimplificationTime))/2);
+		// minimal = (minSize* maxTime)/maxSize
+		if (minimalBodySize != 0 && maximumBodySize != 0) {
+			double minimalProportionalJimplificationTime = (minimalBodySize * profilingTag.getJimplificationTime())/maximumBodySize;
+			profilingTag.setJimplificationTime((profilingTag.getJimplificationTime() + Math.round(minimalProportionalJimplificationTime))/2);
+		}
 		// #endif
 	}
 }
