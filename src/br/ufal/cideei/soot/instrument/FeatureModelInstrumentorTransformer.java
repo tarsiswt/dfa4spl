@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.collections.bidimap.DualHashBidiMap;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
@@ -123,7 +124,7 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 					allPresentFeatures.addAll(nextUnitColors);
 					FeatureTag<String> featureTag = new FeatureTag<String>();
 					featureTag.setFeatures(nextUnitColors);
-					featureTag.setRelativeMaster(allPresentFeaturesId);
+					featureTag.generateId(allPresentFeaturesId);
 					nextUnit.addTag(featureTag);
 				} else {
 					nextUnit.addTag(emptyFeatureTag);
@@ -140,6 +141,7 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 		Set<Set<String>> localPowerSet = SetUtil.powerSet(allPresentFeatures);
 		FeatureTag<Set<String>> powerSetTag = new FeatureTag<Set<String>>();
 		powerSetTag.addAll(localPowerSet);
+		powerSetTag.setFeatureIdMap(new DualHashBidiMap(allPresentFeaturesId));
 		body.addTag(powerSetTag);
 	}
 

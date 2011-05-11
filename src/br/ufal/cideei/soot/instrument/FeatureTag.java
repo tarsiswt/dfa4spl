@@ -1,12 +1,16 @@
 package br.ufal.cideei.soot.instrument;
 
 import java.util.AbstractSet;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.apache.commons.collections.BidiMap;
 
 import soot.tagkit.AttributeValueException;
 import soot.tagkit.Tag;
@@ -27,7 +31,9 @@ public class FeatureTag<E> extends AbstractSet<E> implements Tag {
 	/** The features are kept in this list */
 	private Set<E> features = new HashSet<E>();
 
-	private Integer Id = 0;
+	private Integer Id = -1;
+
+	private BidiMap atoms;
 
 	public int getId() {
 		return Id;
@@ -38,6 +44,7 @@ public class FeatureTag<E> extends AbstractSet<E> implements Tag {
 	static {
 		emptyTag = new FeatureTag();
 		emptyTag.features = Collections.emptySet();
+		emptyTag.Id = 0;
 	}
 
 	public static <E> FeatureTag<E> emptyFeatureTag() {
@@ -135,12 +142,33 @@ public class FeatureTag<E> extends AbstractSet<E> implements Tag {
 	/**
 	 * Gera o identificador baseado no superconjunto.
 	 */
-	public void setRelativeMaster(Map<E, Integer> atoms) {
+	public void generateId(Map<E, Integer> atoms) {
+		this.Id = 0;
 		for (E element : this.features) {
 			Integer featId = atoms.get(element);
 			if (featId != null) {
 				this.Id += featId;
 			}
 		}
+	}
+
+	public void setFeatureIdMap(BidiMap atoms) {
+		this.atoms = atoms;
+	}
+
+	public Set<E> getConfigurationForId(Integer id) {
+		Set<E> configuration = new HashSet<E>();
+		List<Integer> elements = new ArrayList<Integer>();
+		int highestOneBit = Integer.highestOneBit(id);
+		configuration.add((E) atoms.getKey(id));
+		elements.add(highestOneBit);
+		int tmp = id - highestOneBit;
+		while (tmp >= 1) {
+			highestOneBit = Integer.highestOneBit(tmp);
+			tmp -= highestOneBit;
+			configuration.add((E) atoms.getKey(id));
+			elements.add(highestOneBit);
+		}
+		return configuration;
 	}
 }
