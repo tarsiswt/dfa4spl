@@ -55,6 +55,7 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 	private static long transformationTime = 0;
 	private static long parsingTime = 0;
 	private static long colorLookupTableBuildingTime = 0;
+
 	// #endif
 
 	/**
@@ -98,8 +99,27 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 		 * FeatureTag to each of them, and also compute all the colors found in
 		 * the whole body. Units with no colors receive an empty FeatureTag.
 		 */
+
 		Iterator<Unit> unitIt = body.getUnits().iterator();
+
+		/*
+		 * After the following loop, allPresentFeatures will hold all the colors
+		 * found in the body.
+		 */
 		Set<String> allPresentFeatures = new HashSet<String>();
+
+		/*
+		 * The set of features are represented as bits, for a more compact
+		 * representation. The mapping between a feature and it's ID is stored
+		 * in the FeatureTag of the body.
+		 * 
+		 * This is necessary so that clients, such as r.d. analysis, can safely
+		 * iterate over all configurations without explicitly invoking Set
+		 * operations like containsAll();
+		 * 
+		 * TODO: check redundancy between allPresentFeatures &
+		 * allPresentFeaturesId
+		 */
 		Map<String, Integer> allPresentFeaturesId = new HashMap<String, Integer>();
 		FeatureTag<Set<String>> emptyFeatureTag = FeatureTag.<Set<String>> emptyFeatureTag();
 
@@ -120,8 +140,15 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 							idGen = idGen << 1;
 						}
 					}
-
+					/*
+					 * increment local powerset with freshly found colors.
+					 */
 					allPresentFeatures.addAll(nextUnitColors);
+
+					/*
+					 * creates a FeatureTag, generate it's ID, and assign it to
+					 * the corresponding Unit.
+					 */
 					FeatureTag<String> featureTag = new FeatureTag<String>();
 					featureTag.setFeatures(nextUnitColors);
 					featureTag.generateId(allPresentFeaturesId);
@@ -137,11 +164,12 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 		long delta = endTransform - startTransform;
 		FeatureModelInstrumentorTransformer.transformationTime += delta;
 		// #endif
-		
+
 		Set<Set<String>> localPowerSet = SetUtil.powerSet(allPresentFeatures);
 		FeatureTag<Set<String>> powerSetTag = new FeatureTag<Set<String>>();
 		powerSetTag.addAll(localPowerSet);
-		powerSetTag.setFeatureIdMap(new DualHashBidiMap(allPresentFeaturesId));
+		DualHashBidiMap dualHashBidiMap = new DualHashBidiMap(allPresentFeaturesId);
+		powerSetTag.setFeatureIdMap(new DualHashBidiMap(dualHashBidiMap));
 		body.addTag(powerSetTag);
 	}
 
@@ -189,7 +217,7 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 
 		/*
 		 * XXX String#replaceAll bugs when replacing "special" chars like
-		 * File.separator. The Matcher and Patter composes a workaround for
+		 * File.separator. The Matcher and Pattern composes a workaround for
 		 * that.
 		 */
 		absolutePath = absolutePath.replaceAll(Pattern.quote("."), Matcher.quoteReplacement(File.separator));

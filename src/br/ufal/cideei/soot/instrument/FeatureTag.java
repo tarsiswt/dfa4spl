@@ -39,11 +39,11 @@ public class FeatureTag<E> extends AbstractSet<E> implements Tag {
 		return Id;
 	}
 
-	private static FeatureTag emptyTag = null;
+	private static final FeatureTag emptyTag = new FeatureTag();
 
 	static {
-		emptyTag = new FeatureTag();
-		emptyTag.features = Collections.emptySet();
+//		emptyTag = new FeatureTag();
+		emptyTag.features = Collections.unmodifiableSet(Collections.emptySet());
 		emptyTag.Id = 0;
 	}
 
@@ -140,7 +140,8 @@ public class FeatureTag<E> extends AbstractSet<E> implements Tag {
 	}
 
 	/**
-	 * Gera o identificador baseado no superconjunto.
+	 * Gera o identificador para esta Tag baseado no superconjunto. Não utilizar
+	 * quando a esta Tag diz respeito a um Body.
 	 */
 	public void generateId(Map<E, Integer> atoms) {
 		this.Id = 0;
@@ -156,18 +157,21 @@ public class FeatureTag<E> extends AbstractSet<E> implements Tag {
 		this.atoms = atoms;
 	}
 
+	/**
+	 * Para um dado ID, retorna o conjunto de Features.
+	 * 
+	 * @param id
+	 * @return
+	 */
 	public Set<E> getConfigurationForId(Integer id) {
 		Set<E> configuration = new HashSet<E>();
-		List<Integer> elements = new ArrayList<Integer>();
 		int highestOneBit = Integer.highestOneBit(id);
-		configuration.add((E) atoms.getKey(id));
-		elements.add(highestOneBit);
+		configuration.add((E) atoms.getKey(highestOneBit));
 		int tmp = id - highestOneBit;
 		while (tmp >= 1) {
 			highestOneBit = Integer.highestOneBit(tmp);
 			tmp -= highestOneBit;
-			configuration.add((E) atoms.getKey(id));
-			elements.add(highestOneBit);
+			configuration.add((E) atoms.getKey(highestOneBit));
 		}
 		return configuration;
 	}
