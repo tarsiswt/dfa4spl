@@ -20,18 +20,8 @@ public class VertexNameFilterProvider<V extends Unit> implements VertexNameProvi
 
 	/**
 	 * Instantiates a new vertex name filter provider.
-	 * 
-	 * @param compilationUnit
-	 *            the compilation unit
 	 */
-	public VertexNameFilterProvider(CompilationUnit compilationUnit) {
-	}
-
-	/**
-	 * Instantiates a new vertex name filter provider.
-	 */
-	@SuppressWarnings("unused")
-	private VertexNameFilterProvider() {
+	public VertexNameFilterProvider() {
 		super();
 	}
 

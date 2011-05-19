@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.collections.BidiMap;
+import org.apache.commons.collections.MapIterator;
 
 import soot.tagkit.AttributeValueException;
 import soot.tagkit.Tag;
@@ -156,6 +157,10 @@ public class FeatureTag<E> extends AbstractSet<E> implements Tag {
 	public void setFeatureIdMap(BidiMap atoms) {
 		this.atoms = atoms;
 	}
+	
+	public Set<E> getAtoms(){
+		return this.atoms.keySet();
+	}
 
 	/**
 	 * Para um dado ID, retorna o conjunto de Features.
@@ -174,5 +179,15 @@ public class FeatureTag<E> extends AbstractSet<E> implements Tag {
 			configuration.add((E) atoms.getKey(highestOneBit));
 		}
 		return configuration;
+	}
+	
+	public Integer getIdForConfiguration(Set<E> configuration) {
+		Iterator<E> iterator = configuration.iterator();
+		int accumulator = 0;
+		while (iterator.hasNext()) {
+			E e = (E) iterator.next();
+			accumulator += (Integer) atoms.get(e);			
+		}
+		return accumulator;
 	}
 }
