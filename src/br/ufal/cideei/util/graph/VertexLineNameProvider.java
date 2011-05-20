@@ -6,10 +6,9 @@ import org.jgrapht.ext.VertexNameProvider;
 import soot.Unit;
 import soot.tagkit.SourceLnPosTag;
 
-// TODO: Auto-generated Javadoc
 /**
  * The Class VertexNameFilterProvider is a utility class used to name the
- * vertexes on a graph when transforming it to another serializes
+ * vertexes on a graph when transforming it to another serialized
  * representation, like a .DOT file.
  * 
  * @param <V>

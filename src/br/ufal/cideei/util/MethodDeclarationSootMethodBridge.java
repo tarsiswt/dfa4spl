@@ -133,9 +133,7 @@ public class MethodDeclarationSootMethodBridge {
 		 * When using the Soot framework, we need the path to the package root
 		 * in which the file is located. There may be other ways to acomplish
 		 * this.
-		 * 
 		 */
-
 		String pathToSourceClasspathEntry = null;
 
 		IClasspathEntry[] classPathEntries = null;

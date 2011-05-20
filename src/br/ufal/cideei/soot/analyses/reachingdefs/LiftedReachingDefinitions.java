@@ -114,11 +114,6 @@ public class LiftedReachingDefinitions extends ForwardFlowAnalysis<Unit, LiftedF
 			FlowSet destFlowSet = destLattices[index];
 
 			if ((id & index) == id) {
-				/*
-				 * TODO: a configuração não é mais a correta aqui. Estamos
-				 * usando de 0 .. (2^n)-1 para iterar sobre as possíveis
-				 * configurações, como pode ser visto no if acima.
-				 */
 				kill(sourceFlowSet, unit, destFlowSet, null);
 				gen(sourceFlowSet, unit, destFlowSet, null);
 			} else {

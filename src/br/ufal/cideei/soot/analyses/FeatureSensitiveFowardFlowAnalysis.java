@@ -12,7 +12,6 @@ import soot.toolkits.scalar.FlowSet;
 import soot.toolkits.scalar.ForwardFlowAnalysis;
 import br.ufal.cideei.soot.instrument.FeatureTag;
 
-// TODO: Auto-generated Javadoc
 /**
  * The Class FeatureSensitiviteFowardFlowAnalysis is the base implementation for
  * forward flow analysis that are feature-sensitive. Implementing an

@@ -22,7 +22,6 @@ import soot.util.cfgcmd.CFGGraphType;
 import soot.util.dot.DotGraph;
 import soot.util.queue.QueueReader;
 
-// TODO: Auto-generated Javadoc
 /**
  * The Class UnitUtil contains convenience methods to serialize information from
  * memory to help with visualisation and debugging.

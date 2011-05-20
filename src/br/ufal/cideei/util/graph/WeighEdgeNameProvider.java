@@ -3,7 +3,6 @@ package br.ufal.cideei.util.graph;
 import org.jgrapht.WeightedGraph;
 import org.jgrapht.ext.EdgeNameProvider;
 
-// TODO: Auto-generated Javadoc
 /**
  * The Class WeighEdgeNameProvider is a utility class used to provide a label
  * for edges when transforming it to a serializes format like .DOT. It simple

@@ -79,10 +79,9 @@ public class DoAnalysisOnClassPath extends AbstractHandler {
 					 * 
 					 * FIXME: WARNING: A bug was found on Soot, in which the
 					 * FileSourceTag would contain incorrect information
-					 * regarding the absolute localtion of the source file. In
-					 * order to workaround this, the classpath must be injected
-					 * into the FeatureModelInstrumentorTransformer class (it is
-					 * done though its constructor).
+					 * regarding the absolute location of the source file. In
+					 * this workaround, the classpath must be injected
+					 * into the FeatureModelInstrumentorTransformer class (done though its constructor).
 					 * 
 					 * As a consequence, we CANNOT build an string with all
 					 * classpaths that contains source code for the project and

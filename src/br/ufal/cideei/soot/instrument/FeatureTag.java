@@ -1,25 +1,21 @@
 package br.ufal.cideei.soot.instrument;
 
 import java.util.AbstractSet;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.collections.BidiMap;
-import org.apache.commons.collections.MapIterator;
 
 import soot.tagkit.AttributeValueException;
 import soot.tagkit.Tag;
 
-// TODO: Auto-generated Javadoc
 /**
  * The Class FeatureTag is used to store feature-sensitive metadata. The
- * metadata is simply stored in a List collection.
+ * metadata is simply stored in a Set collection.
  * 
  * @param <E>
  *            the element type

@@ -2,13 +2,15 @@ package br.ufal.cideei.features;
 
 import org.eclipse.jdt.core.IJavaProject;
 
+//FIXME: terrible class structre. Rethink it.
 public class CIDEFeatureExtracterFactory extends AbstractFeatureExtracterFactory {
-	
+
 	static CIDEFeatureExtracterFactory instance = new CIDEFeatureExtracterFactory();
+
 	private CIDEFeatureExtracterFactory() {
 		super();
 	}
-	
+
 	public static CIDEFeatureExtracterFactory getInstance() {
 		return instance;
 	}

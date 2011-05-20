@@ -1,13 +1,11 @@
 package br.ufal.cideei.util.graph;
 
-import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.jgrapht.ext.VertexNameProvider;
 
 import soot.Unit;
 import soot.tagkit.SourceLnPosTag;
 import br.ufal.cideei.soot.instrument.FeatureTag;
 
-// TODO: Auto-generated Javadoc
 /**
  * The Class VertexNameFilterProvider is a utility class used to name the
  * vertexes on a graph when transforming it to another serializes

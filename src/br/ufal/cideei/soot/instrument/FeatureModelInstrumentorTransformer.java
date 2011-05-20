@@ -40,9 +40,10 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 	/** Current compilation unit the transformation is working on */
 	private CompilationUnit currentCompilationUnit;
 	private IFile file;
-	/*
+	
+	/**
 	 * XXX: Workaround for the preTransform method. See comments on
-	 * #preTransform method.
+	 * FeatureModelInstrumentorTransformer#preTransform() method.
 	 */
 	private static String classPath;
 	private CachedICompilationUnitParser cachedParser = new CachedICompilationUnitParser();
@@ -195,9 +196,7 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 		}
 		/*
 		 * XXX: WARNING! tag.getAbsolutePath() returns an INCORRECT value for
-		 * the absolute path AFTER the first body transformation. In order to
-		 * work around this, we must inject the classpath we are working on
-		 * through a parameter in this method. We will use tag.getSourceFile()
+		 * the absolute path AFTER the first body transformation. In this workaround, since this method depends on the classpath , it is injected on this class constructor. We will use tag.getSourceFile()
 		 * in order to resolve the file name.
 		 * 
 		 * Yes, this is ugly.
@@ -216,7 +215,7 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 		}
 
 		/*
-		 * XXX String#replaceAll bugs when replacing "special" chars like
+		 * XXX String#replaceAll does not work properly when replacing "special" chars like
 		 * File.separator. The Matcher and Pattern composes a workaround for
 		 * that.
 		 */

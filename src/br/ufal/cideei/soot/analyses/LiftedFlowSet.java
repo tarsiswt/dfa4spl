@@ -79,7 +79,6 @@ public class LiftedFlowSet<T> extends AbstractFlowSet {
 	 * 
 	 * @see soot.toolkits.scalar.AbstractFlowSet#clone()
 	 */
-	// FIXME: nao esta funcionando. Por outro lado, RD nao chama este metodo.
 	@Override
 	public LiftedFlowSet clone() {
 		LiftedFlowSet other = new LiftedFlowSet();
@@ -110,6 +109,7 @@ public class LiftedFlowSet<T> extends AbstractFlowSet {
 
 		LiftedFlowSet other = (LiftedFlowSet) obj;
 
+		// Deep-check equality
 		boolean returnFlag = true;
 		for (int i = 0; i < liftedFlowSetSize; i++) {
 			if (!other.configurations[i].equals(this.configurations[i]) || !other.lattices[i].equals(this.lattices[i])) {

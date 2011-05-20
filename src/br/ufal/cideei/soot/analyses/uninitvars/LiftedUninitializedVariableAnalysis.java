@@ -24,11 +24,6 @@ import br.ufal.cideei.soot.instrument.FeatureTag;
  */
 public class LiftedUninitializedVariableAnalysis extends ForwardFlowAnalysis<Unit, LiftedFlowSet> {
 
-	/** The empty set. */
-	/*
-	 * FIXME: the clone method of LiftedFlowSet is not working properly right
-	 * now.
-	 */
 	private LiftedFlowSet allLocals;
 	private Collection<Set<String>> configurations;
 	private LiftedFlowSet emptySet;

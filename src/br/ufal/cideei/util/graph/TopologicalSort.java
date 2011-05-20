@@ -16,6 +16,7 @@ import org.jgrapht.DirectedGraph;
  * @param <E> the element type
  * @param <V> the value type
  */
+//TODO: Not used. Consider removing (along with DirectedAcyclicGraphLongestPath)
 public class TopologicalSort<E, V> {
 	
 	/** The sorted. */

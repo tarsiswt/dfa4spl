@@ -14,7 +14,6 @@ import de.ovgu.cide.features.IFeature;
 import de.ovgu.cide.features.source.ColoredSourceFile;
 import de.ovgu.cide.language.jdt.ASTBridge;
 
-// TODO: Auto-generated Javadoc
 /**
  * A feature extracter implementation for CIDE.
  */
@@ -39,7 +38,6 @@ class CIDEFeatureExtracter implements IFeatureExtracter {
 	 * br.ufal.cideei.features.IFeatureExtracter#getFeatures(org.eclipse.jdt
 	 * .core.dom.ASTNode)
 	 */
-	// TODO: treat exception correctly
 	@Override
 	public Set<String> getFeaturesNames(ASTNode node, IFile file) {
 		Set<IFeature> cideFeatureSet = this.getFeatures(node, file);
@@ -70,7 +68,7 @@ class CIDEFeatureExtracter implements IFeatureExtracter {
 	@Override
 	public boolean isValid(Set<IFeature> config) throws FeatureModelNotFoundException {
 		/*
-		 * FIXME: simply not working. Oh god why?
+		 * FIXME: simply not working. WHY?
 		 */
 //		IFeatureModel featureModel = FeatureModelManager.getInstance().getActiveFeatureModelProvider().getFeatureModel(javaProject.getProject());
 //		return FeatureModelManager.getInstance().getActiveFeatureModelProvider().getFeatureModel(javaProject.getProject()).isValidSelection(featureModel.getVisibleFeatures());
