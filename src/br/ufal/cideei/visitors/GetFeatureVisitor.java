@@ -5,8 +5,8 @@ import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jdt.core.dom.ASTNode;
-import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jdt.core.dom.ASTVisitor;
+import org.eclipse.jface.text.ITextSelection;
 
 import br.ufal.cideei.features.CIDEFeatureExtracterFactory;
 import br.ufal.cideei.features.IFeatureExtracter;

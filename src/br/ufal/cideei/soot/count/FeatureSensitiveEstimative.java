@@ -12,12 +12,10 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-import br.ufal.cideei.soot.instrument.FeatureTag;
-
 import profiling.ProfilingTag;
-
 import soot.Body;
 import soot.BodyTransformer;
+import br.ufal.cideei.soot.instrument.FeatureTag;
 
 public class FeatureSensitiveEstimative extends BodyTransformer {
 
