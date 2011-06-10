@@ -33,8 +33,9 @@ public class SupplementaryConfigurationVisitor extends ASTVisitor {
 	 */
 	public SupplementaryConfigurationVisitor(Set<String> configuration, IFile file) {
 		this.configuration = configuration;
-		this.featureLines = new HashMap<String,Set<ASTNode>>();
-		this.featureNames = new TreeSet<String>();
+		featureLines = new HashMap<String,Set<ASTNode>>();
+		featureNames = new TreeSet<String>();
+		this.file = file;
 	}
 	
 	/**
@@ -43,11 +44,11 @@ public class SupplementaryConfigurationVisitor extends ASTVisitor {
 	 * @return the nodes
 	 */
 	public HashMap<String,Set<ASTNode>> getFeatureLines(){
-		return this.featureLines;
+		return featureLines;
 	}
 	
 	public Set<String> getFeatureNames(){
-		return this.featureNames;
+		return featureNames;
 	}
 
 	/**
@@ -58,14 +59,14 @@ public class SupplementaryConfigurationVisitor extends ASTVisitor {
 	public void preVisit(ASTNode node) {
 		super.preVisit(node);
 		IFeatureExtracter extracter = CIDEFeatureExtracterFactory.getInstance().newExtracter();
-		Set<String> nodeFeatures = extracter.getFeaturesNames(node, this.file);
-		if (!this.configuration.containsAll(nodeFeatures)) {
+		Set<String> nodeFeatures = extracter.getFeaturesNames(node, file);
+		if (nodeFeatures.size() == 0 || !configuration.containsAll(nodeFeatures)) {
 			Iterator<String> features = nodeFeatures.iterator();
 			String f = null;
 			if(nodeFeatures.size() > 1){
 				while(features.hasNext()){
 					f = features.next();
-					this.featureNames.add(f);
+					featureNames.add(f);
 					this.addNode(node, f);
 				}
 			}else{
@@ -76,14 +77,14 @@ public class SupplementaryConfigurationVisitor extends ASTVisitor {
 	}
 	
 	private void addNode(ASTNode node, String feature){
-		Set<ASTNode> nodes = this.featureLines.get(feature);
+		Set<ASTNode> nodes = featureLines.get(feature);
 		if(nodes.size() > 0){
 			 nodes.add(node);
 		}else{
 			nodes = new TreeSet<ASTNode>();
 		}
 		nodes.add(node);
-		this.featureLines.put(feature, nodes);
+		featureLines.put(feature, nodes);
 	}
 }
 
