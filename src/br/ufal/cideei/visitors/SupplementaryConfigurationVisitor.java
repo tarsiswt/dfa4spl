@@ -1,9 +1,9 @@
 package br.ufal.cideei.visitors;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
-import java.util.TreeSet;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTVisitor;
@@ -18,6 +18,7 @@ public class SupplementaryConfigurationVisitor extends ASTVisitor {
 	private HashMap<String,Set<ASTNode>> featureLines;
 	private Set<String> featureNames;
 	private IFile file;
+	private IFeatureExtracter extracter;
 
 	/**
 	 * Instantiates a new selection nodes visitor.
@@ -33,8 +34,9 @@ public class SupplementaryConfigurationVisitor extends ASTVisitor {
 	 */
 	public SupplementaryConfigurationVisitor(Set<String> configuration, IFile file) {
 		this.configuration = configuration;
-		featureLines = new HashMap<String,Set<ASTNode>>();
-		featureNames = new TreeSet<String>();
+		this.featureLines = new HashMap<String,Set<ASTNode>>();
+		this.featureNames = new HashSet<String>();
+		this.extracter = CIDEFeatureExtracterFactory.getInstance().newExtracter();
 		this.file = file;
 	}
 	
@@ -44,10 +46,12 @@ public class SupplementaryConfigurationVisitor extends ASTVisitor {
 	 * @return the nodes
 	 */
 	public HashMap<String,Set<ASTNode>> getFeatureLines(){
+		System.out.println(featureLines);
 		return featureLines;
 	}
 	
 	public Set<String> getFeatureNames(){
+		System.out.println(featureNames);
 		return featureNames;
 	}
 
@@ -58,32 +62,33 @@ public class SupplementaryConfigurationVisitor extends ASTVisitor {
 	 */
 	public void preVisit(ASTNode node) {
 		super.preVisit(node);
-		IFeatureExtracter extracter = CIDEFeatureExtracterFactory.getInstance().newExtracter();
-		Set<String> nodeFeatures = extracter.getFeaturesNames(node, file);
-		if (nodeFeatures.size() == 0 || !configuration.containsAll(nodeFeatures)) {
-			Iterator<String> features = nodeFeatures.iterator();
-			String f = null;
-			if(nodeFeatures.size() > 1){
-				while(features.hasNext()){
+		Set<String> nodeFeatures = this.extracter.getFeaturesNames(node, this.file);
+		if (!nodeFeatures.isEmpty()){
+			if(!configuration.containsAll(nodeFeatures)) {
+				Iterator<String> features = nodeFeatures.iterator();
+				String f = null;
+				if(nodeFeatures.size() > 1){
+					while(features.hasNext()){
+						f = features.next();
+						this.addNode(node, f);
+					}
+				}else{
 					f = features.next();
-					featureNames.add(f);
 					this.addNode(node, f);
 				}
-			}else{
-				f = features.next();
-				this.addNode(node, f);
 			}
 		}
 	}
 	
 	private void addNode(ASTNode node, String feature){
 		Set<ASTNode> nodes = featureLines.get(feature);
-		if(nodes.size() > 0){
+		if(nodes != null){
 			 nodes.add(node);
 		}else{
-			nodes = new TreeSet<ASTNode>();
+			nodes = new HashSet<ASTNode>();
+			nodes.add(node);
 		}
-		nodes.add(node);
+		featureNames.add(feature);
 		featureLines.put(feature, nodes);
 	}
 }
