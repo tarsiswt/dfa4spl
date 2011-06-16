@@ -14,7 +14,7 @@ import br.ufal.cideei.features.IFeatureExtracter;
 public class SupplementaryConfigurationVisitor extends ASTVisitor {
 
 	/** The text selection. */
-	private Set<String> configuration;
+	private HashSet<String> configuration;
 	private HashMap<String,Set<ASTNode>> featureLines;
 	private Set<String> featureNames;
 	private IFile file;
@@ -32,7 +32,7 @@ public class SupplementaryConfigurationVisitor extends ASTVisitor {
 	 *
 	 * @param textSelection the text selection
 	 */
-	public SupplementaryConfigurationVisitor(Set<String> configuration, IFile file) {
+	public SupplementaryConfigurationVisitor(HashSet<String> configuration, IFile file) {
 		this.configuration = configuration;
 		this.featureLines = new HashMap<String,Set<ASTNode>>();
 		this.featureNames = new HashSet<String>();
@@ -64,7 +64,7 @@ public class SupplementaryConfigurationVisitor extends ASTVisitor {
 		super.preVisit(node);
 		Set<String> nodeFeatures = this.extracter.getFeaturesNames(node, this.file);
 		if (!nodeFeatures.isEmpty()){
-			if(!configuration.containsAll(nodeFeatures)) {
+			if(!this.configuration.containsAll(nodeFeatures)) {
 				Iterator<String> features = nodeFeatures.iterator();
 				String f = null;
 				if(nodeFeatures.size() > 1){
@@ -91,5 +91,6 @@ public class SupplementaryConfigurationVisitor extends ASTVisitor {
 		featureNames.add(feature);
 		featureLines.put(feature, nodes);
 	}
+
 }
 
