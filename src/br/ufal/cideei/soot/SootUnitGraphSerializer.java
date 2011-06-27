@@ -45,7 +45,9 @@ import soot.util.dot.DotGraphNode;
 import br.ufal.cideei.soot.instrument.FeatureTag;
 
 /**
- * Warning: this source code along with its Javadoc was completely copied from the Soot framework, as it was impossible, since it was package-visible.
+ * Warning: this source code along with its Javadoc was completely copied from
+ * the Soot framework, as it was impossible to extend it, since it was
+ * package-visible.
  * 
  * 
  * Class that creates a {@link DotGraph} visualization of a control flow graph.

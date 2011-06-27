@@ -24,6 +24,7 @@ import soot.tagkit.SourceLnPosTag;
 import br.ufal.cideei.features.IFeatureExtracter;
 import br.ufal.cideei.util.CachedICompilationUnitParser;
 import br.ufal.cideei.util.SetUtil;
+import br.ufal.cideei.util.count.AbstractMetricsSink;
 
 /**
  * The Class FeatureModelInstrumentor is a Soot transformation for transcribing
@@ -31,16 +32,15 @@ import br.ufal.cideei.util.SetUtil;
  * feature model and its format from which the information will be extracted is
  * still unkown.
  */
+// TODO: change class name to something more appropriate, like
+// "FeatureInstrumentorTransformer"
 public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 
-	/** The singleton instance. */
-	private static FeatureModelInstrumentorTransformer instance = new FeatureModelInstrumentorTransformer();
 	/** Feature extracter. */
 	private static IFeatureExtracter extracter;
 	/** Current compilation unit the transformation is working on */
-	private CompilationUnit currentCompilationUnit;
 	private IFile file;
-	
+
 	/**
 	 * XXX: Workaround for the preTransform method. See comments on
 	 * FeatureModelInstrumentorTransformer#preTransform() method.
@@ -51,35 +51,23 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 	private Map<Integer, Set<String>> currentColorMap;
 
 	// #ifdef METRICS
-	private static long totalBodies = 0;
-	private static long totalColoredBodies = 0;
 	private static long transformationTime = 0;
 	private static long parsingTime = 0;
 	private static long colorLookupTableBuildingTime = 0;
+	private AbstractMetricsSink sink;
+	private static String COLOR_LOOKUP = "color table";
+	private static String PARSING = "parsing";
+	private static String INSTRUMENTATION = "instrumentation";
 
 	// #endif
-
-	/**
-	 * Disable default constructor. This class is a singleton.
+	/*
+	 * TODO: maybe injecting the sink depency in a different way could make this
+	 * funcionality less intrusive.
 	 */
-	private FeatureModelInstrumentorTransformer() {
-	}
-
-	/**
-	 * V.
-	 * 
-	 * @param algorithm
-	 * 
-	 * @return the feature model instrumentor
-	 */
-	public static FeatureModelInstrumentorTransformer v(IFeatureExtracter extracter, String classPath) {
+	public FeatureModelInstrumentorTransformer(AbstractMetricsSink sink, IFeatureExtracter extracter, String classPath) {
 		FeatureModelInstrumentorTransformer.classPath = classPath;
 		FeatureModelInstrumentorTransformer.extracter = extracter;
-		return instance;
-	}
-
-	public static FeatureModelInstrumentorTransformer v() {
-		return instance;
+		this.sink = sink;
 	}
 
 	/*
@@ -95,12 +83,12 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 		// #ifdef METRICS
 		long startTransform = System.nanoTime();
 		// #endif
+
 		/*
 		 * Iterate over all units, look up for their colors and add a new
 		 * FeatureTag to each of them, and also compute all the colors found in
 		 * the whole body. Units with no colors receive an empty FeatureTag.
 		 */
-
 		Iterator<Unit> unitIt = body.getUnits().iterator();
 
 		/*
@@ -142,7 +130,7 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 						}
 					}
 					/*
-					 * increment local powerset with freshly found colors.
+					 * increment local powerset with new found colors.
 					 */
 					allPresentFeatures.addAll(nextUnitColors);
 
@@ -160,10 +148,11 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 			}
 		}
 
-		// #ifdef METRICS
-		long endTransform = System.nanoTime();
-		long delta = endTransform - startTransform;
-		FeatureModelInstrumentorTransformer.transformationTime += delta;
+		long transformationDelta = System.nanoTime() - startTransform;
+		if (sink != null) {
+			sink.flow(body, FeatureModelInstrumentorTransformer.INSTRUMENTATION, transformationDelta);
+		}
+		FeatureModelInstrumentorTransformer.transformationTime += transformationDelta;
 		// #endif
 
 		Set<Set<String>> localPowerSet = SetUtil.powerSet(allPresentFeatures);
@@ -176,7 +165,7 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 
 	/**
 	 * Do the transformation on the body. To accomplish this, the class that
-	 * declares this SootMethod, it needs to be tagged with the SourceFileTag.
+	 * declares this SootMethod needs to be tagged with the SourceFileTag.
 	 * 
 	 * @param body
 	 *            the body
@@ -196,7 +185,9 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 		}
 		/*
 		 * XXX: WARNING! tag.getAbsolutePath() returns an INCORRECT value for
-		 * the absolute path AFTER the first body transformation. In this workaround, since this method depends on the classpath , it is injected on this class constructor. We will use tag.getSourceFile()
+		 * the absolute path AFTER the first body transformation. In this
+		 * workaround, since this method depends on the classpath , it is
+		 * injected on this class constructor. We will use tag.getSourceFile()
 		 * in order to resolve the file name.
 		 * 
 		 * Yes, this is ugly.
@@ -204,7 +195,9 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 		SourceFileTag sourceFileTag = (SourceFileTag) body.getMethod().getDeclaringClass().getTag("SourceFileTag");
 
 		/*
-		 * package name
+		 * The String absolutePath will be transformed to the absolute path to
+		 * the Class which body belongs to. See the XXX above for the
+		 * explanation.
 		 */
 		String absolutePath = sootClass.getName();
 		int lastIndexOf = absolutePath.lastIndexOf(".");
@@ -215,9 +208,9 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 		}
 
 		/*
-		 * XXX String#replaceAll does not work properly when replacing "special" chars like
-		 * File.separator. The Matcher and Pattern composes a workaround for
-		 * that.
+		 * XXX String#replaceAll does not work properly when replacing "special"
+		 * chars like File.separator. The Matcher and Pattern composes a
+		 * workaround for that.
 		 */
 		absolutePath = absolutePath.replaceAll(Pattern.quote("."), Matcher.quoteReplacement(File.separator));
 		absolutePath = classPath + File.separator + absolutePath + File.separator + sourceFileTag.getSourceFile();
@@ -226,50 +219,19 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 		IPath path = new Path(sourceFileTag.getAbsolutePath());
 		this.file = org.eclipse.core.resources.ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(path);
 
+		// TODO: wrap metrics around the delta calculations
 		long startCompilationUnitParser = System.nanoTime();
 		CompilationUnit compilationUnit = cachedParser.parse(file);
-		long endCompilationUnitParser = System.nanoTime();
-		FeatureModelInstrumentorTransformer.parsingTime += endCompilationUnitParser - startCompilationUnitParser;
+		long parsingDelta = System.nanoTime() - startCompilationUnitParser;
+		if (sink != null)
+			sink.flow(body, FeatureModelInstrumentorTransformer.PARSING, parsingDelta);
+		FeatureModelInstrumentorTransformer.parsingTime += parsingDelta;
 
 		long startBuilderColorLookUpTable = System.nanoTime();
 		this.currentColorMap = cachedLineColorMapper.makeAccept(compilationUnit, file, extracter, compilationUnit);
-		long endBuilderColorLookUpTable = System.nanoTime();
-		FeatureModelInstrumentorTransformer.colorLookupTableBuildingTime += endBuilderColorLookUpTable - startBuilderColorLookUpTable;
-
-		/*
-		 * The CIDE feature extractor depends on this object.
-		 */
-		this.currentCompilationUnit = compilationUnit;
+		long builderColorLookUpTableDelta = System.nanoTime() - startBuilderColorLookUpTable;
+		if (sink != null)
+			sink.flow(body, FeatureModelInstrumentorTransformer.COLOR_LOOKUP, builderColorLookUpTableDelta);
+		FeatureModelInstrumentorTransformer.colorLookupTableBuildingTime += builderColorLookUpTableDelta;
 	}
-
-	// #ifdef METRICS
-	public static long getTransformationTime() {
-		return FeatureModelInstrumentorTransformer.transformationTime;
-	}
-
-	public static long getTotalBodies() {
-		return FeatureModelInstrumentorTransformer.totalBodies;
-	}
-
-	public static long getTotalColoredBodies() {
-		return FeatureModelInstrumentorTransformer.totalColoredBodies;
-	}
-
-	public static double getParsingTime() {
-		return FeatureModelInstrumentorTransformer.parsingTime;
-	}
-
-	public static double getColorLookupTableBuildingTime() {
-		return FeatureModelInstrumentorTransformer.colorLookupTableBuildingTime;
-	}
-
-	public void reset() {
-		FeatureModelInstrumentorTransformer.totalColoredBodies = 0;
-		FeatureModelInstrumentorTransformer.totalBodies = 0;
-		FeatureModelInstrumentorTransformer.transformationTime = 0;
-		FeatureModelInstrumentorTransformer.parsingTime = 0;
-		FeatureModelInstrumentorTransformer.colorLookupTableBuildingTime = 0;
-	}
-	// #endif
-
 }

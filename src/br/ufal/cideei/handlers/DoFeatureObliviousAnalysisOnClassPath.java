@@ -1,7 +1,10 @@
 package br.ufal.cideei.handlers;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -26,27 +29,22 @@ import br.ufal.cideei.soot.SootManager;
 import br.ufal.cideei.soot.analyses.wholeline.WholeLineObliviousReachingDefinitionsAnalysis;
 import br.ufal.cideei.soot.analyses.wholeline.WholeLineObliviousUninitializedVariablesAnalysis;
 import br.ufal.cideei.soot.count.AssignmentsCounter;
-import br.ufal.cideei.soot.count.BodyCounter;
 import br.ufal.cideei.soot.count.FeatureObliviousEstimative;
 import br.ufal.cideei.soot.count.LocalCounter;
 import br.ufal.cideei.soot.instrument.FeatureModelInstrumentorTransformer;
-import br.ufal.cideei.util.ExecutionResultWrapper;
+import br.ufal.cideei.util.count.MetricsSink;
+import br.ufal.cideei.util.count.MetricsTable;
 
 public class DoFeatureObliviousAnalysisOnClassPath extends AbstractHandler {
-	private static ExecutionResultWrapper<Double> jimplificationResults = new ExecutionResultWrapper<Double>();
-	private static ExecutionResultWrapper<Double> simpleRDResults = new ExecutionResultWrapper<Double>();
-	private static ExecutionResultWrapper<Double> simpleUVResults = new ExecutionResultWrapper<Double>();
-	private static ExecutionResultWrapper<Double> preprocessingResults = new ExecutionResultWrapper<Double>();
-
-	private Long assignmentsCount;
-	private Long bodyCount;
-	private Long localCount;
+	private static MetricsSink sink;
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
-		int times = 10;
+		int times = 3;
 		try {
 			for (int i = 0; i < times; i++) {
+				sink = new MetricsSink(new MetricsTable(new File(System.getProperty("user.home") + File.separator + "fo.xls")));
+
 				IStructuredSelection selection = (IStructuredSelection) HandlerUtil.getActiveMenuSelection(event);
 				Object firstElement = selection.getFirstElement();
 				if (firstElement instanceof IJavaProject) {
@@ -99,41 +97,16 @@ public class DoFeatureObliviousAnalysisOnClassPath extends AbstractHandler {
 					}
 				}
 				G.reset();
+				sink.terminate();
+				sink = null;
 				System.out.println("=============" + (i + 1) + "/" + times + "=============");
 			}
 		} catch (Throwable e) {
 			e.printStackTrace();
 		} finally {
 			G.reset();
+			sink.terminate();
 		}
-		String format = "|%1$-50s|%2$-80s|\n";
-		// System.out.format(format, "TOTAL/" + times +": Lifted"
-		// ,DoAnalysisOnClassPath.totalRDLiftedTime);
-		// System.out.format(format, "TOTAL/" + times +": Runner"
-		// ,DoAnalysisOnClassPath.totalRDRunnerTime);
-		// System.out.format(format, "TOTAL: Runner/Lifted"
-		// ,DoAnalysisOnClassPath.totalRDRunnerTime/DoAnalysisOnClassPath.totalRDLiftedTime);
-		try {
-
-			System.out.format(format, "[JIMPLFCTN] results: ", jimplificationResults.toString());
-			System.out.format(format, "[RD-SIMPLE] results: ", simpleRDResults.toString());
-			System.out.format(format, "[UV-SIMPLE] results: ", simpleUVResults.toString());
-			System.out.format(format, "[PREPROCES] results: ", preprocessingResults.toString());
-
-			System.out.format(format, "[ASSGNMNT-COUNT] results: ", assignmentsCount);
-			System.out.format(format, "[BODY-COUNT] results: ", bodyCount);
-			System.out.format(format, "[LOCAL-COUNT] results: ", localCount);
-
-			jimplificationResults = new ExecutionResultWrapper<Double>();
-			simpleRDResults = new ExecutionResultWrapper<Double>();
-			simpleUVResults = new ExecutionResultWrapper<Double>();
-			preprocessingResults = new ExecutionResultWrapper<Double>();
-
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
-		FeatureObliviousEstimative.v().closeMetricsFile();
 
 		return null;
 	}
@@ -172,7 +145,6 @@ public class DoFeatureObliviousAnalysisOnClassPath extends AbstractHandler {
 				}
 
 				for (ICompilationUnit compilationUnit : compilationUnits) {
-					// CompilationUnit a = compilationUnit.
 					String fragmentName = packageFragment.getElementName();
 					String compilationName = compilationUnit.getElementName();
 					StringBuilder qualifiedNameStrBuilder = new StringBuilder(fragmentName);
@@ -192,7 +164,7 @@ public class DoFeatureObliviousAnalysisOnClassPath extends AbstractHandler {
 		}
 		Scene.v().loadNecessaryClasses();
 
-		Transform instrumentation = new Transform("jtp.fminst", FeatureModelInstrumentorTransformer.v(extracter, classPath));
+		Transform instrumentation = new Transform("jtp.fminst", new FeatureModelInstrumentorTransformer(sink, extracter, classPath));
 		PackManager.v().getPack("jtp").add(instrumentation);
 
 		Transform reachingDef = new Transform("jap.simplerd", WholeLineObliviousReachingDefinitionsAnalysis.v());
@@ -202,41 +174,16 @@ public class DoFeatureObliviousAnalysisOnClassPath extends AbstractHandler {
 		PackManager.v().getPack("jap").add(uninitVars);
 
 		// #ifdef METRICS
-		Transform assignmentsCounter = new Transform("jap.counter.assgnmt", AssignmentsCounter.v());
+		Transform assignmentsCounter = new Transform("jap.counter.assgnmt", new AssignmentsCounter(sink, true));
 		PackManager.v().getPack("jap").add(assignmentsCounter);
 
-		Transform bodyCounter = new Transform("jap.counter.body", BodyCounter.v());
-		PackManager.v().getPack("jap").add(bodyCounter);
-
-		Transform localCounter = new Transform("jap.counter.local", LocalCounter.v());
+		Transform localCounter = new Transform("jap.counter.local", new LocalCounter(sink, true));
 		PackManager.v().getPack("jap").add(localCounter);
 
-		Transform estimativeCounter = new Transform("jap.counter.estimative", FeatureObliviousEstimative.v());
+		Transform estimativeCounter = new Transform("jap.counter.estimative", new FeatureObliviousEstimative(sink));
 		PackManager.v().getPack("jap").add(estimativeCounter);
 		// #endif
 
 		SootManager.runPacks(extracter);
-
-		// #ifdef METRICS
-		double simpleRDTime = ((double) FeatureObliviousEstimative.v().getRdTotal()) / 1000000;
-		double simpleUVTime = ((double) FeatureObliviousEstimative.v().getUvTotal()) / 1000000;
-		double jimplificationTime = ((double) FeatureObliviousEstimative.v().getJimplificationTotal()) / 1000000;
-		double preprocessingTime = ((double) FeatureObliviousEstimative.v().getPreprocessingTotal()) / 1000000;
-
-		DoFeatureObliviousAnalysisOnClassPath.simpleRDResults.add(simpleRDTime);
-		DoFeatureObliviousAnalysisOnClassPath.simpleUVResults.add(simpleUVTime);
-		DoFeatureObliviousAnalysisOnClassPath.jimplificationResults.add(jimplificationTime);
-		DoFeatureObliviousAnalysisOnClassPath.preprocessingResults.add(preprocessingTime);
-
-		assignmentsCount = AssignmentsCounter.v().getCount();
-		bodyCount = BodyCounter.v().getCount();
-		localCount = LocalCounter.v().getCount();
-
-		AssignmentsCounter.v().reset();
-		BodyCounter.v().reset();
-		LocalCounter.v().reset();
-		FeatureObliviousEstimative.v().reset();
-		// #endif
 	}
-
 }

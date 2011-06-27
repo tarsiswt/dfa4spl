@@ -8,19 +8,7 @@ import soot.BodyTransformer;
 
 public class BodyCounter extends BodyTransformer implements ICounter<Long>, IResettable {
 
-	private static BodyCounter instance = null;
-
-	private BodyCounter() {
-	}
-
-	public static BodyCounter v() {
-		if (instance == null)
-			instance = new BodyCounter();
-		return instance;
-
-	}
-
-	private long counter = 0;
+	protected long counter = 0;
 
 	public Long getCount() {
 		return counter;

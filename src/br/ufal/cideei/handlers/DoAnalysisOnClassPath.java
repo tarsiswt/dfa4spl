@@ -1,7 +1,10 @@
 package br.ufal.cideei.handlers;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -23,41 +26,27 @@ import soot.Transform;
 import br.ufal.cideei.features.CIDEFeatureExtracterFactory;
 import br.ufal.cideei.features.IFeatureExtracter;
 import br.ufal.cideei.soot.SootManager;
-import br.ufal.cideei.soot.analyses.FeatureSensitiveFowardFlowAnalysis;
-import br.ufal.cideei.soot.analyses.reachingdefs.LiftedReachingDefinitions;
 import br.ufal.cideei.soot.analyses.wholeline.WholeLineLiftedReachingDefinitions;
 import br.ufal.cideei.soot.analyses.wholeline.WholeLineLiftedUninitializedVariableAnalysis;
 import br.ufal.cideei.soot.analyses.wholeline.WholeLineRunnerReachingDefinitions;
 import br.ufal.cideei.soot.analyses.wholeline.WholeLineRunnerUninitializedVariable;
 import br.ufal.cideei.soot.count.AssignmentsCounter;
-import br.ufal.cideei.soot.count.ColoredBodyCounter;
 import br.ufal.cideei.soot.count.FeatureSensitiveEstimative;
 import br.ufal.cideei.soot.count.LocalCounter;
 import br.ufal.cideei.soot.instrument.FeatureModelInstrumentorTransformer;
-import br.ufal.cideei.soot.instrument.LineNumberColorMapper;
 import br.ufal.cideei.util.ExecutionResultWrapper;
+import br.ufal.cideei.util.count.MetricsSink;
+import br.ufal.cideei.util.count.MetricsTable;
 
 public class DoAnalysisOnClassPath extends AbstractHandler {
-	private static double totalRDRunnerTime;
-	private static double totalRDLiftedTime;
-	private static double totalUVRunnerTime;
-	private static double totalUVLiftedTime;
-	private static ExecutionResultWrapper<Double> rdRunnerResults = new ExecutionResultWrapper<Double>();
-	private static ExecutionResultWrapper<Double> uvRunnerResults = new ExecutionResultWrapper<Double>();
-	private static ExecutionResultWrapper<Double> rdLiftedResults = new ExecutionResultWrapper<Double>();
-	private static ExecutionResultWrapper<Double> uvLiftedResults = new ExecutionResultWrapper<Double>();
-	private static ExecutionResultWrapper<Double> instrumentationResults = new ExecutionResultWrapper<Double>();
-	private static ExecutionResultWrapper<Double> parsingTimeResults = new ExecutionResultWrapper<Double>();
-	private static ExecutionResultWrapper<Double> colorLookupTableBuildingTimeResults = new ExecutionResultWrapper<Double>();
-	private static ExecutionResultWrapper<Double> CIDEExtractingTime = new ExecutionResultWrapper<Double>();
-	private static ExecutionResultWrapper<Double> jimplificationResults = new ExecutionResultWrapper<Double>();
-	private static ExecutionResultWrapper<Long> coloredBodyResults = new ExecutionResultWrapper<Long>();
+	private static MetricsSink sink;
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
-		int times = 10;
+		int times = 3;
 		try {
 			for (int i = 0; i < times; i++) {
+				sink = new MetricsSink(new MetricsTable(new File(System.getProperty("user.home") + File.separator + "fs.xls")));
 
 				IStructuredSelection selection = (IStructuredSelection) HandlerUtil.getActiveMenuSelection(event);
 				Object firstElement = selection.getFirstElement();
@@ -80,8 +69,9 @@ public class DoAnalysisOnClassPath extends AbstractHandler {
 					 * FIXME: WARNING: A bug was found on Soot, in which the
 					 * FileSourceTag would contain incorrect information
 					 * regarding the absolute location of the source file. In
-					 * this workaround, the classpath must be injected
-					 * into the FeatureModelInstrumentorTransformer class (done though its constructor).
+					 * this workaround, the classpath must be injected into the
+					 * FeatureModelInstrumentorTransformer class (done though
+					 * its constructor).
 					 * 
 					 * As a consequence, we CANNOT build an string with all
 					 * classpaths that contains source code for the project and
@@ -109,48 +99,24 @@ public class DoAnalysisOnClassPath extends AbstractHandler {
 						}
 					}
 				}
+				// Resets SOOT
 				G.reset();
-				System.out.println("=============" + (i+1) + "/" + times + "=============");
+
+				/*
+				 * terminate the Metrics Facade. This dumps all the in-memory
+				 * information.
+				 */
+				sink.terminate();
+				sink = null;
+				System.out.println("=============" + (i + 1) + "/" + times + "=============");
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
 			G.reset();
+			sink.terminate();
 		}
-		String format = "|%1$-50s|%2$-80s|\n";
-		// System.out.format(format, "TOTAL/" + times +": Lifted"
-		// ,DoAnalysisOnClassPath.totalRDLiftedTime);
-		// System.out.format(format, "TOTAL/" + times +": Runner"
-		// ,DoAnalysisOnClassPath.totalRDRunnerTime);
-		// System.out.format(format, "TOTAL: Runner/Lifted"
-		// ,DoAnalysisOnClassPath.totalRDRunnerTime/DoAnalysisOnClassPath.totalRDLiftedTime);
-		try {
-			System.out.format(format, "[RD-LIFTED] results: ", rdLiftedResults.toString());
-			System.out.format(format, "[RD-RUNNER] results: ", rdRunnerResults.toString());
-			System.out.format(format, "[UV-LIFTED] results: ", uvLiftedResults.toString());
-			System.out.format(format, "[UV-RUNNER] results: ", uvRunnerResults.toString());
-			System.out.format(format, "[INSTRUMNT] results: ", instrumentationResults.toString());
-			System.out.format(format, "[COLORTABL] results: ", colorLookupTableBuildingTimeResults.toString());
-			System.out.format(format, "[CIDEEXTRC] results: ", CIDEExtractingTime.toString());
-			System.out.format(format, "[JIMPLFCTN] results: ", jimplificationResults.toString());
 
-			rdLiftedResults = new ExecutionResultWrapper<Double>();
-			rdRunnerResults = new ExecutionResultWrapper<Double>();
-			uvLiftedResults = new ExecutionResultWrapper<Double>();
-			uvRunnerResults = new ExecutionResultWrapper<Double>();
-			instrumentationResults = new ExecutionResultWrapper<Double>();
-			jimplificationResults = new ExecutionResultWrapper<Double>();
-			coloredBodyResults = new ExecutionResultWrapper<Long>();
-			parsingTimeResults = new ExecutionResultWrapper<Double>();
-			colorLookupTableBuildingTimeResults = new ExecutionResultWrapper<Double>();
-			CIDEExtractingTime = new ExecutionResultWrapper<Double>();
-
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		
-		FeatureSensitiveEstimative.v().closeMetricsFile();
-		
 		return null;
 	}
 
@@ -188,7 +154,6 @@ public class DoAnalysisOnClassPath extends AbstractHandler {
 				}
 
 				for (ICompilationUnit compilationUnit : compilationUnits) {
-					// CompilationUnit a = compilationUnit.
 					String fragmentName = packageFragment.getElementName();
 					String compilationName = compilationUnit.getElementName();
 					StringBuilder qualifiedNameStrBuilder = new StringBuilder(fragmentName);
@@ -206,9 +171,10 @@ public class DoAnalysisOnClassPath extends AbstractHandler {
 				}
 			}
 		}
+
 		Scene.v().loadNecessaryClasses();
 
-		Transform instrumentation = new Transform("jtp.fminst", FeatureModelInstrumentorTransformer.v(extracter, classPath));
+		Transform instrumentation = new Transform("jtp.fminst", new FeatureModelInstrumentorTransformer(sink, extracter, classPath));
 		PackManager.v().getPack("jtp").add(instrumentation);
 
 		Transform reachingDefRunner = new Transform("jap.rdrunner", WholeLineRunnerReachingDefinitions.v());
@@ -224,58 +190,16 @@ public class DoAnalysisOnClassPath extends AbstractHandler {
 		PackManager.v().getPack("jap").add(uninitVarsRunner);
 
 		// #ifdef METRICS
-		Transform assignmentsCounter = new Transform("jap.counter.assgnmt", AssignmentsCounter.v());
+		Transform assignmentsCounter = new Transform("jap.counter.assgnmt", new AssignmentsCounter(sink, true));
 		PackManager.v().getPack("jap").add(assignmentsCounter);
 
-		Transform cBodyCounter = new Transform("jap.counter.coloredbody", ColoredBodyCounter.v());
-		PackManager.v().getPack("jap").add(cBodyCounter);
-
-		Transform localCounter = new Transform("jap.counter.local", LocalCounter.v());
+		Transform localCounter = new Transform("jap.counter.local", new LocalCounter(sink, true));
 		PackManager.v().getPack("jap").add(localCounter);
-		
-		Transform estimativeCounter = new Transform("jap.counter.estimative", FeatureSensitiveEstimative.v());
+
+		Transform estimativeCounter = new Transform("jap.counter.estimative", new FeatureSensitiveEstimative(sink));
 		PackManager.v().getPack("jap").add(estimativeCounter);
 		// #endif
 
 		SootManager.runPacks(extracter);
-
-		// #ifdef METRICS
-		String format = "|%1$-50s|%2$-50s|\n";
-		
-		double rdLiftedTime = ((double) FeatureSensitiveEstimative.v().getRdTotal2()) / 1000000;
-		double rdRunnerTime = ((double) FeatureSensitiveEstimative.v().getRdTotal()) / 1000000;
-		double uvLiftedTime = ((double) FeatureSensitiveEstimative.v().getUvTotal2()) / 1000000;
-		double uvRunnerTime = ((double) FeatureSensitiveEstimative.v().getUvTotal()) / 1000000;
-		double jimplificationTime = ((double) FeatureSensitiveEstimative.v().getJimplificationTotal()) / 1000000;
-		
-		double instrumentationTime = ((double) FeatureModelInstrumentorTransformer.getTransformationTime()) / 1000000;
-		double parsingTime = ((double) FeatureModelInstrumentorTransformer.getParsingTime()) / 1000000;
-		double colorLookupTableBuildingTime = ((double) FeatureModelInstrumentorTransformer.getColorLookupTableBuildingTime()) / 1000000;
-		double CIDEExtractingTime = ((double) LineNumberColorMapper.getExtractTime()) / 1000000;
-		
-		DoAnalysisOnClassPath.rdLiftedResults.add(rdLiftedTime);
-		DoAnalysisOnClassPath.rdRunnerResults.add(rdRunnerTime);
-		DoAnalysisOnClassPath.uvLiftedResults.add(uvLiftedTime);
-		DoAnalysisOnClassPath.uvRunnerResults.add(uvRunnerTime);
-		DoAnalysisOnClassPath.instrumentationResults.add(instrumentationTime);
-		DoAnalysisOnClassPath.jimplificationResults.add(jimplificationTime);
-		DoAnalysisOnClassPath.coloredBodyResults.add(ColoredBodyCounter.v().getCount());
-		DoAnalysisOnClassPath.parsingTimeResults.add(parsingTime);
-		DoAnalysisOnClassPath.colorLookupTableBuildingTimeResults.add(colorLookupTableBuildingTime);
-		DoAnalysisOnClassPath.CIDEExtractingTime.add(CIDEExtractingTime);
-		DoAnalysisOnClassPath.totalRDRunnerTime += rdRunnerTime;
-		DoAnalysisOnClassPath.totalRDLiftedTime += rdLiftedTime;
-		DoAnalysisOnClassPath.totalUVRunnerTime += uvRunnerTime;
-		DoAnalysisOnClassPath.totalUVLiftedTime += uvLiftedTime;
-
-		FeatureSensitiveEstimative.v().reset();
-		FeatureModelInstrumentorTransformer.v().reset();
-		AssignmentsCounter.v().reset();
-		LocalCounter.v().reset();
-		FeatureSensitiveFowardFlowAnalysis.reset();
-		LiftedReachingDefinitions.reset();
-		ColoredBodyCounter.v().reset();
-		LineNumberColorMapper.reset();
-		// #endif
 	}
 }

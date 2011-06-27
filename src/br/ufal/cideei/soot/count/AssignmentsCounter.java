@@ -3,6 +3,8 @@ package br.ufal.cideei.soot.count;
 
 import java.util.Map;
 
+import br.ufal.cideei.util.count.AbstractMetricsSink;
+
 import soot.Body;
 import soot.BodyTransformer;
 import soot.Local;
@@ -13,22 +15,23 @@ import soot.jimple.AssignStmt;
 
 public class AssignmentsCounter extends BodyTransformer implements ICounter<Long>, IResettable {
 
-	private static AssignmentsCounter instance = null;
+	private static final String PROPERTY_NAME = "assignments";
 
-	private AssignmentsCounter() {
-	}
-
-	// ignore assignments that have $tempN on the LHS.
-	private boolean ignoreTemp = true;
-
-	public static AssignmentsCounter v() {
-		if (instance == null)
-			instance = new AssignmentsCounter();
-		return instance;
-
-	}
+	// Ignore assignments that have $tempN on the left hand side?
+	private boolean ignoreTemp;
 
 	private long counter = 0;
+
+	private AbstractMetricsSink sink;
+
+	public AssignmentsCounter(AbstractMetricsSink sink, boolean ignoreTemp) {
+		this.ignoreTemp = ignoreTemp;
+		this.sink = sink;
+	}
+
+	public AssignmentsCounter(boolean ignoreTemp) {
+		this.ignoreTemp = ignoreTemp;
+	}
 
 	@Override
 	protected void internalTransform(Body body, String phase, Map opt) {
@@ -50,7 +53,7 @@ public class AssignmentsCounter extends BodyTransformer implements ICounter<Long
 				}
 			}
 		}
-
+		sink.flow(body, AssignmentsCounter.PROPERTY_NAME, counterChunk);
 		counter += counterChunk;
 	}
 

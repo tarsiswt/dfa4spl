@@ -1,13 +1,18 @@
 package br.ufal.cideei.soot.analyses.reachingdefs;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
 import soot.Unit;
 import soot.jimple.AssignStmt;
+import soot.jimple.NopStmt;
 import soot.toolkits.graph.DirectedGraph;
 import soot.toolkits.scalar.ArraySparseSet;
 import soot.toolkits.scalar.FlowSet;
 import soot.toolkits.scalar.ForwardFlowAnalysis;
 
-public class SimpleReachingDefinitions extends ForwardFlowAnalysis<Unit, FlowSet> {
+public class SimpleReachingDefinitions extends ForwardFlowAnalysis<Unit, FlowSet> implements ReachedDefinitions {
 
 	/**
 	 * Instantiates a new simple reaching definitions.
@@ -116,5 +121,31 @@ public class SimpleReachingDefinitions extends ForwardFlowAnalysis<Unit, FlowSet
 		if (unit instanceof AssignStmt) {
 			dest.add(unit);
 		}
+	}
+
+	@Override
+	public List<Unit> getReachedUses(Unit target) {
+		Iterator<Unit> unitIterator = graph.iterator();
+		List<Unit> reached = new ArrayList<Unit>();
+		while (unitIterator.hasNext()) {
+			Unit nextUnit = unitIterator.next();
+			// Ignore nop statements
+			if (nextUnit instanceof NopStmt) {
+				continue;
+			}
+
+			FlowSet reachingDefSet = this.getFlowAfter(nextUnit);
+			Iterator<? extends Unit> flowIterator = reachingDefSet.toList().iterator();
+			while (flowIterator.hasNext()) {
+				Unit nextUnitInFlow = flowIterator.next();
+				if (nextUnitInFlow instanceof NopStmt) {
+					continue;
+				}
+				if (nextUnitInFlow.equals(target)) {
+					reached.add(nextUnit);
+				}
+			}
+		}
+		return reached;
 	}
 }

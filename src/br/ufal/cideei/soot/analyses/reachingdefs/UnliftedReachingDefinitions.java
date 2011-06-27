@@ -8,7 +8,7 @@ import soot.toolkits.scalar.FlowSet;
 import soot.toolkits.scalar.ForwardFlowAnalysis;
 import br.ufal.cideei.soot.instrument.FeatureTag;
 
-// TODO: Auto-generated Javadoc
+// TODO: Find a better name!
 /**
  */
 public class UnliftedReachingDefinitions extends ForwardFlowAnalysis<Unit, FlowSet> {
