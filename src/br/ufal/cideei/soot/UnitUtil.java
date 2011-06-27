@@ -81,7 +81,7 @@ public class UnitUtil {
 	 */
 	public static File serializeGraph(Body body, String fileName) {
 		CFGGraphType graphType = CFGGraphType.BRIEF_UNIT_GRAPH;
-		DirectedGraph<Unit> graph = graphType.buildGraph(body);
+		DirectedGraph graph = graphType.buildGraph(body);
 		SootUnitGraphSerializer drawer = new SootUnitGraphSerializer();
 		DotGraph canvas = graphType.drawGraph(drawer, graph, body);
 		String methodName = body.getMethod().getSubSignature();

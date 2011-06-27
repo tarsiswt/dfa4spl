@@ -26,7 +26,7 @@ public class FeatureObliviousEstimative extends BodyTransformer {
 
 	@Override
 	protected void internalTransform(Body body, String phase, Map opt) {
-		FeatureTag featureTag = (FeatureTag) body.getTag("FeatureTag");
+		FeatureTag featureTag = (FeatureTag) body.getTag(FeatureTag.FEAT_TAG_NAME);
 		ProfilingTag profilingTag = (ProfilingTag) body.getTag("ProfilingTag");
 
 		int featureTagSize = featureTag.size();

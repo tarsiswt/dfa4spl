@@ -45,7 +45,7 @@ public class ASTNodeUnitBridge {
 		try {
 			ASTNodeVisitor = new ASTNodesAtRangeFinder(unit, compilationUnit);
 		} catch (IllegalArgumentException ex) {
-			// TODO: silently ignoring an error is usually a bad idea.
+			// TODO: silently ignoring an error is a bad idea.
 			return Collections.emptyList();
 		}
 		compilationUnit.accept(ASTNodeVisitor);

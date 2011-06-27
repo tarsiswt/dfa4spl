@@ -124,7 +124,7 @@ public class DoFeatureObliviousAnalysisOnClassPath extends AbstractHandler {
 
 		SootManager.configure(classPath + File.pathSeparator + libs);
 
-		IFeatureExtracter extracter = CIDEFeatureExtracterFactory.getInstance().newExtracter(javaProject);
+		IFeatureExtracter extracter = CIDEFeatureExtracterFactory.getInstance().newExtracter();
 		IPackageFragmentRoot[] packageFragmentRoots = javaProject.findPackageFragmentRoots(entry);
 		for (IPackageFragmentRoot packageFragmentRoot : packageFragmentRoots) {
 			IJavaElement[] children = null;

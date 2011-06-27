@@ -9,8 +9,6 @@ import java.util.Set;
 
 import de.ovgu.cide.features.IFeature;
 
-
-
 // TODO: Auto-generated Javadoc
 /**
  * The Class SetUtil is a utility class to generate relevant sets to the
@@ -33,7 +31,7 @@ public class SetUtil {
 	 *            the original set
 	 * @return the sets the
 	 */
-	// TODO: search for a more efficient implementation.
+	// TODO: look for a more efficient implementation.
 	public static <T> Set<Set<T>> powerSet(Set<T> originalSet) {
 		Set<Set<T>> sets = new HashSet<Set<T>>();
 		if (originalSet.isEmpty()) {

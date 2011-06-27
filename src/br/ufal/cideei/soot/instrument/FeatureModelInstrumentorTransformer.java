@@ -93,7 +93,7 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 
 		/*
 		 * After the following loop, allPresentFeatures will hold all the colors
-		 * found in the body.
+		 * found in the body. Used to calculate a "local" power set.
 		 */
 		Set<String> allPresentFeatures = new HashSet<String>();
 

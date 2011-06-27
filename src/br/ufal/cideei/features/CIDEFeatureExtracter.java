@@ -5,7 +5,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.dom.ASTNode;
 
 import cide.gast.IASTNode;
@@ -27,8 +26,12 @@ class CIDEFeatureExtracter implements IFeatureExtracter {
 	CIDEFeatureExtracter() {
 	}
 
-	/* (non-Javadoc)
-	 * @see br.ufal.cideei.features.IFeatureExtracter#getFeaturesNames(org.eclipse.jdt.core.dom.ASTNode, org.eclipse.core.resources.IFile)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * br.ufal.cideei.features.IFeatureExtracter#getFeaturesNames(org.eclipse
+	 * .jdt.core.dom.ASTNode, org.eclipse.core.resources.IFile)
 	 */
 	@Override
 	public Set<String> getFeaturesNames(ASTNode node, IFile file) {
@@ -46,8 +49,12 @@ class CIDEFeatureExtracter implements IFeatureExtracter {
 	// Returns a the Set of IFeatures associated with a given ASTNode. The
 	// ASTNode must be from the file.
 
-	/* (non-Javadoc)
-	 * @see br.ufal.cideei.features.IFeatureExtracter#getFeatures(org.eclipse.jdt.core.dom.ASTNode, org.eclipse.core.resources.IFile)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * br.ufal.cideei.features.IFeatureExtracter#getFeatures(org.eclipse.jdt
+	 * .core.dom.ASTNode, org.eclipse.core.resources.IFile)
 	 */
 	@Override
 	public Set<IFeature> getFeatures(ASTNode node, IFile file) {

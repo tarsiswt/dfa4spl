@@ -112,7 +112,7 @@ public class UnliftedUnitializedVariablesAnalysis extends ForwardFlowAnalysis<Un
 		flowThroughCounter++;
 		// #endif
 
-		FeatureTag<String> tag = (FeatureTag<String>) unit.getTag("FeatureTag");
+		FeatureTag<String> tag = (FeatureTag<String>) unit.getTag(FeatureTag.FEAT_TAG_NAME);
 		int featureTagId = tag.getId();
 
 		if ((featureTagId & configurationId) == featureTagId) {

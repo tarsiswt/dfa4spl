@@ -126,7 +126,7 @@ public class LiftedUninitializedVariableAnalysis extends ForwardFlowAnalysis<Uni
 		flowThroughCounter++;
 		// #endif
 
-		FeatureTag<String> tag = (FeatureTag<String>) unit.getTag("FeatureTag");
+		FeatureTag<String> tag = (FeatureTag<String>) unit.getTag(FeatureTag.FEAT_TAG_NAME);
 		int id = tag.getId();
 
 		Set<String>[] configurations = source.getConfigurations();

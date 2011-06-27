@@ -512,8 +512,8 @@ public class SootUnitGraphSerializer extends CFGToDotGraph {
 					} else {
 						nodeLabel = targetLabel + ": " + printer.toString();
 					}
-					if (unit.hasTag("FeatureTag")) {
-						FeatureTag ftag = (FeatureTag) unit.getTag("FeatureTag");
+					if (unit.hasTag(FeatureTag.FEAT_TAG_NAME)) {
+						FeatureTag ftag = (FeatureTag) unit.getTag(FeatureTag.FEAT_TAG_NAME);
 						nodeLabel = nodeLabel + "\\n" + ftag.getFeatures().toString().replace("[", "{").replace("]", "}");
 					}
 					if (unit.hasTag("SourceLnPosTag")) {

@@ -23,7 +23,7 @@ import soot.tagkit.Tag;
 public class FeatureTag<E> extends AbstractSet<E> implements Tag {
 
 	/** The Constant FEAT_TAG_NAME. */
-	private static final String FEAT_TAG_NAME = "FeatureTag";
+	public static final String FEAT_TAG_NAME = "FeatureTag";
 
 	/** The features are kept in this list */
 	private Set<E> features = new HashSet<E>();

@@ -103,7 +103,7 @@ public class LiftedReachingDefinitions extends ForwardFlowAnalysis<Unit, LiftedF
 		flowThroughCounter++;
 		// #endif
 
-		FeatureTag<String> tag = (FeatureTag<String>) unit.getTag("FeatureTag");
+		FeatureTag<String> tag = (FeatureTag<String>) unit.getTag(FeatureTag.FEAT_TAG_NAME);
 		int id = tag.getId();
 
 		FlowSet[] sourceLattices = source.getLattices();
@@ -148,7 +148,6 @@ public class LiftedReachingDefinitions extends ForwardFlowAnalysis<Unit, LiftedF
 	 *            the unit
 	 * @param configuration
 	 */
-	// TODO: MUST ITERATE THROUGH ALL DEFBOXES!!!
 	protected void gen(FlowSet source, Unit unit, FlowSet dest, Set<String> configuration) {
 		if (unit instanceof AssignStmt) {
 			dest.add(unit);

@@ -17,7 +17,7 @@ public class ColoredBodyCounter extends BodyCounter {
 	@Override
 	protected void internalTransform(Body body, String phase, Map opt) {
 		super.internalTransform(body, phase, opt);
-		FeatureTag tag = (FeatureTag) body.getTag("FeatureTag");
+		FeatureTag tag = (FeatureTag) body.getTag(FeatureTag.FEAT_TAG_NAME);
 		if (tag.getFeatures().size() > 1)
 			coloredCounter++;
 	}

@@ -3,10 +3,6 @@
  */
 package br.ufal.cideei.features;
 
-import org.eclipse.jdt.core.IJavaProject;
-
-// TODO: Auto-generated Javadoc
-//FIXME: terrible class structre. Think Abstract Factory.
 /**
  * A factory for creating CIDEFeatureExtracter objects.
  */
@@ -40,16 +36,4 @@ public class CIDEFeatureExtracterFactory {
 	public IFeatureExtracter newExtracter() {
 		return new CIDEFeatureExtracter();
 	}
-
-	/**
-	 * New extracter.
-	 * 
-	 * @param javaProject
-	 *            the java project
-	 * @return the i feature extracter
-	 */
-	public IFeatureExtracter newExtracter(IJavaProject javaProject) {
-		return new CIDEFeatureExtracter();
-	}
-
 }

@@ -34,7 +34,7 @@ public class VertexNameFilterProvider<V extends Unit> implements VertexNameProvi
 			SourceLnPosTag tag = (SourceLnPosTag) vertex.getTag("SourceLnPosTag");
 			String feat;
 			try {
-				FeatureTag ftag = (FeatureTag) vertex.getTag("FeatureTag");
+				FeatureTag ftag = (FeatureTag) vertex.getTag(FeatureTag.FEAT_TAG_NAME);
 				feat = ftag.getFeatures().toString();
 			} catch (Exception ex) {
 				ex.printStackTrace();

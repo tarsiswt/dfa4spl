@@ -93,7 +93,7 @@ public class UnliftedReachingDefinitions extends ForwardFlowAnalysis<Unit, FlowS
 		flowThroughCounter++;
 		// #endif
 
-		FeatureTag<String> tag = (FeatureTag<String>) unit.getTag("FeatureTag");
+		FeatureTag<String> tag = (FeatureTag<String>) unit.getTag(FeatureTag.FEAT_TAG_NAME);
 		int tagFeaturesId = tag.getId();
 
 		if ((tagFeaturesId & this.configurationId) == tagFeaturesId) {
@@ -129,7 +129,6 @@ public class UnliftedReachingDefinitions extends ForwardFlowAnalysis<Unit, FlowS
 	 * @param unit
 	 *            the unit
 	 */
-	// TODO: MUST ITERATE THROUGH ALL DEFBOXES!!!
 	private void gen(FlowSet dest, Unit unit) {
 		if (unit instanceof AssignStmt) {
 			dest.add(unit);
