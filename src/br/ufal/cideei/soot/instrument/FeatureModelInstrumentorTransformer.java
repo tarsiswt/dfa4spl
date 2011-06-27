@@ -67,7 +67,9 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 	public FeatureModelInstrumentorTransformer(AbstractMetricsSink sink, IFeatureExtracter extracter, String classPath) {
 		FeatureModelInstrumentorTransformer.classPath = classPath;
 		FeatureModelInstrumentorTransformer.extracter = extracter;
+		// #ifdef METRICS
 		this.sink = sink;
+		// #endif
 	}
 
 	/*
@@ -147,7 +149,8 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 				}
 			}
 		}
-
+		
+		// #ifdef METRICS
 		long transformationDelta = System.nanoTime() - startTransform;
 		if (sink != null) {
 			sink.flow(body, FeatureModelInstrumentorTransformer.INSTRUMENTATION, transformationDelta);
@@ -219,19 +222,24 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 		IPath path = new Path(sourceFileTag.getAbsolutePath());
 		this.file = org.eclipse.core.resources.ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(path);
 
-		// TODO: wrap metrics around the delta calculations
+		//#ifdef METRICS
 		long startCompilationUnitParser = System.nanoTime();
+		//#endif
 		CompilationUnit compilationUnit = cachedParser.parse(file);
+		//#ifdef METRICS
 		long parsingDelta = System.nanoTime() - startCompilationUnitParser;
 		if (sink != null)
 			sink.flow(body, FeatureModelInstrumentorTransformer.PARSING, parsingDelta);
 		FeatureModelInstrumentorTransformer.parsingTime += parsingDelta;
 
 		long startBuilderColorLookUpTable = System.nanoTime();
+		//#endif
 		this.currentColorMap = cachedLineColorMapper.makeAccept(compilationUnit, file, extracter, compilationUnit);
+		//#ifdef METRICS
 		long builderColorLookUpTableDelta = System.nanoTime() - startBuilderColorLookUpTable;
 		if (sink != null)
 			sink.flow(body, FeatureModelInstrumentorTransformer.COLOR_LOOKUP, builderColorLookUpTableDelta);
 		FeatureModelInstrumentorTransformer.colorLookupTableBuildingTime += builderColorLookUpTableDelta;
+		//#endif
 	}
 }

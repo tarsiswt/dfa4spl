@@ -28,9 +28,11 @@ import br.ufal.cideei.features.IFeatureExtracter;
 import br.ufal.cideei.soot.SootManager;
 import br.ufal.cideei.soot.analyses.wholeline.WholeLineObliviousReachingDefinitionsAnalysis;
 import br.ufal.cideei.soot.analyses.wholeline.WholeLineObliviousUninitializedVariablesAnalysis;
+//#ifdef METRICS
 import br.ufal.cideei.soot.count.AssignmentsCounter;
 import br.ufal.cideei.soot.count.FeatureObliviousEstimative;
 import br.ufal.cideei.soot.count.LocalCounter;
+//#endif
 import br.ufal.cideei.soot.instrument.FeatureModelInstrumentorTransformer;
 import br.ufal.cideei.util.count.MetricsSink;
 import br.ufal.cideei.util.count.MetricsTable;

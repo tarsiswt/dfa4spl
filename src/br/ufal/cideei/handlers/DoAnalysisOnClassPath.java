@@ -1,10 +1,7 @@
 package br.ufal.cideei.handlers;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 
-import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -30,11 +27,12 @@ import br.ufal.cideei.soot.analyses.wholeline.WholeLineLiftedReachingDefinitions
 import br.ufal.cideei.soot.analyses.wholeline.WholeLineLiftedUninitializedVariableAnalysis;
 import br.ufal.cideei.soot.analyses.wholeline.WholeLineRunnerReachingDefinitions;
 import br.ufal.cideei.soot.analyses.wholeline.WholeLineRunnerUninitializedVariable;
+//#ifdef METRICS
 import br.ufal.cideei.soot.count.AssignmentsCounter;
 import br.ufal.cideei.soot.count.FeatureSensitiveEstimative;
 import br.ufal.cideei.soot.count.LocalCounter;
+//#endif
 import br.ufal.cideei.soot.instrument.FeatureModelInstrumentorTransformer;
-import br.ufal.cideei.util.ExecutionResultWrapper;
 import br.ufal.cideei.util.count.MetricsSink;
 import br.ufal.cideei.util.count.MetricsTable;
 
