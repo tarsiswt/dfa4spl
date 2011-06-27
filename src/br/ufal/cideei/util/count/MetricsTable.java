@@ -7,8 +7,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.Set;
-import java.util.Map.Entry;
+import java.util.TreeSet;
 
 import org.apache.commons.collections.MapIterator;
 import org.apache.commons.collections.bidimap.TreeBidiMap;
@@ -22,6 +21,7 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.apache.poi.ss.util.CellReference;
 
 public class MetricsTable {
 
@@ -108,12 +108,12 @@ public class MetricsTable {
 			String property = (String) nextKeyVal.getKey();
 			Object value = nextKeyVal.getValue();
 			Integer columnIndex = (Integer) columnMapping.getKey(property);
-			
+
 			if (value instanceof Double) {
 				Cell cell = entryRow.createCell(columnIndex);
 				cell.setCellValue((Double) value);
 				cell.setCellType(HSSFCell.CELL_TYPE_NUMERIC);
-				
+
 			} else {
 				Cell cell = entryRow.createCell(columnIndex);
 				cell.setCellValue((String) value);
@@ -134,6 +134,23 @@ public class MetricsTable {
 		}
 	}
 
+	private void printFooters() {
+		int columns = columnMapping.size();
+		Row firstRow = sheet.getRow(2);
+		Row lastRow = sheet.getRow(rowCount - 1);
+		Row footerRow = sheet.createRow(rowCount++);
+		for (int index = 0; index < columns; index++) {
+			Cell cell = firstRow.getCell(index);
+			if (cell.getCellType() == Cell.CELL_TYPE_NUMERIC) {
+				Cell footerCell = footerRow.createCell(index);
+
+				CellReference firstCell = new CellReference(firstRow.getCell(index));
+				CellReference lastCell = new CellReference(lastRow.getCell(index));
+				footerCell.setCellFormula("SUM(" + firstCell.formatAsString() + ":" + lastCell.formatAsString() + ")");
+			}
+		}
+	}
+
 	private void mapColumns(Collection<DefaultKeyValue> sample) {
 		columnMapping = new TreeBidiMap();
 		int columnCounter = 1;
@@ -144,9 +161,10 @@ public class MetricsTable {
 
 	public void dumpEntriesAndClose() throws IOException {
 		dumpAllEntries();
+		printFooters();
 		int noOfColumns = columnMapping.keySet().size();
-		for (; noOfColumns > 0; noOfColumns--) {
-			sheet.autoSizeColumn(noOfColumns);
+		for (int index = 0; index < noOfColumns; index++) {
+			sheet.autoSizeColumn(index);
 		}
 		FileOutputStream outStream = new FileOutputStream(output);
 		workBook.write(outStream);
@@ -154,10 +172,9 @@ public class MetricsTable {
 	}
 
 	private void dumpAllEntries() {
-		Set entrySet = map.entrySet();
-		for (Object entryObj : entrySet) {
-			Entry entry = (Entry) entryObj;
-			dumpEntry((String) entry.getKey(), (Collection) entry.getValue());
+		TreeSet sortedKeySet = new TreeSet(map.keySet());
+		for (Object object : sortedKeySet) {
+			dumpEntry((String) object, map.getCollection(object));
 		}
 	}
 

@@ -21,19 +21,15 @@ import de.ovgu.cide.language.jdt.ASTBridge;
 class CIDEFeatureExtracter implements IFeatureExtracter {
 
 	/**
-	 * The project from which colors from nodes are to be extracted from the
-	 * feature model.
-	 */
-	private IJavaProject javaProject;
-
-	/**
 	 * Instantiates a new CIDE feature extracter. Clients should use the
 	 * {@link CIDEFeatureExtracterFactory#newExtracter()} method.
 	 */
 	CIDEFeatureExtracter() {
 	}
 
-
+	/* (non-Javadoc)
+	 * @see br.ufal.cideei.features.IFeatureExtracter#getFeaturesNames(org.eclipse.jdt.core.dom.ASTNode, org.eclipse.core.resources.IFile)
+	 */
 	@Override
 	public Set<String> getFeaturesNames(ASTNode node, IFile file) {
 		Set<IFeature> cideFeatureSet = this.getFeatures(node, file);
@@ -47,8 +43,12 @@ class CIDEFeatureExtracter implements IFeatureExtracter {
 		return stringFeatureSet;
 	}
 
-	 //Returns a the Set of IFeatures associated with a given ASTNode. The ASTNode must be from the file.
+	// Returns a the Set of IFeatures associated with a given ASTNode. The
+	// ASTNode must be from the file.
 
+	/* (non-Javadoc)
+	 * @see br.ufal.cideei.features.IFeatureExtracter#getFeatures(org.eclipse.jdt.core.dom.ASTNode, org.eclipse.core.resources.IFile)
+	 */
 	@Override
 	public Set<IFeature> getFeatures(ASTNode node, IFile file) {
 		ColoredSourceFile coloredFile;
