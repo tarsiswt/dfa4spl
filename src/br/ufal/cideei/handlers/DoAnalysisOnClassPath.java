@@ -37,14 +37,18 @@ import br.ufal.cideei.util.count.MetricsSink;
 import br.ufal.cideei.util.count.MetricsTable;
 
 public class DoAnalysisOnClassPath extends AbstractHandler {
+	//#ifdef METRICS 
 	private static MetricsSink sink;
+	//#endif
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		int times = 3;
 		try {
 			for (int i = 0; i < times; i++) {
+				//#ifdef METRICS
 				sink = new MetricsSink(new MetricsTable(new File(System.getProperty("user.home") + File.separator + "fs.xls")));
+				//#endif
 
 				IStructuredSelection selection = (IStructuredSelection) HandlerUtil.getActiveMenuSelection(event);
 				Object firstElement = selection.getFirstElement();
@@ -104,15 +108,19 @@ public class DoAnalysisOnClassPath extends AbstractHandler {
 				 * terminate the Metrics Facade. This dumps all the in-memory
 				 * information.
 				 */
+				//#ifdef METRICS
 				sink.terminate();
 				sink = null;
+				//#endif
 				System.out.println("=============" + (i + 1) + "/" + times + "=============");
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
 			G.reset();
+			//#ifdef METRICS
 			sink.terminate();
+			//#endif
 		}
 
 		return null;
@@ -172,7 +180,11 @@ public class DoAnalysisOnClassPath extends AbstractHandler {
 
 		Scene.v().loadNecessaryClasses();
 
-		Transform instrumentation = new Transform("jtp.fminst", new FeatureModelInstrumentorTransformer(sink, extracter, classPath));
+		Transform instrumentation = new Transform("jtp.fminst", new FeatureModelInstrumentorTransformer(extracter, classPath)
+		// #ifdef METRICS
+				.setMetricsSink(sink)
+		// #endif
+		);
 		PackManager.v().getPack("jtp").add(instrumentation);
 
 		Transform reachingDefRunner = new Transform("jap.rdrunner", WholeLineRunnerReachingDefinitions.v());

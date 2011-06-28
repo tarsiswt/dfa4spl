@@ -64,13 +64,17 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 	 * TODO: maybe injecting the sink depency in a different way could make this
 	 * funcionality less intrusive.
 	 */
-	public FeatureModelInstrumentorTransformer(AbstractMetricsSink sink, IFeatureExtracter extracter, String classPath) {
+	public FeatureModelInstrumentorTransformer(IFeatureExtracter extracter, String classPath) {
 		FeatureModelInstrumentorTransformer.classPath = classPath;
 		FeatureModelInstrumentorTransformer.extracter = extracter;
-		// #ifdef METRICS
-		this.sink = sink;
-		// #endif
 	}
+	
+	//#ifdef METRICS
+	public FeatureModelInstrumentorTransformer setMetricsSink(AbstractMetricsSink sink) {
+		this.sink = sink;
+		return this;
+	}
+	//#endif
 
 	/*
 	 * (non-Javadoc)

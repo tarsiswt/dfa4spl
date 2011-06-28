@@ -3,7 +3,9 @@ package br.ufal.cideei.soot.analyses.wholeline;
 import java.util.Map;
 import java.util.Set;
 
+//#ifdef METRICS
 import profiling.ProfilingTag;
+//#endif
 import soot.Body;
 import soot.BodyTransformer;
 import soot.toolkits.graph.BriefUnitGraph;

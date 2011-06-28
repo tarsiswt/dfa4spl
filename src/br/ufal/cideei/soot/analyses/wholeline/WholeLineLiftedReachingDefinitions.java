@@ -9,7 +9,7 @@ import soot.BodyTransformer;
 import soot.toolkits.graph.BriefUnitGraph;
 import br.ufal.cideei.soot.analyses.reachingdefs.LiftedReachingDefinitions;
 import br.ufal.cideei.soot.instrument.FeatureTag;
-
+//TODO: can this class structure could be replaced by an abstract factory?
 public class WholeLineLiftedReachingDefinitions extends BodyTransformer {
 
 	private static WholeLineLiftedReachingDefinitions instance = new WholeLineLiftedReachingDefinitions();
