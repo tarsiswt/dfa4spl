@@ -30,8 +30,7 @@ public class MetricsTable {
 	MultiValueMap map = new MultiValueMap();
 
 	/*
-	 * Maps int -> String, where int is the column position and the String is
-	 * the column name
+	 * Maps int -> String, where int is the column position and the String is the column name
 	 */
 	private TreeBidiMap columnMapping;
 
@@ -126,7 +125,7 @@ public class MetricsTable {
 	private void printHeaders() {
 		MapIterator columnMapIterator = columnMapping.mapIterator();
 		Row headerRow = sheet.createRow(0);
-		rowCount = 1;
+		rowCount++;
 
 		while (columnMapIterator.hasNext()) {
 			Cell headerCell = headerRow.createCell((Integer) columnMapIterator.next());
@@ -136,17 +135,36 @@ public class MetricsTable {
 
 	private void printFooters() {
 		int columns = columnMapping.size();
-		Row firstRow = sheet.getRow(2);
+		Row firstRow = sheet.getRow(1);
 		Row lastRow = sheet.getRow(rowCount - 1);
-		Row footerRow = sheet.createRow(rowCount++);
-		for (int index = 0; index < columns; index++) {
+
+		Row sumFooterRow = sheet.createRow(rowCount++);
+		Cell sumFooterLabelCell = sumFooterRow.createCell(0);
+		sumFooterLabelCell.setCellValue("SUM");
+
+		Row averageFooterRow = sheet.createRow(rowCount++);
+		Cell averageFooterLabelCell = averageFooterRow.createCell(0);
+		averageFooterLabelCell.setCellValue("AVERAGE");
+
+		for (int index = 0; index <= columns; index++) {
 			Cell cell = firstRow.getCell(index);
+			if (cell == null) {
+				continue;
+			}
 			if (cell.getCellType() == Cell.CELL_TYPE_NUMERIC) {
-				Cell footerCell = footerRow.createCell(index);
+				Cell sumFooterCell = sumFooterRow.createCell(index);
+				Cell averageFooterCell = averageFooterRow.createCell(index);
 
 				CellReference firstCell = new CellReference(firstRow.getCell(index));
-				CellReference lastCell = new CellReference(lastRow.getCell(index));
-				footerCell.setCellFormula("SUM(" + firstCell.formatAsString() + ":" + lastCell.formatAsString() + ")");
+				Cell lastRowCell = lastRow.getCell(index);
+				if (lastRowCell == null){
+					continue;
+				}
+				CellReference lastCell = new CellReference(lastRowCell);
+
+				sumFooterCell.setCellFormula("SUM(" + firstCell.formatAsString() + ":" + lastCell.formatAsString() + ")");
+				averageFooterCell.setCellFormula("AVERAGE(" + firstCell.formatAsString() + ":" + lastCell.formatAsString() + ")");
+
 			}
 		}
 	}

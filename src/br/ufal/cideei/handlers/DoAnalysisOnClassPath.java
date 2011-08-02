@@ -23,32 +23,43 @@ import soot.Transform;
 import br.ufal.cideei.features.CIDEFeatureExtracterFactory;
 import br.ufal.cideei.features.IFeatureExtracter;
 import br.ufal.cideei.soot.SootManager;
+
+//#ifdef LAZY
+import br.ufal.cideei.soot.analyses.wholeline.WholeLineLazyReachingDefinitions;
+import br.ufal.cideei.soot.analyses.wholeline.WholeLineLazyUninitializedVariables;
+
+//#endif
+
 import br.ufal.cideei.soot.analyses.wholeline.WholeLineLiftedReachingDefinitions;
 import br.ufal.cideei.soot.analyses.wholeline.WholeLineLiftedUninitializedVariableAnalysis;
 import br.ufal.cideei.soot.analyses.wholeline.WholeLineRunnerReachingDefinitions;
 import br.ufal.cideei.soot.analyses.wholeline.WholeLineRunnerUninitializedVariable;
+
 //#ifdef METRICS
 import br.ufal.cideei.soot.count.AssignmentsCounter;
 import br.ufal.cideei.soot.count.FeatureSensitiveEstimative;
 import br.ufal.cideei.soot.count.LocalCounter;
-//#endif
-import br.ufal.cideei.soot.instrument.FeatureModelInstrumentorTransformer;
 import br.ufal.cideei.util.count.MetricsSink;
 import br.ufal.cideei.util.count.MetricsTable;
 
+//#endif
+
+import br.ufal.cideei.soot.instrument.FeatureModelInstrumentorTransformer;
+
 public class DoAnalysisOnClassPath extends AbstractHandler {
-	//#ifdef METRICS 
+	// #ifdef METRICS
 	private static MetricsSink sink;
-	//#endif
+
+	// #endif
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
-		int times = 3;
+		int times = 1;
 		try {
 			for (int i = 0; i < times; i++) {
-				//#ifdef METRICS
+				// #ifdef METRICS
 				sink = new MetricsSink(new MetricsTable(new File(System.getProperty("user.home") + File.separator + "fs.xls")));
-				//#endif
+				// #endif
 
 				IStructuredSelection selection = (IStructuredSelection) HandlerUtil.getActiveMenuSelection(event);
 				Object firstElement = selection.getFirstElement();
@@ -64,24 +75,18 @@ public class DoAnalysisOnClassPath extends AbstractHandler {
 					}
 
 					/*
-					 * To build the path string variable that will represent
-					 * Soot's classpath we will first iterate through all libs
-					 * (.jars) files, then through all source classpaths.
+					 * To build the path string variable that will represent Soot's classpath we will first iterate
+					 * through all libs (.jars) files, then through all source classpaths.
 					 * 
-					 * FIXME: WARNING: A bug was found on Soot, in which the
-					 * FileSourceTag would contain incorrect information
-					 * regarding the absolute location of the source file. In
-					 * this workaround, the classpath must be injected into the
-					 * FeatureModelInstrumentorTransformer class (done though
-					 * its constructor).
+					 * FIXME: WARNING: A bug was found on Soot, in which the FileSourceTag would contain incorrect
+					 * information regarding the absolute location of the source file. In this workaround, the classpath
+					 * must be injected into the FeatureModelInstrumentorTransformer class (done through its
+					 * constructor).
 					 * 
-					 * As a consequence, we CANNOT build an string with all
-					 * classpaths that contains source code for the project and
-					 * thus one only source code classpath can be analysed at a
-					 * given time.
+					 * As a consequence, we CANNOT build an string with all classpaths that contains source code for the
+					 * project and thus one only source code classpath can be analysed at a given time.
 					 * 
-					 * This seriously restricts the range of projects that can
-					 * be analysed with this tool.
+					 * This seriously restricts the range of projects that can be analysed with this tool.
 					 */
 					StringBuilder libsPaths = new StringBuilder();
 					for (IClasspathEntry entry : classPathEntries) {
@@ -90,8 +95,7 @@ public class DoAnalysisOnClassPath extends AbstractHandler {
 							if (file.isAbsolute()) {
 								libsPaths.append(file.getAbsolutePath() + File.pathSeparator);
 							} else {
-								libsPaths.append(ResourcesPlugin.getWorkspace().getRoot().getFile(entry.getPath()).getLocation().toOSString()
-										+ File.pathSeparator);
+								libsPaths.append(ResourcesPlugin.getWorkspace().getRoot().getFile(entry.getPath()).getLocation().toOSString() + File.pathSeparator);
 							}
 						}
 					}
@@ -105,22 +109,21 @@ public class DoAnalysisOnClassPath extends AbstractHandler {
 				G.reset();
 
 				/*
-				 * terminate the Metrics Facade. This dumps all the in-memory
-				 * information.
+				 * terminate the Metrics Facade. This dumps all the in-memory information.
 				 */
-				//#ifdef METRICS
+				// #ifdef METRICS
 				sink.terminate();
 				sink = null;
-				//#endif
+				// #endif
 				System.out.println("=============" + (i + 1) + "/" + times + "=============");
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
 			G.reset();
-			//#ifdef METRICS
+			// #ifdef METRICS
 			sink.terminate();
-			//#endif
+			// #endif
 		}
 
 		return null;
@@ -187,17 +190,52 @@ public class DoAnalysisOnClassPath extends AbstractHandler {
 		);
 		PackManager.v().getPack("jtp").add(instrumentation);
 
-		Transform reachingDefRunner = new Transform("jap.rdrunner", WholeLineRunnerReachingDefinitions.v());
-		PackManager.v().getPack("jap").add(reachingDefRunner);
-
-		Transform reachingDefLifted = new Transform("jap.rdlifted", WholeLineLiftedReachingDefinitions.v());
-		PackManager.v().getPack("jap").add(reachingDefLifted);
-
-		Transform uninitVarsLifted = new Transform("jap.uninitvarlifted", WholeLineLiftedUninitializedVariableAnalysis.v());
-		PackManager.v().getPack("jap").add(uninitVarsLifted);
-
-		Transform uninitVarsRunner = new Transform("jap.uninitvarrunner", WholeLineRunnerUninitializedVariable.v());
-		PackManager.v().getPack("jap").add(uninitVarsRunner);
+		// #ifdef LAZY
+		 Transform reachingDefLazy = new Transform("jap.rdlazy", WholeLineLazyReachingDefinitions.v()
+		// #ifdef METRICS
+		 .setMetricsSink(sink)
+		// #endif
+		 );
+		 PackManager.v().getPack("jap").add(reachingDefLazy);
+		
+		Transform uninitVarsLazy = new Transform("jap.uninitvarlazy", WholeLineLazyUninitializedVariables.v()
+		// #ifdef METRICS
+				.setMetricsSink(sink)
+		// #endif
+		);
+		PackManager.v().getPack("jap").add(uninitVarsLazy);
+		
+		// #else
+//@
+//@		Transform reachingDefRunner = new Transform("jap.rdrunner", WholeLineRunnerReachingDefinitions.v()
+		// #ifdef METRICS
+//@				.setMetricsSink(sink)
+		// #endif
+//@		);
+//@		PackManager.v().getPack("jap").add(reachingDefRunner);
+//@
+//@		Transform reachingDefLifted = new Transform("jap.rdlifted", WholeLineLiftedReachingDefinitions.v()
+		// #ifdef METRICS
+//@				.setMetricsSink(sink)
+		// #endif
+//@		);
+//@		PackManager.v().getPack("jap").add(reachingDefLifted);
+//@
+//@		Transform uninitVarsLifted = new Transform("jap.uninitvarlifted", WholeLineLiftedUninitializedVariableAnalysis.v()
+		// #ifdef METRICS
+//@				.setMetricsSink(sink)
+		// #endif
+//@		);
+//@		PackManager.v().getPack("jap").add(uninitVarsLifted);
+//@
+//@		Transform uninitVarsRunner = new Transform("jap.uninitvarrunner", WholeLineRunnerUninitializedVariable.v()
+		// #ifdef METRICS
+//@				.setMetricsSink(sink)
+		// #endif
+//@		);
+//@		PackManager.v().getPack("jap").add(uninitVarsRunner);
+//@
+		// #endif
 
 		// #ifdef METRICS
 		Transform assignmentsCounter = new Transform("jap.counter.assgnmt", new AssignmentsCounter(sink, true));

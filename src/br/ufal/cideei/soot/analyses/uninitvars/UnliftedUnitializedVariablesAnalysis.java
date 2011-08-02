@@ -11,6 +11,8 @@ import soot.toolkits.scalar.FlowSet;
 import soot.toolkits.scalar.ForwardFlowAnalysis;
 import soot.util.Chain;
 import br.ufal.cideei.soot.instrument.FeatureTag;
+import br.ufal.cideei.soot.instrument.IConfigRep;
+import br.ufal.cideei.soot.instrument.IFeatureRep;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -22,9 +24,15 @@ public class UnliftedUnitializedVariablesAnalysis extends ForwardFlowAnalysis<Un
 	/** The empty set. */
 	private FlowSet emptySet;
 
-	private final int configurationId;
+	private IConfigRep configuration;
 
 	// #ifdef METRICS
+	private long flowThroughTimeAccumulator = 0;
+
+	public long getFlowThroughTime() {
+		return this.flowThroughTimeAccumulator;
+	}
+
 	private static long flowThroughCounter = 0;
 
 	public static long getFlowThroughCounter() {
@@ -39,9 +47,9 @@ public class UnliftedUnitializedVariablesAnalysis extends ForwardFlowAnalysis<Un
 
 	/**
 	 */
-	public UnliftedUnitializedVariablesAnalysis(DirectedGraph<Unit> graph, final int configurationId) {
+	public UnliftedUnitializedVariablesAnalysis(DirectedGraph<Unit> graph, IConfigRep configuration) {
 		super(graph);
-		this.configurationId = configurationId;
+		this.configuration = configuration;
 		this.emptySet = new ArraySparseSet();
 		this.allLocals = new ArraySparseSet();
 		if (graph instanceof UnitGraph) {
@@ -61,8 +69,7 @@ public class UnliftedUnitializedVariablesAnalysis extends ForwardFlowAnalysis<Un
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see soot.toolkits.scalar.AbstractFlowAnalysis#copy(java.lang.Object,
-	 * java.lang.Object)
+	 * @see soot.toolkits.scalar.AbstractFlowAnalysis#copy(java.lang.Object, java.lang.Object)
 	 */
 	@Override
 	protected void copy(FlowSet source, FlowSet dest) {
@@ -72,8 +79,7 @@ public class UnliftedUnitializedVariablesAnalysis extends ForwardFlowAnalysis<Un
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see soot.toolkits.scalar.AbstractFlowAnalysis#merge(java.lang.Object,
-	 * java.lang.Object, java.lang.Object)
+	 * @see soot.toolkits.scalar.AbstractFlowAnalysis#merge(java.lang.Object, java.lang.Object, java.lang.Object)
 	 */
 	@Override
 	protected void merge(FlowSet source1, FlowSet source2, FlowSet dest) {
@@ -103,35 +109,38 @@ public class UnliftedUnitializedVariablesAnalysis extends ForwardFlowAnalysis<Un
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see soot.toolkits.scalar.FlowAnalysis#flowThrough(java.lang.Object,
-	 * java.lang.Object, java.lang.Object)
+	 * @see soot.toolkits.scalar.FlowAnalysis#flowThrough(java.lang.Object, java.lang.Object, java.lang.Object)
 	 */
 	@Override
 	protected void flowThrough(FlowSet source, Unit unit, FlowSet dest) {
 		// #ifdef METRICS
 		flowThroughCounter++;
+		long timeSpentOnFlowThrough = System.nanoTime();
 		// #endif
 
-		FeatureTag<String> tag = (FeatureTag<String>) unit.getTag(FeatureTag.FEAT_TAG_NAME);
-		int featureTagId = tag.getId();
+		FeatureTag tag = (FeatureTag) unit.getTag(FeatureTag.FEAT_TAG_NAME);
+		IFeatureRep featureRep = tag.getFeatureRep();
 
-		if ((featureTagId & configurationId) == featureTagId) {
+		if (featureRep.belongsToConfiguration(configuration)) {
 			kill(source, unit, dest);
 		} else {
 			source.copy(dest);
 		}
+
+		// #ifdef METRICS
+		timeSpentOnFlowThrough = System.nanoTime() - timeSpentOnFlowThrough;
+		this.flowThroughTimeAccumulator += timeSpentOnFlowThrough;
+		// #endif
 	}
 
 	private void kill(FlowSet src, Unit unit, FlowSet dest) {
-		FlowSet kills = new ArraySparseSet();
 		if (unit instanceof AssignStmt) {
 			AssignStmt assignStmt = (AssignStmt) unit;
 			Value leftOp = assignStmt.getLeftOp();
 			if (leftOp instanceof Local) {
-				kills.add(leftOp);
+				dest.remove(leftOp);
 			}
 		}
-		src.difference(kills, dest);
 	}
 
 }

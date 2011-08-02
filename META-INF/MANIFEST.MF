@@ -10,7 +10,7 @@ Require-Bundle: org.eclipse.ui;visibility:=reexport,
  org.eclipse.jface.text;visibility:=reexport,
  org.eclipse.core.resources;visibility:=reexport,
  org.eclipse.jdt.core;visibility:=reexport,
- org.aspectj.runtime
+ org.aspectj.ajde;bundle-version="1.6.10"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Import-Package: cide.gast,
  de.ovgu.cide,
@@ -30,7 +30,10 @@ Bundle-ClassPath: .,
  lib/poi-3.7/ooxml-lib/dom4j-1.6.1.jar,
  lib/poi-3.7/ooxml-lib/geronimo-stax-api_1.0_spec-1.0.jar,
  lib/poi-3.7/ooxml-lib/xmlbeans-2.3.0.jar,
- lib/commons-collections-3.2.1.jar
+ lib/commons-collections-3.2.1.jar,
+ lib/commons-lang-2.6.jar,
+ lib/colt.jar,
+ lib/concurrent.jar
 Export-Package: beaver,
  br,
  br.ufal.cideei,

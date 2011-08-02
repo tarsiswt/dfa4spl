@@ -12,8 +12,27 @@ import soot.toolkits.scalar.ArraySparseSet;
 import soot.toolkits.scalar.FlowSet;
 import soot.toolkits.scalar.ForwardFlowAnalysis;
 
-public class SimpleReachingDefinitions extends ForwardFlowAnalysis<Unit, FlowSet> implements ReachedDefinitions {
+public class SimpleReachingDefinitions extends ForwardFlowAnalysis<Unit, FlowSet> implements IReachedDefinitions {
 
+	// #ifdef METRICS
+	private long flowThroughTimeAccumulator = 0;
+
+	public long getFlowThroughTime() {
+		return this.flowThroughTimeAccumulator;
+	}
+
+	protected static long flowThroughCounter = 0;
+
+	public static long getFlowThroughCounter() {
+		return flowThroughCounter;
+	}
+
+	public static void reset() {
+		flowThroughCounter = 0;
+	}
+
+	// #endif
+	
 	/**
 	 * Instantiates a new simple reaching definitions.
 	 * 
@@ -28,8 +47,7 @@ public class SimpleReachingDefinitions extends ForwardFlowAnalysis<Unit, FlowSet
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see soot.toolkits.scalar.AbstractFlowAnalysis#copy(java.lang.Object,
-	 * java.lang.Object)
+	 * @see soot.toolkits.scalar.AbstractFlowAnalysis#copy(java.lang.Object, java.lang.Object)
 	 */
 	@Override
 	protected void copy(FlowSet source, FlowSet dest) {
@@ -39,8 +57,7 @@ public class SimpleReachingDefinitions extends ForwardFlowAnalysis<Unit, FlowSet
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see soot.toolkits.scalar.AbstractFlowAnalysis#merge(java.lang.Object,
-	 * java.lang.Object, java.lang.Object)
+	 * @see soot.toolkits.scalar.AbstractFlowAnalysis#merge(java.lang.Object, java.lang.Object, java.lang.Object)
 	 */
 	@Override
 	protected void merge(FlowSet source1, FlowSet source2, FlowSet dest) {
@@ -70,19 +87,27 @@ public class SimpleReachingDefinitions extends ForwardFlowAnalysis<Unit, FlowSet
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see soot.toolkits.scalar.FlowAnalysis#flowThrough(java.lang.Object,
-	 * java.lang.Object, java.lang.Object)
+	 * @see soot.toolkits.scalar.FlowAnalysis#flowThrough(java.lang.Object, java.lang.Object, java.lang.Object)
 	 */
 	@Override
 	protected void flowThrough(FlowSet source, Unit unit, FlowSet dest) {
+		// #ifdef METRICS
+		flowThroughCounter++;
+		long timeSpentOnFlowThrough = System.nanoTime();
+		// #endif
+		
 		kill(source, unit, dest);
 		gen(dest, unit);
+		
+		// #ifdef METRICS
+		timeSpentOnFlowThrough = System.nanoTime() - timeSpentOnFlowThrough;
+		this.flowThroughTimeAccumulator += timeSpentOnFlowThrough;
+		// #endif
 	}
 
 	/**
-	 * Creates a KILL set for a given Unit and it to the FlowSet dest. In this
-	 * case, our KILL set are the Assignments made to the same Value that this
-	 * Unit assigns to.
+	 * Creates a KILL set for a given Unit and it to the FlowSet dest. In this case, our KILL set are the Assignments
+	 * made to the same Value that this Unit assigns to.
 	 * 
 	 * @param src
 	 *            the src
@@ -92,7 +117,7 @@ public class SimpleReachingDefinitions extends ForwardFlowAnalysis<Unit, FlowSet
 	 *            the dest
 	 */
 	private void kill(FlowSet source, Unit unit, FlowSet dest) {
-		FlowSet kills = new ArraySparseSet(); 
+		FlowSet kills = new ArraySparseSet();
 		if (unit instanceof AssignStmt) {
 			AssignStmt assignStmt = (AssignStmt) unit;
 			for (Object earlierAssignment : source.toList()) {
@@ -108,8 +133,8 @@ public class SimpleReachingDefinitions extends ForwardFlowAnalysis<Unit, FlowSet
 	}
 
 	/**
-	 * Creates a GEN set for a given Unit and it to the FlowSet dest. In this
-	 * case, our GEN set are all the definitions present in the unit.
+	 * Creates a GEN set for a given Unit and it to the FlowSet dest. In this case, our GEN set are all the definitions
+	 * present in the unit.
 	 * 
 	 * @param dest
 	 *            the dest

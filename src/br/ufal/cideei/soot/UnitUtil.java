@@ -89,9 +89,9 @@ public class UnitUtil {
 		if (fileName == null) {
 			fileName = soot.SourceLocator.v().getOutputDir();
 			if (fileName.length() > 0) {
-				fileName = fileName + java.io.File.separator;
+				fileName = fileName + File.separator;
 			}
-			fileName = fileName + methodName.replace(java.io.File.separatorChar, '.') + DotGraph.DOT_EXTENSION;
+			fileName = fileName + methodName.replace(File.separatorChar, '.') + DotGraph.DOT_EXTENSION;
 		}
 
 		canvas.plot(fileName);
@@ -119,5 +119,4 @@ public class UnitUtil {
 		canvas.plot(fileName);
 		return new File(fileName);
 	}
-
 }

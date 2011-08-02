@@ -19,6 +19,25 @@ public class SimpleUninitializedVariableAnalysis extends ForwardFlowAnalysis<Uni
 	/** The empty set. */
 	private FlowSet allLocals;
 	private FlowSet emptySet;
+	
+	// #ifdef METRICS
+	private long flowThroughTimeAccumulator = 0;
+
+	public long getFlowThroughTime() {
+		return this.flowThroughTimeAccumulator;
+	}
+
+	protected static long flowThroughCounter = 0;
+
+	public static long getFlowThroughCounter() {
+		return flowThroughCounter;
+	}
+
+	public static void reset() {
+		flowThroughCounter = 0;
+	}
+
+	// #endif
 
 	/**
 	 * Instantiates a new feature sensitive reaching definitions.
@@ -77,41 +96,14 @@ public class SimpleUninitializedVariableAnalysis extends ForwardFlowAnalysis<Uni
 		return this.emptySet.clone();
 	}
 
-	/**
-	 * Creates a KILL set for a given Unit and it to the FlowSet dest. In this
-	 * case, our KILL set are the Assignments made to the same Value that this
-	 * Unit assigns to.
-	 * 
-	 * @param src
-	 *            the src
-	 * @param unit
-	 *            the unit
-	 * @param dest
-	 *            the dest
-	 */
 	private void kill(FlowSet src, Unit unit, FlowSet dest) {
-		FlowSet kills = emptySet.clone();
 		if (unit instanceof AssignStmt) {
 			AssignStmt assignStmt = (AssignStmt) unit;
 			Value leftOp = assignStmt.getLeftOp();
 			if (leftOp instanceof Local) {
-				kills.add(leftOp);
+				dest.remove(leftOp);
 			}
 		}
-		src.difference(kills, dest);
-	}
-
-	/**
-	 * Creates a GEN set for a given Unit and it to the FlowSet dest. In this
-	 * case, all information needed is loaded on construction, right before the
-	 * analysis take place, so GEN set is not needed.
-	 * 
-	 * @param dest
-	 *            the dest
-	 * @param unit
-	 *            the unit
-	 */
-	private void gen(FlowSet dest, Unit unit) {
 	}
 
 	@Override
@@ -121,11 +113,17 @@ public class SimpleUninitializedVariableAnalysis extends ForwardFlowAnalysis<Uni
 
 	@Override
 	protected void flowThrough(FlowSet source, Unit unit, FlowSet dest) {
+		// #ifdef METRICS
+		flowThroughCounter++;
+		long timeSpentOnFlowThrough = System.nanoTime();
+		// #endif
 		kill(source, unit, dest);
 		/*
 		 * GEN = {}
 		 */
-		// gen(dest, unit);
-
+		// #ifdef METRICS
+		timeSpentOnFlowThrough = System.nanoTime() - timeSpentOnFlowThrough;
+		this.flowThroughTimeAccumulator += timeSpentOnFlowThrough;
+		// #endif
 	}
 }

@@ -7,18 +7,26 @@ import soot.toolkits.scalar.ArraySparseSet;
 import soot.toolkits.scalar.FlowSet;
 import soot.toolkits.scalar.ForwardFlowAnalysis;
 import br.ufal.cideei.soot.instrument.FeatureTag;
+import br.ufal.cideei.soot.instrument.IConfigRep;
+import br.ufal.cideei.soot.instrument.IFeatureRep;
 
 // TODO: Find a better name!
 /**
  */
 public class UnliftedReachingDefinitions extends ForwardFlowAnalysis<Unit, FlowSet> {
 
-	protected final int configurationId;
-
 	/** The empty set. */
 	private FlowSet emptySet = new ArraySparseSet();
 
+	private IConfigRep configuration;
+
 	// #ifdef METRICS
+	private long flowThroughTimeAccumulator = 0;
+
+	public long getFlowThroughTime() {
+		return this.flowThroughTimeAccumulator;
+	}
+
 	private static long flowThroughCounter = 0;
 
 	public static long getFlowThroughCounter() {
@@ -33,17 +41,16 @@ public class UnliftedReachingDefinitions extends ForwardFlowAnalysis<Unit, FlowS
 
 	/**
 	 */
-	public UnliftedReachingDefinitions(DirectedGraph<Unit> graph, int configurationId) {
+	public UnliftedReachingDefinitions(DirectedGraph<Unit> graph, IConfigRep configuration) {
 		super(graph);
-		this.configurationId = configurationId;
+		this.configuration = configuration;
 		super.doAnalysis();
 	}
 
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see soot.toolkits.scalar.AbstractFlowAnalysis#copy(java.lang.Object,
-	 * java.lang.Object)
+	 * @see soot.toolkits.scalar.AbstractFlowAnalysis#copy(java.lang.Object, java.lang.Object)
 	 */
 	@Override
 	protected void copy(FlowSet source, FlowSet dest) {
@@ -53,8 +60,7 @@ public class UnliftedReachingDefinitions extends ForwardFlowAnalysis<Unit, FlowS
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see soot.toolkits.scalar.AbstractFlowAnalysis#merge(java.lang.Object,
-	 * java.lang.Object, java.lang.Object)
+	 * @see soot.toolkits.scalar.AbstractFlowAnalysis#merge(java.lang.Object, java.lang.Object, java.lang.Object)
 	 */
 	@Override
 	protected void merge(FlowSet source1, FlowSet source2, FlowSet dest) {
@@ -84,31 +90,35 @@ public class UnliftedReachingDefinitions extends ForwardFlowAnalysis<Unit, FlowS
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see soot.toolkits.scalar.FlowAnalysis#flowThrough(java.lang.Object,
-	 * java.lang.Object, java.lang.Object)
+	 * @see soot.toolkits.scalar.FlowAnalysis#flowThrough(java.lang.Object, java.lang.Object, java.lang.Object)
 	 */
 	@Override
 	protected void flowThrough(FlowSet source, Unit unit, FlowSet dest) {
 		// #ifdef METRICS
 		flowThroughCounter++;
+		long timeSpentOnFlowThrough = System.nanoTime();
 		// #endif
 
-		FeatureTag<String> tag = (FeatureTag<String>) unit.getTag(FeatureTag.FEAT_TAG_NAME);
-		int tagFeaturesId = tag.getId();
+		FeatureTag tag = (FeatureTag) unit.getTag(FeatureTag.FEAT_TAG_NAME);
+		IFeatureRep featureRep = tag.getFeatureRep();
 
-		if ((tagFeaturesId & this.configurationId) == tagFeaturesId) {
+		if (featureRep.belongsToConfiguration(configuration)) {
 			kill(source, unit, dest);
 			gen(dest, unit);
 		} else {
 			source.copy(dest);
 		}
+		// #ifdef METRICS
+		timeSpentOnFlowThrough = System.nanoTime() - timeSpentOnFlowThrough;
+		this.flowThroughTimeAccumulator += timeSpentOnFlowThrough;
+		// #endif
 	}
 
-	private void kill(FlowSet src, Unit unit, FlowSet dest) {
-		FlowSet kills = emptySet.clone();
+	private void kill(FlowSet source, Unit unit, FlowSet dest) {
+		FlowSet kills = new ArraySparseSet();
 		if (unit instanceof AssignStmt) {
 			AssignStmt assignStmt = (AssignStmt) unit;
-			for (Object earlierAssignment : src.toList()) {
+			for (Object earlierAssignment : source.toList()) {
 				if (earlierAssignment instanceof AssignStmt) {
 					AssignStmt stmt = (AssignStmt) earlierAssignment;
 					if (stmt.getLeftOp().equivTo(assignStmt.getLeftOp())) {
@@ -117,12 +127,12 @@ public class UnliftedReachingDefinitions extends ForwardFlowAnalysis<Unit, FlowS
 				}
 			}
 		}
-		src.difference(kills, dest);
+		source.difference(kills, dest);
 	}
 
 	/**
-	 * Creates a GEN set for a given Unit and it to the FlowSet dest. In this
-	 * case, our GEN set are all the definitions present in the unit.
+	 * Creates a GEN set for a given Unit and it to the FlowSet dest. In this case, our GEN set are all the definitions
+	 * present in the unit.
 	 * 
 	 * @param dest
 	 *            the dest

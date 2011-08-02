@@ -8,7 +8,7 @@ import soot.Unit;
 /**
  * The Interface ReachedDefinitions.
  */
-public interface ReachedDefinitions {
+public interface IReachedDefinitions {
 	
 	/**
 	 * Gets the reached uses.

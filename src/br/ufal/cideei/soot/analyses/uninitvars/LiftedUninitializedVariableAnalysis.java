@@ -1,34 +1,40 @@
 package br.ufal.cideei.soot.analyses.uninitvars;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Set;
+import java.util.Map.Entry;
 
 import soot.Local;
 import soot.Unit;
 import soot.Value;
 import soot.jimple.AssignStmt;
-import soot.toolkits.graph.DirectedGraph;
 import soot.toolkits.graph.UnitGraph;
-import soot.toolkits.scalar.ArraySparseSet;
 import soot.toolkits.scalar.FlowSet;
 import soot.toolkits.scalar.ForwardFlowAnalysis;
 import soot.util.Chain;
-import br.ufal.cideei.soot.analyses.LiftedFlowSet;
+import br.ufal.cideei.soot.analyses.MapLiftedFlowSet;
 import br.ufal.cideei.soot.instrument.FeatureTag;
+import br.ufal.cideei.soot.instrument.IConfigRep;
+import br.ufal.cideei.soot.instrument.IFeatureRep;
 
 /**
- * This implementation of the Initialized variable analysis uses a LiftedFlowSet
- * as a lattice element. The only major change is how it's KILL method is
- * implemented. Also, the gen method is empty. We fill the lattice with local
+ * This implementation of the Initialized variable analysis uses a LiftedFlowSet as a lattice element. The only major
+ * change is how it's KILL method is implemented. Also, the gen method is empty. We fill the lattice with local
  * variables at the class constructor.
  */
-public class LiftedUninitializedVariableAnalysis extends ForwardFlowAnalysis<Unit, LiftedFlowSet> {
+public class LiftedUninitializedVariableAnalysis extends ForwardFlowAnalysis<Unit, MapLiftedFlowSet> {
 
-	private LiftedFlowSet allLocals;
-	private Collection<Set<String>> configurations;
-	private LiftedFlowSet emptySet;
+	private MapLiftedFlowSet allLocals;
+	private MapLiftedFlowSet emptySet;
 
 	// #ifdef METRICS
+	private long flowThroughTimeAccumulator = 0;
+
+	public long getFlowThroughTime() {
+		return this.flowThroughTimeAccumulator;
+	}
+
 	private static long flowThroughCounter = 0;
 
 	public static long getFlowThroughCounter() {
@@ -49,23 +55,18 @@ public class LiftedUninitializedVariableAnalysis extends ForwardFlowAnalysis<Uni
 	 * @param configs
 	 *            the configurations.
 	 */
-	public LiftedUninitializedVariableAnalysis(DirectedGraph<Unit> graph, Collection<Set<String>> configs) {
-		super(graph);
-		this.configurations = configs;
-		this.allLocals = new LiftedFlowSet(configs);
-		this.emptySet = new LiftedFlowSet(configs);
-		if (graph instanceof UnitGraph) {
-			UnitGraph ug = (UnitGraph) graph;
+	public LiftedUninitializedVariableAnalysis(UnitGraph unitGraph, Collection<IConfigRep> configs) {
+		super(unitGraph);
+		this.allLocals = new MapLiftedFlowSet(configs);
+		this.emptySet = new MapLiftedFlowSet(configs);
 
-			Chain<Local> locals = ug.getBody().getLocals();
-			for (Object object : locals) {
-				Local local = (Local) object;
-				if (!local.getName().contains("$")) {
-					FlowSet[] lattices = this.allLocals.getLattices();
-					for (int i = 0; i < lattices.length; i++) {
-						FlowSet flowSet = lattices[i];
-						flowSet.add(local);
-					}
+		Chain<Local> locals = unitGraph.getBody().getLocals();
+		for (Local local : locals) {
+			if (!local.getName().contains("$")) {
+				HashMap<IConfigRep, FlowSet> mapping = this.allLocals.getMapping();
+				Set<Entry<IConfigRep, FlowSet>> entrySet = mapping.entrySet();
+				for (Entry<IConfigRep, FlowSet> entry : entrySet) {
+					entry.getValue().add(local);
 				}
 			}
 		}
@@ -75,22 +76,20 @@ public class LiftedUninitializedVariableAnalysis extends ForwardFlowAnalysis<Uni
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see soot.toolkits.scalar.AbstractFlowAnalysis#copy(java.lang.Object,
-	 * java.lang.Object)
+	 * @see soot.toolkits.scalar.AbstractFlowAnalysis#copy(java.lang.Object, java.lang.Object)
 	 */
 	@Override
-	protected void copy(LiftedFlowSet source, LiftedFlowSet dest) {
+	protected void copy(MapLiftedFlowSet source, MapLiftedFlowSet dest) {
 		source.copy(dest);
 	}
 
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see soot.toolkits.scalar.AbstractFlowAnalysis#merge(java.lang.Object,
-	 * java.lang.Object, java.lang.Object)
+	 * @see soot.toolkits.scalar.AbstractFlowAnalysis#merge(java.lang.Object, java.lang.Object, java.lang.Object)
 	 */
 	@Override
-	protected void merge(LiftedFlowSet source1, LiftedFlowSet source2, LiftedFlowSet dest) {
+	protected void merge(MapLiftedFlowSet source1, MapLiftedFlowSet source2, MapLiftedFlowSet dest) {
 		source1.union(source2, dest);
 	}
 
@@ -100,7 +99,7 @@ public class LiftedUninitializedVariableAnalysis extends ForwardFlowAnalysis<Uni
 	 * @see soot.toolkits.scalar.AbstractFlowAnalysis#entryInitialFlow()
 	 */
 	@Override
-	protected LiftedFlowSet entryInitialFlow() {
+	protected MapLiftedFlowSet entryInitialFlow() {
 		return this.allLocals.clone();
 	}
 
@@ -110,53 +109,50 @@ public class LiftedUninitializedVariableAnalysis extends ForwardFlowAnalysis<Uni
 	 * @see soot.toolkits.scalar.AbstractFlowAnalysis#newInitialFlow()
 	 */
 	@Override
-	protected LiftedFlowSet newInitialFlow() {
+	protected MapLiftedFlowSet newInitialFlow() {
 		return this.emptySet.clone();
 	}
 
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see soot.toolkits.scalar.FlowAnalysis#flowThrough(java.lang.Object,
-	 * java.lang.Object, java.lang.Object)
+	 * @see soot.toolkits.scalar.FlowAnalysis#flowThrough(java.lang.Object, java.lang.Object, java.lang.Object)
 	 */
 	@Override
-	protected void flowThrough(LiftedFlowSet source, Unit unit, LiftedFlowSet dest) {
+	protected void flowThrough(MapLiftedFlowSet source, Unit unit, MapLiftedFlowSet dest) {
 		// #ifdef METRICS
 		flowThroughCounter++;
+		long timeSpentOnFlowThrough = System.nanoTime();
 		// #endif
 
-		FeatureTag<String> tag = (FeatureTag<String>) unit.getTag(FeatureTag.FEAT_TAG_NAME);
-		int id = tag.getId();
+		FeatureTag tag = (FeatureTag) unit.getTag(FeatureTag.FEAT_TAG_NAME);
+		IFeatureRep featureRep = tag.getFeatureRep();
 
-		Set<String>[] configurations = source.getConfigurations();
-
-		FlowSet[] sourceLattices = source.getLattices();
-		FlowSet[] destLattices = dest.getLattices();
-
-		for (int index = 0; index < configurations.length; index++) {
-
-			FlowSet sourceFlowSet = sourceLattices[index];
-			FlowSet destFlowSet = destLattices[index];
-
-			if ((id & index) == id) {
+		Collection<IConfigRep> configs = source.getConfigurations();
+		for (IConfigRep config : configs) {
+			FlowSet sourceFlowSet = source.getLattice(config);
+			FlowSet destFlowSet = dest.getLattice(config);
+			if (config.belongsToConfiguration(featureRep)) {
 				kill(sourceFlowSet, unit, destFlowSet);
 			} else {
 				sourceFlowSet.copy(destFlowSet);
 			}
 		}
+		
+		// #ifdef METRICS
+		timeSpentOnFlowThrough = System.nanoTime() - timeSpentOnFlowThrough;
+		this.flowThroughTimeAccumulator += timeSpentOnFlowThrough;
+		// #endif
 	}
 
 	private void kill(FlowSet source, Unit unit, FlowSet dest) {
-		FlowSet kills = new ArraySparseSet();
 		if (unit instanceof AssignStmt) {
 			AssignStmt assignStmt = (AssignStmt) unit;
 			Value leftOp = assignStmt.getLeftOp();
 			if (leftOp instanceof Local) {
-				kills.add(leftOp);
+				dest.remove(leftOp);
 			}
 		}
-		source.difference(kills, dest);
 	}
 
 }

@@ -7,6 +7,7 @@ import java.util.Set;
 import soot.toolkits.scalar.AbstractFlowSet;
 import soot.toolkits.scalar.ArraySparseSet;
 import soot.toolkits.scalar.FlowSet;
+import br.ufal.cideei.soot.instrument.IConfigRep;
 
 /**
  * The Class LiftedFlowSet.
@@ -14,30 +15,31 @@ import soot.toolkits.scalar.FlowSet;
  * @param <T>
  *            the generic type
  */
-public class LiftedFlowSet<T> extends AbstractFlowSet {
+//XXX refatorar!
+public class LiftedFlowSet extends AbstractFlowSet {
 
 	private int liftedFlowSetSize;
 
-	private Set<String>[] configurations;
+	private IConfigRep[] configurations;
 
 	private FlowSet[] lattices;
 
 	/**
 	 * Instantiates a new LiftedFlowSet.
 	 */
-	public LiftedFlowSet(Collection<Set<String>> configs) {
+	public LiftedFlowSet(Collection<IConfigRep> configs) {
 		this.liftedFlowSetSize = configs.size();
 
 		// Both lists have the same size...
 		// Configurations = [ {}, {A}, {B}, {A, B} ]
 		// Lattices = [ l1, l2, l3, l4 ]
 
-		this.configurations = new Set[liftedFlowSetSize];
+		this.configurations = new IConfigRep[liftedFlowSetSize];
 		this.lattices = new FlowSet[liftedFlowSetSize];
 
 		// Ugly... configs does not have a get method... :-(
 		int i = 0;
-		for (Set<String> configuration : configs) {
+		for (IConfigRep configuration : configs) {
 			this.configurations[i] = configuration;
 			this.lattices[i] = new ArraySparseSet();
 			i++;
@@ -63,7 +65,7 @@ public class LiftedFlowSet<T> extends AbstractFlowSet {
 	/**
 	 * @return the configurations of this lifted lattice.
 	 */
-	public Set<String>[] getConfigurations() {
+	public IConfigRep[] getConfigurations() {
 		return configurations;
 	}
 

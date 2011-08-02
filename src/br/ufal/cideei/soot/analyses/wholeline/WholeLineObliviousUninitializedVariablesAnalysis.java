@@ -11,16 +11,22 @@ import profiling.ProfilingTag;
 import soot.Body;
 import soot.BodyTransformer;
 import soot.PatchingChain;
+import soot.Transformer;
 import soot.Unit;
 import soot.jimple.Jimple;
 import soot.jimple.JimpleBody;
 import soot.toolkits.graph.BriefUnitGraph;
+import soot.toolkits.graph.UnitGraph;
 import br.ufal.cideei.soot.analyses.uninitvars.SimpleUninitializedVariableAnalysis;
+import br.ufal.cideei.soot.instrument.ConfigTag;
 import br.ufal.cideei.soot.instrument.FeatureTag;
+import br.ufal.cideei.soot.instrument.IConfigRep;
+import br.ufal.cideei.util.count.MetricsSink;
 
 public class WholeLineObliviousUninitializedVariablesAnalysis extends BodyTransformer {
 
 	private static WholeLineObliviousUninitializedVariablesAnalysis instance = new WholeLineObliviousUninitializedVariablesAnalysis();
+	private MetricsSink sink;
 
 	private WholeLineObliviousUninitializedVariablesAnalysis() {
 	}
@@ -36,16 +42,17 @@ public class WholeLineObliviousUninitializedVariablesAnalysis extends BodyTransf
 		long startAnalysis = 0;
 		long endAnalysis = 0;
 
-		FeatureTag featureTag = (FeatureTag) body.getTag("FeatureTag");
+		ConfigTag configTag = (ConfigTag) body.getTag(ConfigTag.CONFIG_TAG_NAME);
 
 		int maximumBodySize = 0;
 		int minimalBodySize = 0;
 
-		if (featureTag.size() > 1) {
-			Collection configs = featureTag.getFeatures();
-			for (Object object : configs) {
+		SimpleUninitializedVariableAnalysis analysis = null; 
 
-				Set<String> config = (Set<String>) object;
+		if (configTag.size() > 1) {
+			Set<IConfigRep> configs = configTag.getConfigReps();
+			for (IConfigRep config : configs) {
+
 				JimpleBody newBody = Jimple.v().newBody(body.getMethod());
 				newBody.importBodyContentsFrom(body);
 
@@ -55,7 +62,7 @@ public class WholeLineObliviousUninitializedVariablesAnalysis extends BodyTransf
 				while (snapshotIterator.hasNext()) {
 					Unit unit = (Unit) snapshotIterator.next();
 					FeatureTag unitFeatureTag = (FeatureTag) unit.getTag("FeatureTag");
-					if (!unitFeatureTag.belongsToConfiguration(config)) {
+					if (!unitFeatureTag.getFeatureRep().belongsToConfiguration(config)) {
 						newBodyUnits.remove(unit);
 					}
 				}
@@ -76,23 +83,23 @@ public class WholeLineObliviousUninitializedVariablesAnalysis extends BodyTransf
 					}
 				}
 
-				BriefUnitGraph newBodyGraph = new BriefUnitGraph(newBody);
+				UnitGraph newBodyGraph = new BriefUnitGraph(body);
 
 				// #ifdef METRICS
 				startAnalysis = System.nanoTime();
 				// #endif
-				new SimpleUninitializedVariableAnalysis(newBodyGraph);
+				analysis = new SimpleUninitializedVariableAnalysis(newBodyGraph);
 				// #ifdef METRICS
 				endAnalysis = System.nanoTime();
 				totalAnalysis += (endAnalysis - startAnalysis);
 				// #endif
 			}
 		} else {
-			BriefUnitGraph bodyGraph = new BriefUnitGraph(body);
+			UnitGraph bodyGraph = new BriefUnitGraph(body);
 			// #ifdef METRICS
 			startAnalysis = System.nanoTime();
 			// #endif
-			new SimpleUninitializedVariableAnalysis(bodyGraph);
+			analysis = new SimpleUninitializedVariableAnalysis(bodyGraph);
 			// #ifdef METRICS
 			endAnalysis = System.nanoTime();
 			totalAnalysis = endAnalysis - startAnalysis;
@@ -100,6 +107,8 @@ public class WholeLineObliviousUninitializedVariablesAnalysis extends BodyTransf
 		}
 
 		// #ifdef METRICS
+		this.sink.flow(body, "UV A1 flowthrough time", analysis.getFlowThroughTime());
+		this.sink.flow(body, "UV A1 flowthrough", analysis.getFlowThroughCounter());
 		ProfilingTag profilingTag = (ProfilingTag) body.getTag("ProfilingTag");
 		profilingTag.setUvAnalysisTime(totalAnalysis);
 		profilingTag.setPreprocessingTime(0);
@@ -110,5 +119,10 @@ public class WholeLineObliviousUninitializedVariablesAnalysis extends BodyTransf
 			profilingTag.setJimplificationTime((profilingTag.getJimplificationTime() + Math.round(minimalProportionalJimplificationTime))/2);
 		}
 		// #endif
+	}
+
+	public Transformer setMetricsSink(MetricsSink sink) {
+		this.sink = sink;
+		return this;
 	}
 }

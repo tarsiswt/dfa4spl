@@ -4,7 +4,7 @@ package br.ufal.cideei.soot.count;
 import java.util.Map;
 
 import soot.Body;
-import br.ufal.cideei.soot.instrument.FeatureTag;
+import br.ufal.cideei.soot.instrument.ConfigTag;
 
 public class ColoredBodyCounter extends BodyCounter {
 
@@ -17,8 +17,9 @@ public class ColoredBodyCounter extends BodyCounter {
 	@Override
 	protected void internalTransform(Body body, String phase, Map opt) {
 		super.internalTransform(body, phase, opt);
-		FeatureTag tag = (FeatureTag) body.getTag(FeatureTag.FEAT_TAG_NAME);
-		if (tag.getFeatures().size() > 1)
+		ConfigTag tag = (ConfigTag) body.getTag(ConfigTag.CONFIG_TAG_NAME);
+		//XXX check size consistency
+		if (tag.size() > 1)
 			coloredCounter++;
 	}
 }

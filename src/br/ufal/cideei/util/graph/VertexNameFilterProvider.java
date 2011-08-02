@@ -35,7 +35,7 @@ public class VertexNameFilterProvider<V extends Unit> implements VertexNameProvi
 			String feat;
 			try {
 				FeatureTag ftag = (FeatureTag) vertex.getTag(FeatureTag.FEAT_TAG_NAME);
-				feat = ftag.getFeatures().toString();
+				feat = ftag.getClass().toString();
 			} catch (Exception ex) {
 				ex.printStackTrace();
 				feat = "";

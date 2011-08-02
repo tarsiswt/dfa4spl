@@ -28,28 +28,31 @@ import br.ufal.cideei.features.IFeatureExtracter;
 import br.ufal.cideei.soot.SootManager;
 import br.ufal.cideei.soot.analyses.wholeline.WholeLineObliviousReachingDefinitionsAnalysis;
 import br.ufal.cideei.soot.analyses.wholeline.WholeLineObliviousUninitializedVariablesAnalysis;
+
 //#ifdef METRICS
 import br.ufal.cideei.soot.count.AssignmentsCounter;
 import br.ufal.cideei.soot.count.FeatureObliviousEstimative;
 import br.ufal.cideei.soot.count.LocalCounter;
+
 //#endif
 import br.ufal.cideei.soot.instrument.FeatureModelInstrumentorTransformer;
 import br.ufal.cideei.util.count.MetricsSink;
 import br.ufal.cideei.util.count.MetricsTable;
 
 public class DoFeatureObliviousAnalysisOnClassPath extends AbstractHandler {
-	//#ifdef METRICS
+	// #ifdef METRICS
 	private static MetricsSink sink;
-	//#endif
-	
+
+	// #endif
+
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
-		int times = 3;
+		int times = 10;
 		try {
 			for (int i = 0; i < times; i++) {
-				//#ifdef METRICS
+				// #ifdef METRICS
 				sink = new MetricsSink(new MetricsTable(new File(System.getProperty("user.home") + File.separator + "fo.xls")));
-				//#endif
+				// #endif
 
 				IStructuredSelection selection = (IStructuredSelection) HandlerUtil.getActiveMenuSelection(event);
 				Object firstElement = selection.getFirstElement();
@@ -65,24 +68,18 @@ public class DoFeatureObliviousAnalysisOnClassPath extends AbstractHandler {
 					}
 
 					/*
-					 * To build the path string variable that will represent
-					 * Soot's classpath we will first iterate through all libs
-					 * (.jars) files, then through all source classpaths.
+					 * To build the path string variable that will represent Soot's classpath we will first iterate
+					 * through all libs (.jars) files, then through all source classpaths.
 					 * 
-					 * FIXME: WARNING: A bug was found on Soot, in which the
-					 * FileSourceTag would contain incorrect information
-					 * regarding the absolute location of the source file. In
-					 * this workaround, the classpath must be injected into the
-					 * FeatureModelInstrumentorTransformer class (done though
-					 * its constructor).
+					 * FIXME: WARNING: A bug was found on Soot, in which the FileSourceTag would contain incorrect
+					 * information regarding the absolute location of the source file. In this workaround, the classpath
+					 * must be injected into the FeatureModelInstrumentorTransformer class (done though its
+					 * constructor).
 					 * 
-					 * As a consequence, we CANNOT build an string with all
-					 * classpaths that contains source code for the project and
-					 * thus one only source code classpath can be analysed at a
-					 * given time.
+					 * As a consequence, we CANNOT build an string with all classpaths that contains source code for the
+					 * project and thus one only source code classpath can be analysed at a given time.
 					 * 
-					 * This seriously restricts the range of projects that can
-					 * be analysed with this tool.
+					 * This seriously restricts the range of projects that can be analysed with this tool.
 					 */
 					StringBuilder libsPaths = new StringBuilder();
 					for (IClasspathEntry entry : classPathEntries) {
@@ -91,8 +88,7 @@ public class DoFeatureObliviousAnalysisOnClassPath extends AbstractHandler {
 							if (file.isAbsolute()) {
 								libsPaths.append(file.getAbsolutePath() + File.pathSeparator);
 							} else {
-								libsPaths.append(ResourcesPlugin.getWorkspace().getRoot().getFile(entry.getPath()).getLocation().toOSString()
-										+ File.pathSeparator);
+								libsPaths.append(ResourcesPlugin.getWorkspace().getRoot().getFile(entry.getPath()).getLocation().toOSString() + File.pathSeparator);
 							}
 						}
 					}
@@ -103,19 +99,19 @@ public class DoFeatureObliviousAnalysisOnClassPath extends AbstractHandler {
 					}
 				}
 				G.reset();
-				//#ifdef METRICS
+				// #ifdef METRICS
 				sink.terminate();
 				sink = null;
-				//#endif
+				// #endif
 				System.out.println("=============" + (i + 1) + "/" + times + "=============");
 			}
 		} catch (Throwable e) {
 			e.printStackTrace();
 		} finally {
 			G.reset();
-			//#ifdef METRICS
+			// #ifdef METRICS
 			sink.terminate();
-			//#endif
+			// #endif
 		}
 
 		return null;
@@ -181,10 +177,18 @@ public class DoFeatureObliviousAnalysisOnClassPath extends AbstractHandler {
 		);
 		PackManager.v().getPack("jtp").add(instrumentation);
 
-		Transform reachingDef = new Transform("jap.simplerd", WholeLineObliviousReachingDefinitionsAnalysis.v());
+		Transform reachingDef = new Transform("jap.simplerd", WholeLineObliviousReachingDefinitionsAnalysis.v()
+		// #ifdef METRICS
+				.setMetricsSink(sink)
+		// #endif
+		);
 		PackManager.v().getPack("jap").add(reachingDef);
 
-		Transform uninitVars = new Transform("jap.simpleuv", WholeLineObliviousUninitializedVariablesAnalysis.v());
+		Transform uninitVars = new Transform("jap.simpleuv", WholeLineObliviousUninitializedVariablesAnalysis.v()
+		// #ifdef METRICS
+				.setMetricsSink(sink)
+		// #endif
+		);
 		PackManager.v().getPack("jap").add(uninitVars);
 
 		// #ifdef METRICS

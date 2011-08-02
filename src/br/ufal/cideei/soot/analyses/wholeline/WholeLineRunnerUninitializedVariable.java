@@ -1,16 +1,27 @@
 package br.ufal.cideei.soot.analyses.wholeline;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 //#ifdef METRICS
 import profiling.ProfilingTag;
+import br.ufal.cideei.soot.count.AssignmentsCounter;
+
 //#endif
 import soot.Body;
 import soot.BodyTransformer;
 import soot.toolkits.graph.BriefUnitGraph;
+import soot.toolkits.graph.UnitGraph;
+import br.ufal.cideei.soot.analyses.FlowSetUtils;
+import br.ufal.cideei.soot.analyses.reachingdefs.UnliftedReachingDefinitions;
 import br.ufal.cideei.soot.analyses.uninitvars.UnliftedUnitializedVariablesAnalysis;
-import br.ufal.cideei.soot.instrument.FeatureTag;
+
+import br.ufal.cideei.soot.instrument.ConfigTag;
+import br.ufal.cideei.soot.instrument.IConfigRep;
+import br.ufal.cideei.util.count.AbstractMetricsSink;
 
 public class WholeLineRunnerUninitializedVariable extends BodyTransformer {
 
@@ -23,23 +34,50 @@ public class WholeLineRunnerUninitializedVariable extends BodyTransformer {
 		return instance;
 	}
 
+	// #ifdef METRICS
+	private static final String UV_RUNNER_FLOWTHROUGH_COUNTER = "UV A2 flowthrough";
+	private static final String UV_RUNNER_FLOWSET_MEM = "UV A2 mem";
+	private static final String UV_RUNNER_FLOWTHROUGH_TIME = "UV A2 flowthrough time";
+	private AbstractMetricsSink sink;
+
+	public WholeLineRunnerUninitializedVariable setMetricsSink(AbstractMetricsSink sink) {
+		this.sink = sink;
+		return this;
+	}
+
+	// #endif
+
 	@Override
 	protected void internalTransform(Body body, String phase, Map options) {
-		BriefUnitGraph bodyGraph = new BriefUnitGraph(body);
-		FeatureTag<Set<String>> featureTag = (FeatureTag<Set<String>>) body.getTag("FeatureTag");
+		UnitGraph bodyGraph = new BriefUnitGraph(body);
+		ConfigTag configTag = (ConfigTag) body.getTag(ConfigTag.CONFIG_TAG_NAME);
+
+		List<Long> memUnits = new ArrayList<Long>();
 
 		// #ifdef METRICS
 		long startAnalysis = System.nanoTime();
+		long flowThroughTime = 0;
 		// #endif
 
-		int numOfConfigurations = featureTag.size();
-		for (int index = 0;index < numOfConfigurations; index++) {
-			new UnliftedUnitializedVariablesAnalysis(bodyGraph, index);
+		Set<IConfigRep> configReps = configTag.getConfigReps();
+		for (IConfigRep config : configReps) {
+			UnliftedUnitializedVariablesAnalysis unliftedUnitializedVariablesAnalysis = new UnliftedUnitializedVariablesAnalysis(bodyGraph, config);
+
+			// #ifdef METRICS
+			memUnits.add(FlowSetUtils.unliftedMemoryUnits2(body, unliftedUnitializedVariablesAnalysis, 1));
+			flowThroughTime += unliftedUnitializedVariablesAnalysis.getFlowThroughTime();
+			// #endif
 		}
 
 		// #ifdef METRICS
 		long endAnalysis = System.nanoTime();
-		
+
+		this.sink.flow(body, UV_RUNNER_FLOWTHROUGH_TIME, flowThroughTime);
+		Long max = Collections.max(memUnits);
+		this.sink.flow(body, UV_RUNNER_FLOWSET_MEM, max);
+		this.sink.flow(body, UV_RUNNER_FLOWTHROUGH_COUNTER, UnliftedUnitializedVariablesAnalysis.getFlowThroughCounter());
+		UnliftedUnitializedVariablesAnalysis.reset();
+
 		ProfilingTag profilingTag = (ProfilingTag) body.getTag("ProfilingTag");
 		profilingTag.setUvAnalysisTime(endAnalysis - startAnalysis);
 		// #endif
