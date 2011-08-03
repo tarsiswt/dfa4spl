@@ -28,12 +28,14 @@ import br.ufal.cideei.soot.SootManager;
 import br.ufal.cideei.soot.analyses.wholeline.WholeLineLazyReachingDefinitions;
 import br.ufal.cideei.soot.analyses.wholeline.WholeLineLazyUninitializedVariables;
 
+//#else
+//@
+//@import br.ufal.cideei.soot.analyses.wholeline.WholeLineLiftedReachingDefinitions;
+//@import br.ufal.cideei.soot.analyses.wholeline.WholeLineLiftedUninitializedVariableAnalysis;
+//@import br.ufal.cideei.soot.analyses.wholeline.WholeLineRunnerReachingDefinitions;
+//@import br.ufal.cideei.soot.analyses.wholeline.WholeLineRunnerUninitializedVariable;
+//@
 //#endif
-
-import br.ufal.cideei.soot.analyses.wholeline.WholeLineLiftedReachingDefinitions;
-import br.ufal.cideei.soot.analyses.wholeline.WholeLineLiftedUninitializedVariableAnalysis;
-import br.ufal.cideei.soot.analyses.wholeline.WholeLineRunnerReachingDefinitions;
-import br.ufal.cideei.soot.analyses.wholeline.WholeLineRunnerUninitializedVariable;
 
 //#ifdef METRICS
 import br.ufal.cideei.soot.count.AssignmentsCounter;
@@ -54,7 +56,7 @@ public class DoAnalysisOnClassPath extends AbstractHandler {
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
-		int times = 1;
+		int times = 10;
 		try {
 			for (int i = 0; i < times; i++) {
 				// #ifdef METRICS
@@ -198,12 +200,12 @@ public class DoAnalysisOnClassPath extends AbstractHandler {
 		 );
 		 PackManager.v().getPack("jap").add(reachingDefLazy);
 		
-		Transform uninitVarsLazy = new Transform("jap.uninitvarlazy", WholeLineLazyUninitializedVariables.v()
+		 Transform uninitVarsLazy = new Transform("jap.uninitvarlazy", WholeLineLazyUninitializedVariables.v()
 		// #ifdef METRICS
-				.setMetricsSink(sink)
+		 .setMetricsSink(sink)
 		// #endif
-		);
-		PackManager.v().getPack("jap").add(uninitVarsLazy);
+		 );
+		 PackManager.v().getPack("jap").add(uninitVarsLazy);
 		
 		// #else
 //@

@@ -41,7 +41,7 @@ public class SetBitConfigRep implements ILazyConfigRep {
 		return configs;
 	}
 
-	public Set<IConfigRep> belongsToConfigurations(IFeatureRep rep) {
+	private Set<IConfigRep> belongsToConfigurations(IFeatureRep rep) {
 		Set<IConfigRep> foundConfigs = new HashSet<IConfigRep>();
 		for (IConfigRep config : configs) {
 			if (config.belongsToConfiguration(rep)) {
@@ -98,12 +98,12 @@ public class SetBitConfigRep implements ILazyConfigRep {
 	}
 
 	@Override
-	public BitVectorConfigRep intersection(ILazyConfigRep aOther) {
+	public SetBitConfigRep intersection(ILazyConfigRep aOther) {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public BitVectorConfigRep union(ILazyConfigRep otherKey) {
+	public SetBitConfigRep union(ILazyConfigRep otherKey) {
 		throw new UnsupportedOperationException();
 	}
 }

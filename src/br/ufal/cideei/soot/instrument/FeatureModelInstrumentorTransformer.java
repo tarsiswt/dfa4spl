@@ -65,13 +65,13 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 	private Map<Integer, Set<String>> currentColorMap;
 
 	// #ifdef METRICS
-	private static long transformationTime = 0;
-	private static long parsingTime = 0;
-	private static long colorLookupTableBuildingTime = 0;
-	private AbstractMetricsSink sink;
-	private static String COLOR_LOOKUP = "color table";
-	private static String PARSING = "parsing";
-	private static String INSTRUMENTATION = "instrumentation";
+	protected static long transformationTime = 0;
+	protected static long parsingTime = 0;
+	protected static long colorLookupTableBuildingTime = 0;
+	protected AbstractMetricsSink sink;
+	protected static String COLOR_LOOKUP = "color table";
+	protected static String PARSING = "parsing";
+	protected static String INSTRUMENTATION = "instrumentation";
 
 	// #endif
 
@@ -211,18 +211,8 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 
 		// #ifdef LAZY
 
-		// SetBitConfigRep setBitConfigRep = BitConfigRep.localConfigurations(idGen, unmodAllPresentFeaturesId);
 		BitVectorConfigRep localConfigurations = BitVectorConfigRep.localConfigurations(idGen, unmodAllPresentFeaturesId);
 		emptyBitVectorRep.generateBitVector(idGen);
-
-//		System.out.println("highestId: " + idGen);
-//		System.out.println("atoms: " + allPresentFeaturesId);
-//		System.out.println("localConfigs: " + localConfigurations);
-//		System.out.println("=====================");
-
-		if (body.getMethod().getSignature().contains("Vertex: void nodeSearch")) {
-			System.out.println(body.getMethod().getSignature());
-		}
 		
 		Set<IConfigRep> lazyConfig = new HashSet<IConfigRep>();
 		lazyConfig.add(localConfigurations);

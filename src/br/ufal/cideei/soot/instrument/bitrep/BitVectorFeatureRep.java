@@ -3,18 +3,21 @@ package br.ufal.cideei.soot.instrument.bitrep;
 import java.util.Set;
 
 import org.apache.commons.collections.BidiMap;
-import org.apache.commons.lang.builder.HashCodeBuilder;
+//import org.apache.commons.lang.builder.HashCodeBuilder;
 
+import br.ufal.cideei.features.IFeatureExtracter;
+import br.ufal.cideei.soot.instrument.FeatureModelInstrumentorTransformer;
 import br.ufal.cideei.soot.instrument.IConfigRep;
 import br.ufal.cideei.soot.instrument.IFeatureRep;
 
 import cern.colt.bitvector.BitVector;
 
+//XXX: implement equals/hashCode contract.
 public class BitVectorFeatureRep implements IFeatureRep, Cloneable {
 	private Set<String> features;
 	private BidiMap atoms;
 	private int id;
-	private int hashCode;
+//	private int hashCode;
 	private BitVector bits;
 
 	public BitVectorFeatureRep(Set<String> features, BidiMap originalFeatureIds) {
@@ -27,7 +30,7 @@ public class BitVectorFeatureRep implements IFeatureRep, Cloneable {
 			}
 		}
 		this.id = accumulator;
-		this.hashCode = new HashCodeBuilder(17, 31).append(id).append(bits).toHashCode();
+//		this.hashCode = new HashCodeBuilder(17, 31).append(id).append(bits).toHashCode();
 		this.atoms = originalFeatureIds;
 	}
 
@@ -35,7 +38,7 @@ public class BitVectorFeatureRep implements IFeatureRep, Cloneable {
 		this.features = features;
 		this.atoms = atoms;
 		this.id = id;
-		this.hashCode = new HashCodeBuilder(17, 31).append(id).toHashCode();
+//		this.hashCode = new HashCodeBuilder(17, 31).append(id).toHashCode();
 		this.bits = (BitVector) bits.clone();
 	}
 

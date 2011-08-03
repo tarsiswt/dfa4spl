@@ -17,7 +17,7 @@ public class BitVectorConfigRep implements ILazyConfigRep {
 	private final UnmodifiableBidiMap atoms;
 	private final int hashCode;
 
-	public BitVectorConfigRep(int size, UnmodifiableBidiMap atoms) {
+	private BitVectorConfigRep(int size, UnmodifiableBidiMap atoms) {
 		this.bitVector = new BitVector(size);
 		this.atoms = atoms;
 		this.hashCode = new HashCodeBuilder(17, 31).append(bitVector).toHashCode();
@@ -33,11 +33,6 @@ public class BitVectorConfigRep implements ILazyConfigRep {
 		BitVectorConfigRep bvcr = new BitVectorConfigRep(highestId, atoms);
 		bvcr.bitVector.not();
 		return bvcr;
-	}
-
-	@Override
-	public Collection<IConfigRep> belongsToConfigurations(IFeatureRep rep) {
-		return null;
 	}
 
 	@Override
@@ -62,11 +57,6 @@ public class BitVectorConfigRep implements ILazyConfigRep {
 	@Override
 	public Pair<ILazyConfigRep, ILazyConfigRep> split(Collection<IConfigRep> belongedConfigs) {
 		return null;
-	}
-
-	@Override
-	public boolean belongsToConfiguration(IFeatureRep rep) {
-		return false;
 	}
 
 	@Override
@@ -118,5 +108,11 @@ public class BitVectorConfigRep implements ILazyConfigRep {
 		} else {
 			throw new IllegalArgumentException();
 		}
+	}
+
+	@Override
+	public boolean belongsToConfiguration(IFeatureRep rep) {
+		// TODO Auto-generated method stub
+		return false;
 	}
 }

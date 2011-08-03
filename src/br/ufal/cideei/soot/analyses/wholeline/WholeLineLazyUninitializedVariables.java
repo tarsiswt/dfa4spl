@@ -56,15 +56,14 @@ public class WholeLineLazyUninitializedVariables extends BodyTransformer {
 		// #endif
 
 		// #ifdef HYBRID
-		// @ if (size == 1) {
-		// @ SimpleUninitializedVariableAnalysis uninitializedVariables = new
-//@		// SimpleUninitializedVariableAnalysis(bodyGraph);
-		// @ wentHybrid = true;
-		// @ } else {
-		// #endif
-		lazyUninitializedVariables = new LazyLiftedUninitializedVariableAnalysis(bodyGraph, (ILazyConfigRep) configTag.getConfigReps().iterator().next());
-		// #ifdef HYBRID
-		// @ }
+		if (size == 1) {
+			SimpleUninitializedVariableAnalysis uninitializedVariables = new SimpleUninitializedVariableAnalysis(bodyGraph);
+			wentHybrid = true;
+		} else {
+			// #endif
+			lazyUninitializedVariables = new LazyLiftedUninitializedVariableAnalysis(bodyGraph, (ILazyConfigRep) configTag.getConfigReps().iterator().next());
+			// #ifdef HYBRID
+		}
 		// #endif
 
 		// #ifdef METRICS
@@ -75,8 +74,8 @@ public class WholeLineLazyUninitializedVariables extends BodyTransformer {
 			this.sink.flow(body, UV_LAZY_MEM, FlowSetUtils.lazyMemoryUnits(body, lazyUninitializedVariables, true, 1, size));
 			this.sink.flow(body, UV_LAZY_SHARING_DEGREE, FlowSetUtils.averageSharingDegree(body, lazyUninitializedVariables));
 			this.sink.flow(body, UV_LAZY_FLOWTHROUGH_COUNTER, LazyLiftedUninitializedVariableAnalysis.getFlowThroughCounter());
-		}
-		LazyLiftedUninitializedVariableAnalysis.reset();
+			LazyLiftedUninitializedVariableAnalysis.reset();
+		} 		
 
 		ProfilingTag profilingTag = (ProfilingTag) body.getTag("ProfilingTag");
 		profilingTag.setUvAnalysisTime2(endAnalysis - startAnalysis);

@@ -126,25 +126,25 @@ public class MapLiftedFlowSet extends AbstractFlowSet {
 		dest.map.putAll(destMap);
 
 		// #else
-		// @ MapLiftedFlowSet otherLifted = (MapLiftedFlowSet) aOther;
-		// @ MapLiftedFlowSet destLifted = (MapLiftedFlowSet) aDest;
-		// @
-		// @ Set<Entry<IConfigRep, FlowSet>> entrySet = map.entrySet();
-		// @ for (Entry<IConfigRep, FlowSet> entry : entrySet) {
-		// @ // key
-		// @ IConfigRep config = entry.getKey();
-		// @ // val
-		// @ FlowSet thisNormal = entry.getValue();
-		// @
-		// @ FlowSet otherNormal = otherLifted.map.get(config);
-		// @ if (otherNormal == null) {
-		// @ otherNormal = new ArraySparseSet();
-		// @ }
-		// @
-		// @ ArraySparseSet destNewFlowSet = new ArraySparseSet();
-		// @ destLifted.map.put(config, destNewFlowSet);
-		// @ thisNormal.union(otherNormal, destNewFlowSet);
-		// @ }
+//@		 MapLiftedFlowSet otherLifted = (MapLiftedFlowSet) aOther;
+//@		 MapLiftedFlowSet destLifted = (MapLiftedFlowSet) aDest;
+//@		
+//@		 Set<Entry<IConfigRep, FlowSet>> entrySet = map.entrySet();
+//@		 for (Entry<IConfigRep, FlowSet> entry : entrySet) {
+//@		 // key
+//@		 IConfigRep config = entry.getKey();
+//@		 // val
+//@		 FlowSet thisNormal = entry.getValue();
+//@		
+//@		 FlowSet otherNormal = otherLifted.map.get(config);
+//@		 if (otherNormal == null) {
+//@		 otherNormal = new ArraySparseSet();
+//@		 }
+//@		
+//@		 ArraySparseSet destNewFlowSet = new ArraySparseSet();
+//@		 destLifted.map.put(config, destNewFlowSet);
+//@		 thisNormal.union(otherNormal, destNewFlowSet);
+//@		 }
 		// #endif
 	}
 
@@ -180,25 +180,25 @@ public class MapLiftedFlowSet extends AbstractFlowSet {
 		dest.map.putAll(destMap);
 
 		// #else
-		// @ MapLiftedFlowSet otherLifted = (MapLiftedFlowSet) aOther;
-		// @ MapLiftedFlowSet destLifted = (MapLiftedFlowSet) aDest;
-		// @
-		// @ Set<Entry<IConfigRep, FlowSet>> entrySet = map.entrySet();
-		// @ for (Entry<IConfigRep, FlowSet> entry : entrySet) {
-		// @ // key
-		// @ IConfigRep config = entry.getKey();
-		// @ // val
-		// @ FlowSet thisNormal = entry.getValue();
-		// @
-		// @ FlowSet otherNormal = otherLifted.map.get(config);
-		// @ if (otherNormal == null) {
-		// @ otherNormal = new ArraySparseSet();
-		// @ }
-		// @
-		// @ ArraySparseSet destNewFlowSet = new ArraySparseSet();
-		// @ destLifted.map.put(config, destNewFlowSet);
-		// @ thisNormal.intersection(otherNormal, destNewFlowSet);
-		// @ }
+//@		 MapLiftedFlowSet otherLifted = (MapLiftedFlowSet) aOther;
+//@		 MapLiftedFlowSet destLifted = (MapLiftedFlowSet) aDest;
+//@		
+//@		 Set<Entry<IConfigRep, FlowSet>> entrySet = map.entrySet();
+//@		 for (Entry<IConfigRep, FlowSet> entry : entrySet) {
+//@		 // key
+//@		 IConfigRep config = entry.getKey();
+//@		 // val
+//@		 FlowSet thisNormal = entry.getValue();
+//@		
+//@		 FlowSet otherNormal = otherLifted.map.get(config);
+//@		 if (otherNormal == null) {
+//@		 otherNormal = new ArraySparseSet();
+//@		 }
+//@		
+//@		 ArraySparseSet destNewFlowSet = new ArraySparseSet();
+//@		 destLifted.map.put(config, destNewFlowSet);
+//@		 thisNormal.intersection(otherNormal, destNewFlowSet);
+//@		 }
 		// #endif
 	}
 

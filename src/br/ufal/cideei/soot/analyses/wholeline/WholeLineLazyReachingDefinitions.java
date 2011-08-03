@@ -12,6 +12,7 @@ import soot.toolkits.graph.ExceptionalUnitGraph;
 import soot.toolkits.graph.UnitGraph;
 import br.ufal.cideei.soot.analyses.FlowSetUtils;
 import br.ufal.cideei.soot.analyses.reachingdefs.LazyLiftedReachingDefinitions;
+import br.ufal.cideei.soot.analyses.uninitvars.SimpleUninitializedVariableAnalysis;
 import br.ufal.cideei.soot.instrument.ConfigTag;
 import br.ufal.cideei.soot.instrument.FeatureTag;
 import br.ufal.cideei.soot.instrument.ILazyConfigRep;
@@ -47,36 +48,51 @@ public class WholeLineLazyReachingDefinitions extends BodyTransformer {
 	protected void internalTransform(Body body, String phase, Map options) {
 		UnitGraph bodyGraph = new ExceptionalUnitGraph(body);
 		ConfigTag configTag = (ConfigTag) body.getTag(ConfigTag.CONFIG_TAG_NAME);
+		int size = configTag.getConfigReps().iterator().next().size();
+		boolean wentHybrid = true;
+
+		LazyLiftedReachingDefinitions lazyReachingDefinitions = null;
 
 		// #ifdef METRICS
 		long startAnalysis = System.nanoTime();
 		// #endif
 
-		LazyLiftedReachingDefinitions lazyReachingDefinitions = new LazyLiftedReachingDefinitions(bodyGraph, (ILazyConfigRep) configTag.getConfigReps().iterator().next());
-		lazyReachingDefinitions.execute();
+		// #ifdef HYBRID
+		if (size == 1) {
+			wentHybrid = true;
+			SimpleUninitializedVariableAnalysis uninitializedVariables = new SimpleUninitializedVariableAnalysis(bodyGraph);
+		} else {
+			// #endif
+			lazyReachingDefinitions = new LazyLiftedReachingDefinitions(bodyGraph, (ILazyConfigRep) configTag.getConfigReps().iterator().next());
+			lazyReachingDefinitions.execute();
+			// #ifdef HYBRID
+		}
+		// #endif
 
 		// #ifdef METRICS
 
-		 //#ifdef LAZY
-		 if (body.getMethod().getSignature().contains("simple3(")) {
-		 FlowSetUtils.pbm(body, lazyReachingDefinitions, System.getProperty("user.home") + File.separator +
-		 "lazy-pix.pbm");
-							
-		 System.out.println(body.getTag(ConfigTag.CONFIG_TAG_NAME));
-		 for (Unit unit : body.getUnits()) {
-		 System.out.println(unit + " [[" + unit.getTag(FeatureTag.FEAT_TAG_NAME) + "]]");
-		 System.out.println(lazyReachingDefinitions.getFlowAfter(unit));
-		 }
-		 }
+		// #ifdef LAZY
+		// if (body.getMethod().getSignature().contains("simple3(")) {
+		// FlowSetUtils.pbm(body, lazyReachingDefinitions, System.getProperty("user.home") + File.separator +
+		// "lazy-pix.pbm");
+		//							
+		// System.out.println(body.getTag(ConfigTag.CONFIG_TAG_NAME));
+		// for (Unit unit : body.getUnits()) {
+		// System.out.println(unit + " [[" + unit.getTag(FeatureTag.FEAT_TAG_NAME) + "]]");
+		// System.out.println(lazyReachingDefinitions.getFlowAfter(unit));
+		// }
+		// }
 		// #endif
 
 		long endAnalysis = System.nanoTime();
 
-		this.sink.flow(body, RD_LAZY_FLOWTHROUGH_TIME, lazyReachingDefinitions.getFlowThroughTime());
-		this.sink.flow(body, RD_LAZY_MEM, FlowSetUtils.lazyMemoryUnits(body, lazyReachingDefinitions, true, 1, configTag.getConfigReps().iterator().next().size()));
-		this.sink.flow(body, RD_LAZY_SHARING_DEGREE, FlowSetUtils.averageSharingDegree(body, lazyReachingDefinitions));
-		this.sink.flow(body, RD_LAZY_FLOWTHROUGH_COUNTER, LazyLiftedReachingDefinitions.getFlowThroughCounter());
-		LazyLiftedReachingDefinitions.reset();
+		if (!wentHybrid) {
+			this.sink.flow(body, RD_LAZY_FLOWTHROUGH_TIME, lazyReachingDefinitions.getFlowThroughTime());
+			this.sink.flow(body, RD_LAZY_MEM, FlowSetUtils.lazyMemoryUnits(body, lazyReachingDefinitions, true, 1, configTag.getConfigReps().iterator().next().size()));
+			this.sink.flow(body, RD_LAZY_SHARING_DEGREE, FlowSetUtils.averageSharingDegree(body, lazyReachingDefinitions));
+			this.sink.flow(body, RD_LAZY_FLOWTHROUGH_COUNTER, LazyLiftedReachingDefinitions.getFlowThroughCounter());
+			LazyLiftedReachingDefinitions.reset();
+		}
 
 		ProfilingTag profilingTag = (ProfilingTag) body.getTag("ProfilingTag");
 		profilingTag.setRdAnalysisTime2(endAnalysis - startAnalysis);

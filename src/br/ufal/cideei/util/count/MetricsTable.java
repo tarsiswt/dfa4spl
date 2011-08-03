@@ -32,7 +32,8 @@ public class MetricsTable {
 	/*
 	 * Maps int -> String, where int is the column position and the String is the column name
 	 */
-	private TreeBidiMap columnMapping;
+	private TreeBidiMap columnMapping = new TreeBidiMap();
+	private int columnCounter = 1;
 
 	/*
 	 * Created on the File passed as argument to the ctor.
@@ -77,6 +78,10 @@ public class MetricsTable {
 			dumpEntry(method, map.getCollection(method));
 			map.remove(method);
 		}
+		if (!columnMapping.containsValue(property)) {
+			columnMapping.put(columnCounter, property);
+			columnCounter++;
+		}
 	}
 
 	public void setProperty(String method, String property, Double value) {
@@ -85,12 +90,16 @@ public class MetricsTable {
 			dumpEntry(method, map.getCollection(method));
 			map.remove(method);
 		}
+		if (!columnMapping.containsValue(property)) {
+			columnMapping.put(columnCounter, property);
+			columnCounter++;
+		}
 	}
 
 	private void dumpEntry(String method, Collection<DefaultKeyValue> properties) {
-		if (columnMapping == null) {
-			mapColumns(properties);
-		}
+//		if (columnMapping == null) {
+//			mapColumns(properties);
+//		}
 		if (!headersWerePrint) {
 			printHeaders();
 			headersWerePrint = true;
@@ -169,13 +178,11 @@ public class MetricsTable {
 		}
 	}
 
-	private void mapColumns(Collection<DefaultKeyValue> sample) {
-		columnMapping = new TreeBidiMap();
-		int columnCounter = 1;
-		for (DefaultKeyValue keyVal : sample) {
-			columnMapping.put(columnCounter++, keyVal.getKey());
-		}
-	}
+//	private void mapColumns(Collection<DefaultKeyValue> sample) {
+//		for (DefaultKeyValue keyVal : sample) {
+//			columnMapping.put(columnCounter++, keyVal.getKey());
+//		}
+//	}
 
 	public void dumpEntriesAndClose() throws IOException {
 		dumpAllEntries();

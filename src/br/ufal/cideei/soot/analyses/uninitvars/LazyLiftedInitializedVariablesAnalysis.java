@@ -1,6 +1,5 @@
 package br.ufal.cideei.soot.analyses.uninitvars;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map.Entry;
@@ -13,8 +12,6 @@ import soot.toolkits.graph.UnitGraph;
 import soot.toolkits.scalar.ArraySparseSet;
 import soot.toolkits.scalar.FlowSet;
 import soot.toolkits.scalar.ForwardFlowAnalysis;
-import soot.util.Chain;
-import br.ufal.cideei.soot.analyses.LazyMapLiftedFlowSet;
 import br.ufal.cideei.soot.analyses.MapLiftedFlowSet;
 import br.ufal.cideei.soot.instrument.FeatureTag;
 import br.ufal.cideei.soot.instrument.IConfigRep;

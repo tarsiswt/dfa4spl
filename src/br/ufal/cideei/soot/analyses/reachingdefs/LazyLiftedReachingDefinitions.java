@@ -13,7 +13,6 @@ import soot.toolkits.graph.DirectedGraph;
 import soot.toolkits.scalar.ArraySparseSet;
 import soot.toolkits.scalar.FlowSet;
 import soot.toolkits.scalar.ForwardFlowAnalysis;
-import br.ufal.cideei.soot.analyses.LazyMapLiftedFlowSet;
 import br.ufal.cideei.soot.analyses.MapLiftedFlowSet;
 import br.ufal.cideei.soot.instrument.FeatureTag;
 import br.ufal.cideei.soot.instrument.IConfigRep;
