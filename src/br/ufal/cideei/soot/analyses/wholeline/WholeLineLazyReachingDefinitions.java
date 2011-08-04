@@ -49,7 +49,7 @@ public class WholeLineLazyReachingDefinitions extends BodyTransformer {
 		UnitGraph bodyGraph = new ExceptionalUnitGraph(body);
 		ConfigTag configTag = (ConfigTag) body.getTag(ConfigTag.CONFIG_TAG_NAME);
 		int size = configTag.getConfigReps().iterator().next().size();
-		boolean wentHybrid = true;
+		boolean wentHybrid = false;
 
 		LazyLiftedReachingDefinitions lazyReachingDefinitions = null;
 
@@ -72,16 +72,16 @@ public class WholeLineLazyReachingDefinitions extends BodyTransformer {
 		// #ifdef METRICS
 
 		// #ifdef LAZY
-		// if (body.getMethod().getSignature().contains("simple3(")) {
-		// FlowSetUtils.pbm(body, lazyReachingDefinitions, System.getProperty("user.home") + File.separator +
-		// "lazy-pix.pbm");
-		//							
-		// System.out.println(body.getTag(ConfigTag.CONFIG_TAG_NAME));
-		// for (Unit unit : body.getUnits()) {
-		// System.out.println(unit + " [[" + unit.getTag(FeatureTag.FEAT_TAG_NAME) + "]]");
-		// System.out.println(lazyReachingDefinitions.getFlowAfter(unit));
-		// }
-		// }
+//		 if (body.getMethod().getSignature().contains("f(")) {
+//		 FlowSetUtils.pbm(body, lazyReachingDefinitions, System.getProperty("user.home") + File.separator +
+//		 "lazy-pix.pbm");
+//									
+//		 System.out.println(body.getTag(ConfigTag.CONFIG_TAG_NAME));
+//		 for (Unit unit : body.getUnits()) {
+//		 System.out.println(unit + " [[" + unit.getTag(FeatureTag.FEAT_TAG_NAME) + "]]");
+//		 System.out.println(lazyReachingDefinitions.getFlowAfter(unit));
+//		 }
+//		 }
 		// #endif
 
 		long endAnalysis = System.nanoTime();

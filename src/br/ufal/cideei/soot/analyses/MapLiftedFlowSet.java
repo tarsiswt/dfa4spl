@@ -104,6 +104,7 @@ public class MapLiftedFlowSet extends AbstractFlowSet {
 		HashMap<IConfigRep, FlowSet> destMap = new HashMap<IConfigRep, FlowSet>();
 
 		for (Entry<IConfigRep, FlowSet> entry : entrySet) {
+			ILazyConfigRep emptySetOfConfigs = null;
 			for (Entry<IConfigRep, FlowSet> otherEntry : otherEntrySet) {
 				ILazyConfigRep key = (ILazyConfigRep) entry.getKey();
 				ILazyConfigRep otherKey = (ILazyConfigRep) otherEntry.getKey();
@@ -114,7 +115,15 @@ public class MapLiftedFlowSet extends AbstractFlowSet {
 					ArraySparseSet destFlowSet = new ArraySparseSet();
 					entry.getValue().union(otherFlowSet, destFlowSet);
 					destMap.put(intersection, destFlowSet);
-
+					
+					if (emptySetOfConfigs == null){
+						emptySetOfConfigs = intersection;
+					} else {
+						emptySetOfConfigs = emptySetOfConfigs.union(intersection);
+						if (emptySetOfConfigs.equals(intersection)){
+							break;
+						}
+					}
 					if (intersection.equals(key)) {
 						break;
 					}
@@ -158,7 +167,9 @@ public class MapLiftedFlowSet extends AbstractFlowSet {
 		Set<Entry<IConfigRep, FlowSet>> otherEntrySet = other.map.entrySet();
 
 		HashMap<IConfigRep, FlowSet> destMap = new HashMap<IConfigRep, FlowSet>();
+
 		for (Entry<IConfigRep, FlowSet> entry : entrySet) {
+			ILazyConfigRep emptySetOfConfigs = null;
 			for (Entry<IConfigRep, FlowSet> otherEntry : otherEntrySet) {
 				ILazyConfigRep key = (ILazyConfigRep) entry.getKey();
 				ILazyConfigRep otherKey = (ILazyConfigRep) otherEntry.getKey();
@@ -170,12 +181,21 @@ public class MapLiftedFlowSet extends AbstractFlowSet {
 					entry.getValue().intersection(otherFlowSet, destFlowSet);
 					destMap.put(intersection, destFlowSet);
 					
+					if (emptySetOfConfigs == null){
+						emptySetOfConfigs = intersection;
+					} else {
+						emptySetOfConfigs = emptySetOfConfigs.union(intersection);
+						if (emptySetOfConfigs.equals(intersection)){
+							break;
+						}
+					}
 					if (intersection.equals(key)) {
 						break;
 					}
 				}
 			}
 		}
+
 		dest.map.clear();
 		dest.map.putAll(destMap);
 

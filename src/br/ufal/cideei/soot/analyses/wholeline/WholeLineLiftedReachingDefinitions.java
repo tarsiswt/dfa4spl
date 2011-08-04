@@ -40,6 +40,7 @@ import soot.toolkits.scalar.FlowSet;
 import br.ufal.cideei.soot.analyses.FlowSetUtils;
 import br.ufal.cideei.soot.analyses.MapLiftedFlowSet;
 import br.ufal.cideei.soot.analyses.reachingdefs.LiftedReachingDefinitions;
+import br.ufal.cideei.soot.analyses.reachingdefs.SimpleReachingDefinitions;
 
 import br.ufal.cideei.soot.instrument.ConfigTag;
 import br.ufal.cideei.soot.instrument.FeatureTag;
@@ -81,22 +82,36 @@ public class WholeLineLiftedReachingDefinitions extends BodyTransformer {
 		UnitGraph bodyGraph = new BriefUnitGraph(body);
 		ConfigTag configTag = (ConfigTag) body.getTag(ConfigTag.CONFIG_TAG_NAME);
 
+		boolean wentHybrid = false;
+		LiftedReachingDefinitions liftedReachingDefinitions = null;
+
 		// #ifdef METRICS
 		AssignmentsCounter assignmentsCounter = new AssignmentsCounter(sink, true);
 		long noOfAssigments = assignmentsCounter.getCount();
 		long startAnalysis = System.nanoTime();
 		// #endif
-
-		LiftedReachingDefinitions liftedReachingDefinitions = new LiftedReachingDefinitions(bodyGraph, configTag.getConfigReps());
-		liftedReachingDefinitions.execute();
+		
+		// #ifdef HYBRID
+		if (configTag.size() == 1) {
+			wentHybrid = true;
+			SimpleReachingDefinitions simpleReachingDefinitions = new SimpleReachingDefinitions(bodyGraph);
+		} else {
+			//#endif
+			liftedReachingDefinitions = new LiftedReachingDefinitions(bodyGraph, configTag.getConfigReps());
+			liftedReachingDefinitions.execute();
+			// #ifdef HYBRID
+		}
+		//#endif
 
 		// #ifdef METRICS
 		long endAnalysis = System.nanoTime();
 
-		this.sink.flow(body, RD_LIFTED_FLOWTHROUGH_TIME, liftedReachingDefinitions.getFlowThroughTime());
-		this.sink.flow(body, RD_LIFTED_FLOWSET_MEM, FlowSetUtils.liftedMemoryUnits(body, liftedReachingDefinitions, false, 1));
-		this.sink.flow(body, RD_LIFTED_FLOWTHROUGH_COUNTER, LiftedReachingDefinitions.getFlowThroughCounter());
-		LiftedReachingDefinitions.reset();
+		if (!wentHybrid) {
+			this.sink.flow(body, RD_LIFTED_FLOWTHROUGH_TIME, liftedReachingDefinitions.getFlowThroughTime());
+			this.sink.flow(body, RD_LIFTED_FLOWSET_MEM, FlowSetUtils.liftedMemoryUnits(body, liftedReachingDefinitions, false, 1));
+			this.sink.flow(body, RD_LIFTED_FLOWTHROUGH_COUNTER, LiftedReachingDefinitions.getFlowThroughCounter());
+			LiftedReachingDefinitions.reset();
+		}
 
 //		if (body.getMethod().getSignature().contains("simple3")) {
 //			System.out.println(body.getTag(ConfigTag.CONFIG_TAG_NAME));
