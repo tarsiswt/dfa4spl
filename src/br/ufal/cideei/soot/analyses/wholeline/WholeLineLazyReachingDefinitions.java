@@ -12,6 +12,7 @@ import soot.toolkits.graph.ExceptionalUnitGraph;
 import soot.toolkits.graph.UnitGraph;
 import br.ufal.cideei.soot.analyses.FlowSetUtils;
 import br.ufal.cideei.soot.analyses.reachingdefs.LazyLiftedReachingDefinitions;
+import br.ufal.cideei.soot.analyses.reachingdefs.SimpleReachingDefinitions;
 import br.ufal.cideei.soot.analyses.uninitvars.SimpleUninitializedVariableAnalysis;
 import br.ufal.cideei.soot.instrument.ConfigTag;
 import br.ufal.cideei.soot.instrument.FeatureTag;
@@ -60,7 +61,7 @@ public class WholeLineLazyReachingDefinitions extends BodyTransformer {
 		// #ifdef HYBRID
 		if (size == 1) {
 			wentHybrid = true;
-			SimpleUninitializedVariableAnalysis uninitializedVariables = new SimpleUninitializedVariableAnalysis(bodyGraph);
+			 SimpleReachingDefinitions simpleReachingDefinitions = new SimpleReachingDefinitions(bodyGraph);
 		} else {
 			// #endif
 			lazyReachingDefinitions = new LazyLiftedReachingDefinitions(bodyGraph, (ILazyConfigRep) configTag.getConfigReps().iterator().next());

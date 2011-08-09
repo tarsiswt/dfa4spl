@@ -97,9 +97,9 @@ public class MetricsTable {
 	}
 
 	private void dumpEntry(String method, Collection<DefaultKeyValue> properties) {
-//		if (columnMapping == null) {
-//			mapColumns(properties);
-//		}
+		// if (columnMapping == null) {
+		// mapColumns(properties);
+		// }
 		if (!headersWerePrint) {
 			printHeaders();
 			headersWerePrint = true;
@@ -158,7 +158,7 @@ public class MetricsTable {
 		for (int index = 0; index <= columns; index++) {
 			Cell cell = firstRow.getCell(index);
 			if (cell == null) {
-				continue;
+				cell = firstRow.createCell(index);
 			}
 			if (cell.getCellType() == Cell.CELL_TYPE_NUMERIC) {
 				Cell sumFooterCell = sumFooterRow.createCell(index);
@@ -166,8 +166,8 @@ public class MetricsTable {
 
 				CellReference firstCell = new CellReference(firstRow.getCell(index));
 				Cell lastRowCell = lastRow.getCell(index);
-				if (lastRowCell == null){
-					continue;
+				if (lastRowCell == null) {
+					lastRowCell = lastRow.createCell(index);
 				}
 				CellReference lastCell = new CellReference(lastRowCell);
 
@@ -178,11 +178,11 @@ public class MetricsTable {
 		}
 	}
 
-//	private void mapColumns(Collection<DefaultKeyValue> sample) {
-//		for (DefaultKeyValue keyVal : sample) {
-//			columnMapping.put(columnCounter++, keyVal.getKey());
-//		}
-//	}
+	// private void mapColumns(Collection<DefaultKeyValue> sample) {
+	// for (DefaultKeyValue keyVal : sample) {
+	// columnMapping.put(columnCounter++, keyVal.getKey());
+	// }
+	// }
 
 	public void dumpEntriesAndClose() throws IOException {
 		dumpAllEntries();
