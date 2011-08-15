@@ -1,4 +1,4 @@
-package br.ufal.cideei.soot.analyses.uninitvars;
+package br.ufal.cideei.soot.analyses.initvars;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -19,11 +19,12 @@ import br.ufal.cideei.soot.instrument.IFeatureRep;
 import br.ufal.cideei.soot.instrument.ILazyConfigRep;
 import br.ufal.cideei.util.Pair;
 
+//TODO: finish javadoc.
+
 /**
- * This implementation of the Initialized variable analysis uses a LiftedFlowSet
- * as a lattice element. The only major change is how it's KILL method is
- * implemented. Also, the gen method is empty. We fill the lattice with local
- * variables at the class constructor.
+ * This implementation of the Initialized variable analysis uses a LiftedFlowSet as a lattice element. The only major
+ * change is how it's KILL method is implemented. Also, the gen method is empty. Unlike the UNititializedVariables
+ * analsysis, the lattice does not start will all variables at the beggining of the analysis..
  */
 public class LazyLiftedInitializedVariablesAnalysis extends ForwardFlowAnalysis<Unit, MapLiftedFlowSet> {
 
@@ -35,7 +36,7 @@ public class LazyLiftedInitializedVariablesAnalysis extends ForwardFlowAnalysis<
 	public long getFlowThroughTime() {
 		return this.flowThroughTimeAccumulator;
 	}
-	
+
 	private static long flowThroughCounter = 0;
 
 	public static long getFlowThroughCounter() {
@@ -48,14 +49,6 @@ public class LazyLiftedInitializedVariablesAnalysis extends ForwardFlowAnalysis<
 
 	// #endif
 
-	/**
-	 * Instantiates a new TestReachingDefinitions.
-	 * 
-	 * @param graph
-	 *            the graph
-	 * @param configs
-	 *            the configurations.
-	 */
 	public LazyLiftedInitializedVariablesAnalysis(UnitGraph unitGraph, ILazyConfigRep configs) {
 		super(unitGraph);
 		this.emptySet = new MapLiftedFlowSet(configs);
@@ -65,8 +58,7 @@ public class LazyLiftedInitializedVariablesAnalysis extends ForwardFlowAnalysis<
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see soot.toolkits.scalar.AbstractFlowAnalysis#copy(java.lang.Object,
-	 * java.lang.Object)
+	 * @see soot.toolkits.scalar.AbstractFlowAnalysis#copy(java.lang.Object, java.lang.Object)
 	 */
 	@Override
 	protected void copy(MapLiftedFlowSet source, MapLiftedFlowSet dest) {
@@ -76,8 +68,7 @@ public class LazyLiftedInitializedVariablesAnalysis extends ForwardFlowAnalysis<
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see soot.toolkits.scalar.AbstractFlowAnalysis#merge(java.lang.Object,
-	 * java.lang.Object, java.lang.Object)
+	 * @see soot.toolkits.scalar.AbstractFlowAnalysis#merge(java.lang.Object, java.lang.Object, java.lang.Object)
 	 */
 	@Override
 	protected void merge(MapLiftedFlowSet source1, MapLiftedFlowSet source2, MapLiftedFlowSet dest) {
@@ -107,8 +98,7 @@ public class LazyLiftedInitializedVariablesAnalysis extends ForwardFlowAnalysis<
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see soot.toolkits.scalar.FlowAnalysis#flowThrough(java.lang.Object,
-	 * java.lang.Object, java.lang.Object)
+	 * @see soot.toolkits.scalar.FlowAnalysis#flowThrough(java.lang.Object, java.lang.Object, java.lang.Object)
 	 */
 	@Override
 	protected void flowThrough(MapLiftedFlowSet source, Unit unit, MapLiftedFlowSet dest) {

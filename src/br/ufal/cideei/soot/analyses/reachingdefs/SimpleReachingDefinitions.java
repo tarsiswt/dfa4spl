@@ -15,20 +15,16 @@ import soot.toolkits.scalar.ForwardFlowAnalysis;
 public class SimpleReachingDefinitions extends ForwardFlowAnalysis<Unit, FlowSet> implements IReachedDefinitions {
 
 	// #ifdef METRICS
-	private long flowThroughTimeAccumulator = 0;
+	protected long flowThroughTimeAccumulator = 0;
 
 	public long getFlowThroughTime() {
 		return this.flowThroughTimeAccumulator;
 	}
 
-	protected static long flowThroughCounter = 0;
+	protected long flowThroughCounter = 0;
 
-	public static long getFlowThroughCounter() {
+	public long getFlowThroughCounter() {
 		return flowThroughCounter;
-	}
-
-	public static void reset() {
-		flowThroughCounter = 0;
 	}
 
 	// #endif

@@ -97,9 +97,6 @@ public class MetricsTable {
 	}
 
 	private void dumpEntry(String method, Collection<DefaultKeyValue> properties) {
-		// if (columnMapping == null) {
-		// mapColumns(properties);
-		// }
 		if (!headersWerePrint) {
 			printHeaders();
 			headersWerePrint = true;
@@ -160,29 +157,20 @@ public class MetricsTable {
 			if (cell == null) {
 				cell = firstRow.createCell(index);
 			}
-			if (cell.getCellType() == Cell.CELL_TYPE_NUMERIC) {
-				Cell sumFooterCell = sumFooterRow.createCell(index);
-				Cell averageFooterCell = averageFooterRow.createCell(index);
+			Cell sumFooterCell = sumFooterRow.createCell(index);
+			Cell averageFooterCell = averageFooterRow.createCell(index);
 
-				CellReference firstCell = new CellReference(firstRow.getCell(index));
-				Cell lastRowCell = lastRow.getCell(index);
-				if (lastRowCell == null) {
-					lastRowCell = lastRow.createCell(index);
-				}
-				CellReference lastCell = new CellReference(lastRowCell);
-
-				sumFooterCell.setCellFormula("SUM(" + firstCell.formatAsString() + ":" + lastCell.formatAsString() + ")");
-				averageFooterCell.setCellFormula("AVERAGE(" + firstCell.formatAsString() + ":" + lastCell.formatAsString() + ")");
-
+			CellReference firstCell = new CellReference(firstRow.getCell(index));
+			Cell lastRowCell = lastRow.getCell(index);
+			if (lastRowCell == null) {
+				lastRowCell = lastRow.createCell(index);
 			}
+			CellReference lastCell = new CellReference(lastRowCell);
+
+			sumFooterCell.setCellFormula("SUM(" + firstCell.formatAsString() + ":" + lastCell.formatAsString() + ")");
+			averageFooterCell.setCellFormula("AVERAGE(" + firstCell.formatAsString() + ":" + lastCell.formatAsString() + ")");
 		}
 	}
-
-	// private void mapColumns(Collection<DefaultKeyValue> sample) {
-	// for (DefaultKeyValue keyVal : sample) {
-	// columnMapping.put(columnCounter++, keyVal.getKey());
-	// }
-	// }
 
 	public void dumpEntriesAndClose() throws IOException {
 		dumpAllEntries();

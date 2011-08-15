@@ -12,7 +12,6 @@ import soot.Body;
 import soot.MethodOrMethodContext;
 import soot.Printer;
 import soot.SourceLocator;
-import soot.Unit;
 import soot.jimple.toolkits.callgraph.CallGraph;
 import soot.jimple.toolkits.callgraph.Edge;
 import soot.options.Options;
@@ -22,14 +21,13 @@ import soot.util.dot.DotGraph;
 import soot.util.queue.QueueReader;
 
 /**
- * The Class UnitUtil contains convenience methods to serialize information from
- * memory to help with visualisation and debugging.
+ * The Class UnitUtil contains convenience methods to serialize information from memory to help with visualization and
+ * debugging.
  */
 public class UnitUtil {
 
 	/**
-	 * This is a utility class. There's no need for a constructor since all
-	 * methods are static.
+	 * This is a utility class. There's no need for a constructor since all methods are static.
 	 */
 	private UnitUtil() {
 	}
@@ -37,11 +35,13 @@ public class UnitUtil {
 	/**
 	 * Serialize a SootMethod Body in the Jimple IR into a provided file path.
 	 * 
+	 * TODO: describe the behaviour of this method in case the file already exists.
+	 * 
 	 * @param body
 	 *            the body
 	 * @param fileName
 	 *            the file name, or null to use the default Soot output folder.
-	 * @return 
+	 * @return
 	 */
 	public static File serializeBody(Body body, String fileName) {
 		/*
@@ -50,6 +50,7 @@ public class UnitUtil {
 		if (fileName == null) {
 			fileName = SourceLocator.v().getFileNameFor(body.getMethod().getDeclaringClass(), Options.output_format_jimple);
 		}
+
 		OutputStream streamOut;
 		try {
 			streamOut = new FileOutputStream(fileName);
@@ -74,6 +75,8 @@ public class UnitUtil {
 	/**
 	 * Serialize a Unit graph in the DOT format into a provided file path.
 	 * 
+	 * TODO: describe the behaviour of this method in case the file already exists.
+	 * 
 	 * @param body
 	 *            the body
 	 * @param fileName
@@ -97,7 +100,17 @@ public class UnitUtil {
 		canvas.plot(fileName);
 		return new File(fileName);
 	}
-	
+
+	/**
+	 * Serialize a CallGraph in the DOT format into a provided file path.
+	 * 
+	 * TODO: describe the behaviour of this method in case the file already exists.
+	 * 
+	 * @param graph
+	 *            the graph to be serialized
+	 * @param fileName
+	 *            the file name, or null to use the default Soot output folder.
+	 */
 	public static File serializeCallGraph(CallGraph graph, String fileName) {
 		if (fileName == null) {
 			fileName = soot.SourceLocator.v().getOutputDir();
@@ -108,13 +121,13 @@ public class UnitUtil {
 		}
 		DotGraph canvas = new DotGraph("call-graph");
 		QueueReader<Edge> listener = graph.listener();
-		while(listener.hasNext()) {
+		while (listener.hasNext()) {
 			Edge next = listener.next();
 			MethodOrMethodContext src = next.getSrc();
 			MethodOrMethodContext tgt = next.getTgt();
 			canvas.drawNode(src.toString());
 			canvas.drawNode(tgt.toString());
-			canvas.drawEdge(src.toString(), tgt.toString());			
+			canvas.drawEdge(src.toString(), tgt.toString());
 		}
 		canvas.plot(fileName);
 		return new File(fileName);

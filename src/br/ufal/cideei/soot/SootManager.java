@@ -12,7 +12,7 @@ import br.ufal.cideei.features.IFeatureExtracter;
 public class SootManager {
 	public static void configure(String classpath) {
 		Options.v().set_allow_phantom_refs(true);
-//		Options.v().set_whole_program(true);
+
 		Options.v().set_verbose(false);
 		Options.v().set_keep_line_number(true);
 		Options.v().set_src_prec(Options.src_prec_java);
@@ -22,14 +22,12 @@ public class SootManager {
 		PhaseOptions.v().setPhaseOption("tag.ln", "on");
 		PhaseOptions.v().setPhaseOption("jj.a", "on");
 		PhaseOptions.v().setPhaseOption("jj.ule", "on");
+		// Options.v().set_whole_program(true);
 		// PhaseOptions.v().setPhaseOption("cg.cha", "off");
-//		PhaseOptions.v().setPhaseOption("cg.paddle", "on");
+		// PhaseOptions.v().setPhaseOption("cg.paddle", "on");
 	}
 
 	public static void runPacks(IFeatureExtracter extracter) {
-		// Transform t = new Transform("jtp.featmodelinst",
-		// FeatureModelInstrumentorTransformer.v(extracter));
-		// PackManager.v().getPack("jtp").add(t);
 		PackManager.v().runBodyPacks();
 	}
 
@@ -44,7 +42,6 @@ public class SootManager {
 	public static SootClass loadAndSupport(String className) {
 		SootClass sootClass = Scene.v().loadClassAndSupport(className);
 		sootClass.setApplicationClass();
-		// Scene.v().loadNecessaryClasses();
 		return sootClass;
 	}
 

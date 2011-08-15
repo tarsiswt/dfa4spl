@@ -64,7 +64,7 @@ public class WholeLineRunnerUninitializedVariable extends BodyTransformer {
 			UnliftedUnitializedVariablesAnalysis unliftedUnitializedVariablesAnalysis = new UnliftedUnitializedVariablesAnalysis(bodyGraph, config);
 
 			// #ifdef METRICS
-			memUnits.add(FlowSetUtils.unliftedMemoryUnits2(body, unliftedUnitializedVariablesAnalysis, 1));
+			memUnits.add(FlowSetUtils.unliftedMemoryUnits(body, unliftedUnitializedVariablesAnalysis, 1));
 			flowThroughTime += unliftedUnitializedVariablesAnalysis.getFlowThroughTime();
 			// #endif
 		}

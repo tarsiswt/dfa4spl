@@ -27,14 +27,10 @@ public class SimpleUninitializedVariableAnalysis extends ForwardFlowAnalysis<Uni
 		return this.flowThroughTimeAccumulator;
 	}
 
-	protected static long flowThroughCounter = 0;
+	protected long flowThroughCounter = 0;
 
-	public static long getFlowThroughCounter() {
+	public long getFlowThroughCounter() {
 		return flowThroughCounter;
-	}
-
-	public static void reset() {
-		flowThroughCounter = 0;
 	}
 
 	// #endif

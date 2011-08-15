@@ -13,15 +13,14 @@ import de.ovgu.cide.features.IFeature;
 import de.ovgu.cide.features.source.ColoredSourceFile;
 import de.ovgu.cide.language.jdt.ASTBridge;
 
-// TODO: Auto-generated Javadoc
 /**
  * A feature extracter implementation for CIDE.
  */
-class CIDEFeatureExtracter implements IFeatureExtracter {
+final class CIDEFeatureExtracter implements IFeatureExtracter {
 
 	/**
 	 * Instantiates a new CIDE feature extracter. Clients should use the
-	 * {@link CIDEFeatureExtracterFactory#newExtracter()} method.
+	 * {@link CIDEFeatureExtracterFactory#getExtracter()} method.
 	 */
 	CIDEFeatureExtracter() {
 	}
@@ -45,9 +44,6 @@ class CIDEFeatureExtracter implements IFeatureExtracter {
 		}
 		return stringFeatureSet;
 	}
-
-	// Returns a the Set of IFeatures associated with a given ASTNode. The
-	// ASTNode must be from the file.
 
 	/*
 	 * (non-Javadoc)

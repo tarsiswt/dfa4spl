@@ -1,10 +1,7 @@
 package br.ufal.cideei.handlers;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 
-import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -19,7 +16,6 @@ import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.handlers.HandlerUtil;
 
-import soot.G;
 import soot.PackManager;
 import soot.Scene;
 import soot.Transform;
@@ -39,6 +35,11 @@ import br.ufal.cideei.soot.instrument.FeatureModelInstrumentorTransformer;
 import br.ufal.cideei.util.count.MetricsSink;
 import br.ufal.cideei.util.count.MetricsTable;
 
+/**
+ * Invokes feature-insensitive analyses on a Eclipse project. Mainly for collecting data/metrics.
+ * 
+ * @author Társis
+ */
 public class DoFeatureObliviousAnalysisOnClassPath extends AbstractHandler {
 	// #ifdef METRICS
 	private static MetricsSink sink;
@@ -47,6 +48,7 @@ public class DoFeatureObliviousAnalysisOnClassPath extends AbstractHandler {
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
+		// TODO: exteriorize this number as a configuration parameter. Abstract away the looping.
 		int times = 10;
 		try {
 			for (int i = 0; i < times; i++) {
@@ -98,7 +100,7 @@ public class DoFeatureObliviousAnalysisOnClassPath extends AbstractHandler {
 						}
 					}
 				}
-				G.reset();
+				SootManager.reset();
 				// #ifdef METRICS
 				sink.terminate();
 				sink = null;
@@ -108,7 +110,7 @@ public class DoFeatureObliviousAnalysisOnClassPath extends AbstractHandler {
 		} catch (Throwable e) {
 			e.printStackTrace();
 		} finally {
-			G.reset();
+			SootManager.reset();
 			// #ifdef METRICS
 			sink.terminate();
 			// #endif
@@ -130,7 +132,7 @@ public class DoFeatureObliviousAnalysisOnClassPath extends AbstractHandler {
 
 		SootManager.configure(classPath + File.pathSeparator + libs);
 
-		IFeatureExtracter extracter = CIDEFeatureExtracterFactory.getInstance().newExtracter();
+		IFeatureExtracter extracter = CIDEFeatureExtracterFactory.getInstance().getExtracter();
 		IPackageFragmentRoot[] packageFragmentRoots = javaProject.findPackageFragmentRoots(entry);
 		for (IPackageFragmentRoot packageFragmentRoot : packageFragmentRoots) {
 			IJavaElement[] children = null;
@@ -170,6 +172,12 @@ public class DoFeatureObliviousAnalysisOnClassPath extends AbstractHandler {
 		}
 		Scene.v().loadNecessaryClasses();
 
+		addPacks(classPath, extracter);
+
+		SootManager.runPacks(extracter);
+	}
+
+	private void addPacks(String classPath, IFeatureExtracter extracter) {
 		Transform instrumentation = new Transform("jtp.fminst", new FeatureModelInstrumentorTransformer(extracter, classPath)
 		// #ifdef METRICS
 				.setMetricsSink(sink)
@@ -201,7 +209,5 @@ public class DoFeatureObliviousAnalysisOnClassPath extends AbstractHandler {
 		Transform estimativeCounter = new Transform("jap.counter.estimative", new FeatureObliviousEstimative(sink));
 		PackManager.v().getPack("jap").add(estimativeCounter);
 		// #endif
-
-		SootManager.runPacks(extracter);
 	}
 }

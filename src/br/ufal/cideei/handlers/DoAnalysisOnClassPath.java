@@ -25,16 +25,16 @@ import br.ufal.cideei.features.IFeatureExtracter;
 import br.ufal.cideei.soot.SootManager;
 
 //#ifdef LAZY
-import br.ufal.cideei.soot.analyses.wholeline.WholeLineLazyReachingDefinitions;
-import br.ufal.cideei.soot.analyses.wholeline.WholeLineLazyUninitializedVariables;
-
+//@import br.ufal.cideei.soot.analyses.wholeline.WholeLineLazyReachingDefinitions;
+//@import br.ufal.cideei.soot.analyses.wholeline.WholeLineLazyUninitializedVariables;
+//@
 //#else
-//@
-//@import br.ufal.cideei.soot.analyses.wholeline.WholeLineLiftedReachingDefinitions;
-//@import br.ufal.cideei.soot.analyses.wholeline.WholeLineLiftedUninitializedVariableAnalysis;
-//@import br.ufal.cideei.soot.analyses.wholeline.WholeLineRunnerReachingDefinitions;
-//@import br.ufal.cideei.soot.analyses.wholeline.WholeLineRunnerUninitializedVariable;
-//@
+
+import br.ufal.cideei.soot.analyses.wholeline.WholeLineLiftedReachingDefinitions;
+import br.ufal.cideei.soot.analyses.wholeline.WholeLineLiftedUninitializedVariableAnalysis;
+import br.ufal.cideei.soot.analyses.wholeline.WholeLineRunnerReachingDefinitions;
+import br.ufal.cideei.soot.analyses.wholeline.WholeLineRunnerUninitializedVariable;
+
 //#endif
 
 //#ifdef METRICS
@@ -48,6 +48,12 @@ import br.ufal.cideei.util.count.MetricsTable;
 
 import br.ufal.cideei.soot.instrument.FeatureModelInstrumentorTransformer;
 
+//TODO: this class is very similar to DoFeatureObliviousAnalysisOnClassPath. Check for common funcionality and for code reuse opportunities.
+/**
+ * Invokes feature-sensitive analyses on a Eclipse project. Mainly for collecting data/metrics.
+ * 
+ * @author Társis
+ */
 public class DoAnalysisOnClassPath extends AbstractHandler {
 	// #ifdef METRICS
 	private static MetricsSink sink;
@@ -56,6 +62,7 @@ public class DoAnalysisOnClassPath extends AbstractHandler {
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
+		// TODO: exteriorize this number as a configuration parameter. Abstract away the looping.
 		int times = 10;
 		try {
 			for (int i = 0; i < times; i++) {
@@ -108,7 +115,7 @@ public class DoAnalysisOnClassPath extends AbstractHandler {
 					}
 				}
 				// Resets SOOT
-				G.reset();
+				SootManager.reset();
 
 				/*
 				 * terminate the Metrics Facade. This dumps all the in-memory information.
@@ -122,7 +129,7 @@ public class DoAnalysisOnClassPath extends AbstractHandler {
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
-			G.reset();
+			SootManager.reset();
 			// #ifdef METRICS
 			sink.terminate();
 			// #endif
@@ -131,6 +138,13 @@ public class DoAnalysisOnClassPath extends AbstractHandler {
 		return null;
 	}
 
+	/**
+	 * Configures the classpath, sets up the transformers, load (jimplify) classes and run the packs.
+	 * 
+	 * @param javaProject
+	 * @param entry
+	 * @param libs
+	 */
 	private void addPacks(IJavaProject javaProject, IClasspathEntry entry, String libs) {
 		/*
 		 * if the classpath entry is "", then JDT will complain about it.
@@ -143,8 +157,10 @@ public class DoAnalysisOnClassPath extends AbstractHandler {
 		}
 
 		SootManager.configure(classPath + File.pathSeparator + libs);
+		
+		System.out.println(classPath);
 
-		IFeatureExtracter extracter = CIDEFeatureExtracterFactory.getInstance().newExtracter();
+		IFeatureExtracter extracter = CIDEFeatureExtracterFactory.getInstance().getExtracter();
 		IPackageFragmentRoot[] packageFragmentRoots = javaProject.findPackageFragmentRoots(entry);
 		for (IPackageFragmentRoot packageFragmentRoot : packageFragmentRoots) {
 			IJavaElement[] children = null;
@@ -185,6 +201,12 @@ public class DoAnalysisOnClassPath extends AbstractHandler {
 
 		Scene.v().loadNecessaryClasses();
 
+		addPacks(classPath, extracter);
+
+		SootManager.runPacks(extracter);
+	}
+
+	private void addPacks(String classPath, IFeatureExtracter extracter) {
 		Transform instrumentation = new Transform("jtp.fminst", new FeatureModelInstrumentorTransformer(extracter, classPath)
 		// #ifdef METRICS
 				.setMetricsSink(sink)
@@ -193,50 +215,50 @@ public class DoAnalysisOnClassPath extends AbstractHandler {
 		PackManager.v().getPack("jtp").add(instrumentation);
 
 		// #ifdef LAZY
-		 Transform reachingDefLazy = new Transform("jap.rdlazy", WholeLineLazyReachingDefinitions.v()
+		// @ Transform reachingDefLazy = new Transform("jap.rdlazy", WholeLineLazyReachingDefinitions.v()
 		// #ifdef METRICS
-		 .setMetricsSink(sink)
+		// @ .setMetricsSink(sink)
 		// #endif
-		 );
-		 PackManager.v().getPack("jap").add(reachingDefLazy);
-		
-		 Transform uninitVarsLazy = new Transform("jap.uninitvarlazy", WholeLineLazyUninitializedVariables.v()
+		// @ );
+		// @ PackManager.v().getPack("jap").add(reachingDefLazy);
+		// @
+		// @ Transform uninitVarsLazy = new Transform("jap.uninitvarlazy", WholeLineLazyUninitializedVariables.v()
 		// #ifdef METRICS
-		 .setMetricsSink(sink)
+		// @ .setMetricsSink(sink)
 		// #endif
-		 );
-		 PackManager.v().getPack("jap").add(uninitVarsLazy);
-		
+		// @ );
+		// @ PackManager.v().getPack("jap").add(uninitVarsLazy);
+		// @
 		// #else
-//@
-//@		Transform reachingDefRunner = new Transform("jap.rdrunner", WholeLineRunnerReachingDefinitions.v()
+
+		Transform reachingDefRunner = new Transform("jap.rdrunner", WholeLineRunnerReachingDefinitions.v()
 		// #ifdef METRICS
-//@				.setMetricsSink(sink)
+				.setMetricsSink(sink)
 		// #endif
-//@		);
-//@		PackManager.v().getPack("jap").add(reachingDefRunner);
-//@
-//@		Transform reachingDefLifted = new Transform("jap.rdlifted", WholeLineLiftedReachingDefinitions.v()
+		);
+		PackManager.v().getPack("jap").add(reachingDefRunner);
+
+		Transform reachingDefLifted = new Transform("jap.rdlifted", new WholeLineLiftedReachingDefinitions()
 		// #ifdef METRICS
-//@				.setMetricsSink(sink)
+				.setMetricsSink(sink)
 		// #endif
-//@		);
-//@		PackManager.v().getPack("jap").add(reachingDefLifted);
-//@
-//@		Transform uninitVarsLifted = new Transform("jap.uninitvarlifted", WholeLineLiftedUninitializedVariableAnalysis.v()
+		);
+		PackManager.v().getPack("jap").add(reachingDefLifted);
+
+		Transform uninitVarsLifted = new Transform("jap.uninitvarlifted", new WholeLineLiftedUninitializedVariableAnalysis()
 		// #ifdef METRICS
-//@				.setMetricsSink(sink)
+				.setMetricsSink(sink)
 		// #endif
-//@		);
-//@		PackManager.v().getPack("jap").add(uninitVarsLifted);
-//@
-//@		Transform uninitVarsRunner = new Transform("jap.uninitvarrunner", WholeLineRunnerUninitializedVariable.v()
+		);
+		PackManager.v().getPack("jap").add(uninitVarsLifted);
+
+		Transform uninitVarsRunner = new Transform("jap.uninitvarrunner", WholeLineRunnerUninitializedVariable.v()
 		// #ifdef METRICS
-//@				.setMetricsSink(sink)
+				.setMetricsSink(sink)
 		// #endif
-//@		);
-//@		PackManager.v().getPack("jap").add(uninitVarsRunner);
-//@
+		);
+		PackManager.v().getPack("jap").add(uninitVarsRunner);
+
 		// #endif
 
 		// #ifdef METRICS
@@ -249,7 +271,5 @@ public class DoAnalysisOnClassPath extends AbstractHandler {
 		Transform estimativeCounter = new Transform("jap.counter.estimative", new FeatureSensitiveEstimative(sink));
 		PackManager.v().getPack("jap").add(estimativeCounter);
 		// #endif
-
-		SootManager.runPacks(extracter);
 	}
 }

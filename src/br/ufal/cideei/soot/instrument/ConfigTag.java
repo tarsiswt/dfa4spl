@@ -7,7 +7,7 @@ import soot.tagkit.Tag;
 
 public class ConfigTag implements Tag {
 
-	/** The Constant FEAT_TAG_NAME. */
+	/** The Constant CONFIG_TAG_NAME. */
 	public static final String CONFIG_TAG_NAME = "ConfigTag";
 	private Set<IConfigRep> reps;
 

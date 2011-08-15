@@ -1,7 +1,5 @@
 package br.ufal.cideei.soot.instrument;
 
-import java.util.Set;
-
 import soot.tagkit.AttributeValueException;
 import soot.tagkit.Tag;
 

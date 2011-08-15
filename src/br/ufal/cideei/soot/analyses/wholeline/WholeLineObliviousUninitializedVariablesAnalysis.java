@@ -1,13 +1,15 @@
 package br.ufal.cideei.soot.analyses.wholeline;
 
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
 //#ifdef METRICS
 import profiling.ProfilingTag;
+import br.ufal.cideei.util.count.MetricsSink;
+
 //#endif
+
 import soot.Body;
 import soot.BodyTransformer;
 import soot.PatchingChain;
@@ -21,7 +23,6 @@ import br.ufal.cideei.soot.analyses.uninitvars.SimpleUninitializedVariableAnalys
 import br.ufal.cideei.soot.instrument.ConfigTag;
 import br.ufal.cideei.soot.instrument.FeatureTag;
 import br.ufal.cideei.soot.instrument.IConfigRep;
-import br.ufal.cideei.util.count.MetricsSink;
 
 public class WholeLineObliviousUninitializedVariablesAnalysis extends BodyTransformer {
 
@@ -47,7 +48,7 @@ public class WholeLineObliviousUninitializedVariablesAnalysis extends BodyTransf
 		int maximumBodySize = 0;
 		int minimalBodySize = 0;
 
-		SimpleUninitializedVariableAnalysis analysis = null; 
+		SimpleUninitializedVariableAnalysis analysis = null;
 
 		if (configTag.size() > 1) {
 			Set<IConfigRep> configs = configTag.getConfigReps();
@@ -68,8 +69,7 @@ public class WholeLineObliviousUninitializedVariablesAnalysis extends BodyTransf
 				}
 
 				/*
-				 * If the body size is 0, then cannot continue. Store maximum
-				 * and minimal size.
+				 * If the body size is 0, then cannot continue. Store maximum and minimal size.
 				 */
 				int newBodySize = newBodyUnits.size();
 				if (newBodySize == 0) {
@@ -112,11 +112,11 @@ public class WholeLineObliviousUninitializedVariablesAnalysis extends BodyTransf
 		ProfilingTag profilingTag = (ProfilingTag) body.getTag("ProfilingTag");
 		profilingTag.setUvAnalysisTime(totalAnalysis);
 		profilingTag.setPreprocessingTime(0);
-		
+
 		// minimal = (minSize* maxTime)/maxSize
 		if (minimalBodySize != 0 && maximumBodySize != 0) {
-			double minimalProportionalJimplificationTime = (minimalBodySize * profilingTag.getJimplificationTime())/maximumBodySize;
-			profilingTag.setJimplificationTime((profilingTag.getJimplificationTime() + Math.round(minimalProportionalJimplificationTime))/2);
+			double minimalProportionalJimplificationTime = (minimalBodySize * profilingTag.getJimplificationTime()) / maximumBodySize;
+			profilingTag.setJimplificationTime((profilingTag.getJimplificationTime() + Math.round(minimalProportionalJimplificationTime)) / 2);
 		}
 		// #endif
 	}

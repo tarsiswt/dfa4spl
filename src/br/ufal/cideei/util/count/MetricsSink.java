@@ -8,9 +8,6 @@ public class MetricsSink extends AbstractMetricsSink {
 
 	private MetricsTable table;
 
-	private MetricsSink() {
-	}
-
 	public MetricsSink(MetricsTable table) {
 		this.table = table;
 	}

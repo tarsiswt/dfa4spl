@@ -114,6 +114,17 @@ public class UnliftedReachingDefinitions extends ForwardFlowAnalysis<Unit, FlowS
 		// #endif
 	}
 
+	/**
+	 * Creates a KILL set for a given Unit and it to the FlowSet dest. In this case, our KILL set are the Assignments
+	 * made to the same Value that this Unit assigns to.
+	 * 
+	 * @param src
+	 *            the src
+	 * @param unit
+	 *            the unit
+	 * @param dest
+	 *            the dest
+	 */
 	private void kill(FlowSet source, Unit unit, FlowSet dest) {
 		FlowSet kills = new ArraySparseSet();
 		if (unit instanceof AssignStmt) {

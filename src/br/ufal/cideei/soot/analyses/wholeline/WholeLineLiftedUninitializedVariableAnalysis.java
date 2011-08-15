@@ -4,6 +4,7 @@ import java.util.Map;
 
 //#ifdef METRICS
 import profiling.ProfilingTag;
+import br.ufal.cideei.util.count.AbstractMetricsSink;
 
 //#endif
 
@@ -12,23 +13,11 @@ import soot.BodyTransformer;
 import soot.toolkits.graph.BriefUnitGraph;
 import soot.toolkits.graph.UnitGraph;
 import br.ufal.cideei.soot.analyses.FlowSetUtils;
-import br.ufal.cideei.soot.analyses.reachingdefs.SimpleReachingDefinitions;
 import br.ufal.cideei.soot.analyses.uninitvars.LiftedUninitializedVariableAnalysis;
 import br.ufal.cideei.soot.analyses.uninitvars.SimpleUninitializedVariableAnalysis;
 import br.ufal.cideei.soot.instrument.ConfigTag;
-import br.ufal.cideei.util.count.AbstractMetricsSink;
 
-public class WholeLineLiftedUninitializedVariableAnalysis extends
-		BodyTransformer {
-
-	private static WholeLineLiftedUninitializedVariableAnalysis instance = new WholeLineLiftedUninitializedVariableAnalysis();
-
-	private WholeLineLiftedUninitializedVariableAnalysis() {
-	}
-
-	public static WholeLineLiftedUninitializedVariableAnalysis v() {
-		return instance;
-	}
+public class WholeLineLiftedUninitializedVariableAnalysis extends BodyTransformer {
 
 	// #ifdef METRICS
 	private static final String UV_LIFTED_FLOWTHROUGH_COUNTER = "UV A3 flowthrough";
@@ -36,8 +25,7 @@ public class WholeLineLiftedUninitializedVariableAnalysis extends
 	private static final String UV_LIFTED_FLOWTHROUGH_TIME = "UV A3 flowthrough time";
 	private AbstractMetricsSink sink;
 
-	public WholeLineLiftedUninitializedVariableAnalysis setMetricsSink(
-			AbstractMetricsSink sink) {
+	public WholeLineLiftedUninitializedVariableAnalysis setMetricsSink(AbstractMetricsSink sink) {
 		this.sink = sink;
 		return this;
 	}
@@ -47,8 +35,7 @@ public class WholeLineLiftedUninitializedVariableAnalysis extends
 	@Override
 	protected void internalTransform(Body body, String phase, Map options) {
 		UnitGraph bodyGraph = new BriefUnitGraph(body);
-		ConfigTag configTag = (ConfigTag) body
-				.getTag(ConfigTag.CONFIG_TAG_NAME);
+		ConfigTag configTag = (ConfigTag) body.getTag(ConfigTag.CONFIG_TAG_NAME);
 		boolean wentHybrid = false;
 		LiftedUninitializedVariableAnalysis liftedUninitializedVariableAnalysis = null;
 
@@ -59,12 +46,10 @@ public class WholeLineLiftedUninitializedVariableAnalysis extends
 		// #ifdef HYBRID
 		if (configTag.size() == 1) {
 			wentHybrid = true;
-			SimpleUninitializedVariableAnalysis simpleUninitializedVariables = new SimpleUninitializedVariableAnalysis(
-					bodyGraph);
+			SimpleUninitializedVariableAnalysis simpleUninitializedVariables = new SimpleUninitializedVariableAnalysis(bodyGraph);
 		} else {
 			// #endif
-			liftedUninitializedVariableAnalysis = new LiftedUninitializedVariableAnalysis(
-					bodyGraph, configTag.getConfigReps());
+			liftedUninitializedVariableAnalysis = new LiftedUninitializedVariableAnalysis(bodyGraph, configTag.getConfigReps());
 			// #ifdef HYBRID
 		}
 		// #endif
@@ -73,15 +58,9 @@ public class WholeLineLiftedUninitializedVariableAnalysis extends
 		long endAnalysis = System.nanoTime();
 
 		if (!wentHybrid) {
-			this.sink.flow(body, UV_LIFTED_FLOWTHROUGH_TIME,
-					liftedUninitializedVariableAnalysis.getFlowThroughTime());
-			this.sink.flow(body, UV_LIFTED_FLOWSET_MEM, FlowSetUtils
-					.liftedMemoryUnits(body,
-							liftedUninitializedVariableAnalysis, false, 1));
-			this.sink
-					.flow(body, UV_LIFTED_FLOWTHROUGH_COUNTER,
-							LiftedUninitializedVariableAnalysis
-									.getFlowThroughCounter());
+			this.sink.flow(body, UV_LIFTED_FLOWTHROUGH_TIME, liftedUninitializedVariableAnalysis.getFlowThroughTime());
+			this.sink.flow(body, UV_LIFTED_FLOWSET_MEM, FlowSetUtils.liftedMemoryUnits(body, liftedUninitializedVariableAnalysis, false, 1));
+			this.sink.flow(body, UV_LIFTED_FLOWTHROUGH_COUNTER, LiftedUninitializedVariableAnalysis.getFlowThroughCounter());
 			LiftedUninitializedVariableAnalysis.reset();
 		}
 

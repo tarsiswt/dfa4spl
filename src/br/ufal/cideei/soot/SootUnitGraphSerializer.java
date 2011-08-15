@@ -46,7 +46,7 @@ import br.ufal.cideei.soot.instrument.FeatureTag;
 
 /**
  * Warning: this source code along with its Javadoc was completely copied from
- * the Soot framework, as it was impossible to extend it, since it was
+ * the Soot framework, as it was impossible to extend it because it was
  * package-visible.
  * 
  * 

@@ -8,8 +8,8 @@ import java.util.Set;
 
 //#ifdef METRICS
 import profiling.ProfilingTag;
-import br.ufal.cideei.soot.count.AssignmentsCounter;
 import br.ufal.cideei.util.count.AbstractMetricsSink;
+
 //#endif
 
 import soot.Body;
@@ -20,7 +20,6 @@ import br.ufal.cideei.soot.analyses.FlowSetUtils;
 import br.ufal.cideei.soot.analyses.reachingdefs.UnliftedReachingDefinitions;
 import br.ufal.cideei.soot.instrument.ConfigTag;
 import br.ufal.cideei.soot.instrument.IConfigRep;
-
 
 public class WholeLineRunnerReachingDefinitions extends BodyTransformer {
 
@@ -61,19 +60,17 @@ public class WholeLineRunnerReachingDefinitions extends BodyTransformer {
 		Set<IConfigRep> configReps = configTag.getConfigReps();
 		for (IConfigRep config : configReps) {
 			UnliftedReachingDefinitions unliftedReachingDefinitions = new UnliftedReachingDefinitions(bodyGraph, config);
-			
+
 			// #ifdef METRICS
-			memUnits.add(FlowSetUtils.unliftedMemoryUnits2(body, unliftedReachingDefinitions, 1));
+			memUnits.add(FlowSetUtils.unliftedMemoryUnits(body, unliftedReachingDefinitions, 1));
 			flowThroughTime += unliftedReachingDefinitions.getFlowThroughTime();
-			
+
 			// #endif
 		}
 
 		// #ifdef METRICS
 		long endAnalysis = System.nanoTime();
-		
-		
-		
+
 		this.sink.flow(body, RD_RUNNER_FLOWTHROUGH_TIME, flowThroughTime);
 		Long max = Collections.max(memUnits);
 		this.sink.flow(body, RD_RUNNER_FLOWSET_MEM, max);

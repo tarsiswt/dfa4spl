@@ -10,7 +10,9 @@ import de.ovgu.cide.features.IFeature;
 
 // TODO: Auto-generated Javadoc
 /**
- * The Interface IFeatureExtracter.
+ * The Interface IFeatureExtracter defines the contract for retrieving feature information from ASTNodes.
+ * 
+ * TODO: needs some flexibility if this is to used with different components other than CIDE.
  */
 public interface IFeatureExtracter {
 

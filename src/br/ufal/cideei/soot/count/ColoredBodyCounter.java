@@ -18,7 +18,7 @@ public class ColoredBodyCounter extends BodyCounter {
 	protected void internalTransform(Body body, String phase, Map opt) {
 		super.internalTransform(body, phase, opt);
 		ConfigTag tag = (ConfigTag) body.getTag(ConfigTag.CONFIG_TAG_NAME);
-		//XXX check size consistency
+		//XXX check size consistency. Depends on instrumentation.
 		if (tag.size() > 1)
 			coloredCounter++;
 	}

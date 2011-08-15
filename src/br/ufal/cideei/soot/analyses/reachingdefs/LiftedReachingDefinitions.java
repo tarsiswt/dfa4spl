@@ -1,11 +1,8 @@
 package br.ufal.cideei.soot.analyses.reachingdefs;
 
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.Map.Entry;
 
 import soot.Unit;
 import soot.jimple.AssignStmt;
@@ -110,21 +107,6 @@ public class LiftedReachingDefinitions extends ForwardFlowAnalysis<Unit, MapLift
 
 		FeatureTag tag = (FeatureTag) unit.getTag(FeatureTag.FEAT_TAG_NAME);
 		IFeatureRep featureRep = tag.getFeatureRep();
-		
-//		Iterator<Entry<IConfigRep, FlowSet>> iterator = source.getMapping().entrySet().iterator();
-//		while (iterator.hasNext()) {
-//			Map.Entry<IConfigRep, FlowSet> entry = (Map.Entry<IConfigRep, FlowSet>) iterator.next();
-//			IConfigRep config = entry.getKey();
-//			FlowSet sourceFlowSet = entry.getValue();
-//			FlowSet destFlowSet = dest.getLattice(config);
-//			if (config.belongsToConfiguration(featureRep)) {
-//				kill(sourceFlowSet, unit, destFlowSet, null);
-//				gen(sourceFlowSet, unit, destFlowSet, null);
-//			} else {
-//				sourceFlowSet.copy(destFlowSet);
-//			}
-//			
-//		}
 
 		Collection<IConfigRep> configs = source.getConfigurations();
 		for (IConfigRep config : configs) {
@@ -143,6 +125,14 @@ public class LiftedReachingDefinitions extends ForwardFlowAnalysis<Unit, MapLift
 		// #endif
 	}
 
+	/**
+	 * Creates a KILL set for the given unit and remove the elements that are in KILL from the destination FlowSet.
+	 * 
+	 * @param source
+	 * @param unit
+	 * @param dest
+	 * @param configuration
+	 */
 	protected void kill(FlowSet source, Unit unit, FlowSet dest, Set<String> configuration) {
 		FlowSet kills = new ArraySparseSet();
 		if (unit instanceof AssignStmt) {
@@ -160,8 +150,8 @@ public class LiftedReachingDefinitions extends ForwardFlowAnalysis<Unit, MapLift
 	}
 
 	/**
-	 * Creates a GEN set for a given Unit and it to the FlowSet dest. In this case, our GEN set are all the definitions
-	 * present in the unit.
+	 * Creates a GEN set for a given Unit and add it to the FlowSet dest. In this case, our GEN set are all the
+	 * definitions present in the unit.
 	 * 
 	 * @param dest
 	 *            the dest

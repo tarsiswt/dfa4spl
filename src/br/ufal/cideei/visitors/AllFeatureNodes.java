@@ -35,7 +35,7 @@ public class AllFeatureNodes extends ASTVisitor {
 	 *            the text selection
 	 */
 	public AllFeatureNodes(ITextSelection textSelection, IFile file, Set<String> features) {
-		extracter = CIDEFeatureExtracterFactory.getInstance().newExtracter();
+		extracter = CIDEFeatureExtracterFactory.getInstance().getExtracter();
 		selectionFeatures = features;
 		this.textSelection = textSelection;
 		this.file = file;

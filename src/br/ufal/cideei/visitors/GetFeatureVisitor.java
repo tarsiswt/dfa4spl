@@ -59,7 +59,7 @@ public class GetFeatureVisitor extends ASTVisitor{
 		super.preVisit(node);
 		if (node.getStartPosition() >= textSelection.getOffset() && 
 				(node.getStartPosition() + node.getLength()) <= textSelection.getOffset() + textSelection.getLength()) {
-			IFeatureExtracter extracter = CIDEFeatureExtracterFactory.getInstance().newExtracter();
+			IFeatureExtracter extracter = CIDEFeatureExtracterFactory.getInstance().getExtracter();
 			features = extracter.getFeaturesNames(node, file);
 			return;
 		}

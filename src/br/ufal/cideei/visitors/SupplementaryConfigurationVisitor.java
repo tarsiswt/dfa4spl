@@ -36,7 +36,7 @@ public class SupplementaryConfigurationVisitor extends ASTVisitor {
 		this.configuration = configuration;
 		this.featureLines = new HashMap<String,Set<ASTNode>>();
 		this.featureNames = new HashSet<String>();
-		this.extracter = CIDEFeatureExtracterFactory.getInstance().newExtracter();
+		this.extracter = CIDEFeatureExtracterFactory.getInstance().getExtracter();
 		this.file = file;
 	}
 	
