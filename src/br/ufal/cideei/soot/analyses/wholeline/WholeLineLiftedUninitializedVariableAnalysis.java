@@ -23,6 +23,7 @@ public class WholeLineLiftedUninitializedVariableAnalysis extends BodyTransforme
 	private static final String UV_LIFTED_FLOWTHROUGH_COUNTER = "UV A3 flowthrough";
 	private static final String UV_LIFTED_FLOWSET_MEM = "UV A3 mem";
 	private static final String UV_LIFTED_FLOWTHROUGH_TIME = "UV A3 flowthrough time";
+	private static final String UV_LIFTED_L1_FLOWTHROUGH_COUNTER = "UV A3 L1 flowthrough counter";
 	private AbstractMetricsSink sink;
 
 	public WholeLineLiftedUninitializedVariableAnalysis setMetricsSink(AbstractMetricsSink sink) {
@@ -44,14 +45,14 @@ public class WholeLineLiftedUninitializedVariableAnalysis extends BodyTransforme
 		// #endif
 
 		// #ifdef HYBRID
-		if (configTag.size() == 1) {
-			wentHybrid = true;
-			SimpleUninitializedVariableAnalysis simpleUninitializedVariables = new SimpleUninitializedVariableAnalysis(bodyGraph);
-		} else {
+//@		if (configTag.size() == 1) {
+//@			wentHybrid = true;
+//@			SimpleUninitializedVariableAnalysis simpleUninitializedVariables = new SimpleUninitializedVariableAnalysis(bodyGraph);
+//@		} else {
 			// #endif
 			liftedUninitializedVariableAnalysis = new LiftedUninitializedVariableAnalysis(bodyGraph, configTag.getConfigReps());
 			// #ifdef HYBRID
-		}
+//@		}
 		// #endif
 
 		// #ifdef METRICS
@@ -61,6 +62,7 @@ public class WholeLineLiftedUninitializedVariableAnalysis extends BodyTransforme
 			this.sink.flow(body, UV_LIFTED_FLOWTHROUGH_TIME, liftedUninitializedVariableAnalysis.getFlowThroughTime());
 			this.sink.flow(body, UV_LIFTED_FLOWSET_MEM, FlowSetUtils.liftedMemoryUnits(body, liftedUninitializedVariableAnalysis, false, 1));
 			this.sink.flow(body, UV_LIFTED_FLOWTHROUGH_COUNTER, LiftedUninitializedVariableAnalysis.getFlowThroughCounter());
+			this.sink.flow(body, UV_LIFTED_L1_FLOWTHROUGH_COUNTER, liftedUninitializedVariableAnalysis.getL1flowThroughCounter());
 			LiftedUninitializedVariableAnalysis.reset();
 		}
 

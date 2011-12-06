@@ -16,10 +16,13 @@ import br.ufal.cideei.soot.instrument.IConfigRep;
 import br.ufal.cideei.soot.instrument.IFeatureRep;
 
 /**
- * This implementation of the Reaching Definitions analysis uses a LiftedFlowSet as a lattice element. The only major
- * change is how its KILL method is implemented. Everything else is quite similar to a 'regular' FlowSet-based analysis.
+ * This implementation of the Reaching Definitions analysis uses a LiftedFlowSet
+ * as a lattice element. The only major change is how its KILL method is
+ * implemented. Everything else is quite similar to a 'regular' FlowSet-based
+ * analysis.
  */
-public class LiftedReachingDefinitions extends ForwardFlowAnalysis<Unit, MapLiftedFlowSet> {
+public class LiftedReachingDefinitions extends
+		ForwardFlowAnalysis<Unit, MapLiftedFlowSet> {
 
 	private Collection<IConfigRep> configurations;
 
@@ -36,6 +39,12 @@ public class LiftedReachingDefinitions extends ForwardFlowAnalysis<Unit, MapLift
 		return flowThroughCounter;
 	}
 
+	private long L1flowThroughCounter = 0;
+
+	public long getL1flowThroughCounter() {
+		return L1flowThroughCounter;
+	}
+
 	public static void reset() {
 		flowThroughCounter = 0;
 	}
@@ -48,7 +57,8 @@ public class LiftedReachingDefinitions extends ForwardFlowAnalysis<Unit, MapLift
 	 * @param graph
 	 *            the graph
 	 */
-	public LiftedReachingDefinitions(DirectedGraph<Unit> graph, Collection<IConfigRep> configs) {
+	public LiftedReachingDefinitions(DirectedGraph<Unit> graph,
+			Collection<IConfigRep> configs) {
 		super(graph);
 		this.configurations = configs;
 	}
@@ -56,7 +66,8 @@ public class LiftedReachingDefinitions extends ForwardFlowAnalysis<Unit, MapLift
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see soot.toolkits.scalar.AbstractFlowAnalysis#copy(java.lang.Object, java.lang.Object)
+	 * @see soot.toolkits.scalar.AbstractFlowAnalysis#copy(java.lang.Object,
+	 * java.lang.Object)
 	 */
 	@Override
 	protected void copy(MapLiftedFlowSet source, MapLiftedFlowSet dest) {
@@ -66,10 +77,12 @@ public class LiftedReachingDefinitions extends ForwardFlowAnalysis<Unit, MapLift
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see soot.toolkits.scalar.AbstractFlowAnalysis#merge(java.lang.Object, java.lang.Object, java.lang.Object)
+	 * @see soot.toolkits.scalar.AbstractFlowAnalysis#merge(java.lang.Object,
+	 * java.lang.Object, java.lang.Object)
 	 */
 	@Override
-	protected void merge(MapLiftedFlowSet source1, MapLiftedFlowSet source2, MapLiftedFlowSet dest) {
+	protected void merge(MapLiftedFlowSet source1, MapLiftedFlowSet source2,
+			MapLiftedFlowSet dest) {
 		source1.union(source2, dest);
 	}
 
@@ -96,10 +109,15 @@ public class LiftedReachingDefinitions extends ForwardFlowAnalysis<Unit, MapLift
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see soot.toolkits.scalar.FlowAnalysis#flowThrough(java.lang.Object, java.lang.Object, java.lang.Object)
+	 * @see soot.toolkits.scalar.FlowAnalysis#flowThrough(java.lang.Object,
+	 * java.lang.Object, java.lang.Object)
 	 */
 	@Override
 	protected void flowThrough(MapLiftedFlowSet source, Unit unit, MapLiftedFlowSet dest) {
+		//#ifdef CACHEPURGE
+		br.Main.waste();
+		//#endif
+
 		// #ifdef METRICS
 		flowThroughCounter++;
 		long timeSpentOnFlowThrough = System.nanoTime();
@@ -108,11 +126,12 @@ public class LiftedReachingDefinitions extends ForwardFlowAnalysis<Unit, MapLift
 		FeatureTag tag = (FeatureTag) unit.getTag(FeatureTag.FEAT_TAG_NAME);
 		IFeatureRep featureRep = tag.getFeatureRep();
 
-		Collection<IConfigRep> configs = source.getConfigurations();
+		Collection<IConfigRep> configs = source.getConfigurations();	
 		for (IConfigRep config : configs) {
 			FlowSet sourceFlowSet = source.getLattice(config);
 			FlowSet destFlowSet = dest.getLattice(config);
 			if (config.belongsToConfiguration(featureRep)) {
+				L1flowThroughCounter++;
 				kill(sourceFlowSet, unit, destFlowSet, null);
 				gen(sourceFlowSet, unit, destFlowSet, null);
 			} else {
@@ -126,14 +145,16 @@ public class LiftedReachingDefinitions extends ForwardFlowAnalysis<Unit, MapLift
 	}
 
 	/**
-	 * Creates a KILL set for the given unit and remove the elements that are in KILL from the destination FlowSet.
+	 * Creates a KILL set for the given unit and remove the elements that are in
+	 * KILL from the destination FlowSet.
 	 * 
 	 * @param source
 	 * @param unit
 	 * @param dest
 	 * @param configuration
 	 */
-	protected void kill(FlowSet source, Unit unit, FlowSet dest, Set<String> configuration) {
+	protected void kill(FlowSet source, Unit unit, FlowSet dest,
+			Set<String> configuration) {
 		FlowSet kills = new ArraySparseSet();
 		if (unit instanceof AssignStmt) {
 			AssignStmt assignStmt = (AssignStmt) unit;
@@ -150,8 +171,8 @@ public class LiftedReachingDefinitions extends ForwardFlowAnalysis<Unit, MapLift
 	}
 
 	/**
-	 * Creates a GEN set for a given Unit and add it to the FlowSet dest. In this case, our GEN set are all the
-	 * definitions present in the unit.
+	 * Creates a GEN set for a given Unit and add it to the FlowSet dest. In
+	 * this case, our GEN set are all the definitions present in the unit.
 	 * 
 	 * @param dest
 	 *            the dest
@@ -159,7 +180,8 @@ public class LiftedReachingDefinitions extends ForwardFlowAnalysis<Unit, MapLift
 	 *            the unit
 	 * @param configuration
 	 */
-	protected void gen(FlowSet source, Unit unit, FlowSet dest, Set<String> configuration) {
+	protected void gen(FlowSet source, Unit unit, FlowSet dest,
+			Set<String> configuration) {
 		if (unit instanceof AssignStmt) {
 			dest.add(unit);
 		}

@@ -38,9 +38,16 @@ public class UnliftedUnitializedVariablesAnalysis extends ForwardFlowAnalysis<Un
 	public static long getFlowThroughCounter() {
 		return flowThroughCounter;
 	}
+	
+	private static long L1flowThroughCounter = 0;
+
+	public static long getL1flowThroughCounter() {
+		return L1flowThroughCounter;
+	}
 
 	public static void reset() {
 		flowThroughCounter = 0;
+		L1flowThroughCounter = 0;
 	}
 
 	// #endif
@@ -113,6 +120,10 @@ public class UnliftedUnitializedVariablesAnalysis extends ForwardFlowAnalysis<Un
 	 */
 	@Override
 	protected void flowThrough(FlowSet source, Unit unit, FlowSet dest) {
+		//#ifdef CACHEPURGE
+		br.Main.waste();
+		//#endif
+		
 		// #ifdef METRICS
 		flowThroughCounter++;
 		long timeSpentOnFlowThrough = System.nanoTime();
@@ -122,6 +133,7 @@ public class UnliftedUnitializedVariablesAnalysis extends ForwardFlowAnalysis<Un
 		IFeatureRep featureRep = tag.getFeatureRep();
 
 		if (featureRep.belongsToConfiguration(configuration)) {
+			L1flowThroughCounter++;
 			kill(source, unit, dest);
 		} else {
 			source.copy(dest);

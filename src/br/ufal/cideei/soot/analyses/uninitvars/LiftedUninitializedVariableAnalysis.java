@@ -40,6 +40,12 @@ public class LiftedUninitializedVariableAnalysis extends ForwardFlowAnalysis<Uni
 	public static long getFlowThroughCounter() {
 		return flowThroughCounter;
 	}
+	
+	private long L1flowThroughCounter = 0;
+
+	public long getL1flowThroughCounter() {
+		return L1flowThroughCounter;
+	}
 
 	public static void reset() {
 		flowThroughCounter = 0;
@@ -120,6 +126,10 @@ public class LiftedUninitializedVariableAnalysis extends ForwardFlowAnalysis<Uni
 	 */
 	@Override
 	protected void flowThrough(MapLiftedFlowSet source, Unit unit, MapLiftedFlowSet dest) {
+		//#ifdef CACHEPURGE
+		br.Main.waste();
+		//#endif
+		
 		// #ifdef METRICS
 		flowThroughCounter++;
 		long timeSpentOnFlowThrough = System.nanoTime();
@@ -133,6 +143,7 @@ public class LiftedUninitializedVariableAnalysis extends ForwardFlowAnalysis<Uni
 			FlowSet sourceFlowSet = source.getLattice(config);
 			FlowSet destFlowSet = dest.getLattice(config);
 			if (config.belongsToConfiguration(featureRep)) {
+				L1flowThroughCounter++;
 				kill(sourceFlowSet, unit, destFlowSet);
 			} else {
 				sourceFlowSet.copy(destFlowSet);

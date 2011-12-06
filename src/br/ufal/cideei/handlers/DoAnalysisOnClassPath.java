@@ -52,7 +52,7 @@ import br.ufal.cideei.soot.instrument.FeatureModelInstrumentorTransformer;
 /**
  * Invokes feature-sensitive analyses on a Eclipse project. Mainly for collecting data/metrics.
  * 
- * @author Társis
+ * @author Tï¿½rsis
  */
 public class DoAnalysisOnClassPath extends AbstractHandler {
 	// #ifdef METRICS
@@ -62,6 +62,10 @@ public class DoAnalysisOnClassPath extends AbstractHandler {
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
+		//#ifdef CACHEPURGE
+		br.Main.randomLong();
+		//#endif
+		
 		// TODO: exteriorize this number as a configuration parameter. Abstract away the looping.
 		int times = 10;
 		try {
@@ -126,7 +130,7 @@ public class DoAnalysisOnClassPath extends AbstractHandler {
 				// #endif
 				System.out.println("=============" + (i + 1) + "/" + times + "=============");
 			}
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			e.printStackTrace();
 		} finally {
 			SootManager.reset();

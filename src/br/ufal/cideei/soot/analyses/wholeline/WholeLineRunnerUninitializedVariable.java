@@ -38,6 +38,7 @@ public class WholeLineRunnerUninitializedVariable extends BodyTransformer {
 	private static final String UV_RUNNER_FLOWTHROUGH_COUNTER = "UV A2 flowthrough";
 	private static final String UV_RUNNER_FLOWSET_MEM = "UV A2 mem";
 	private static final String UV_RUNNER_FLOWTHROUGH_TIME = "UV A2 flowthrough time";
+	private static final String UV_RUNNER_L1_FLOWTHROUGH_COUNTER = "UV A2 L1 flowthough counter";
 	private AbstractMetricsSink sink;
 
 	public WholeLineRunnerUninitializedVariable setMetricsSink(AbstractMetricsSink sink) {
@@ -76,6 +77,7 @@ public class WholeLineRunnerUninitializedVariable extends BodyTransformer {
 		Long max = Collections.max(memUnits);
 		this.sink.flow(body, UV_RUNNER_FLOWSET_MEM, max);
 		this.sink.flow(body, UV_RUNNER_FLOWTHROUGH_COUNTER, UnliftedUnitializedVariablesAnalysis.getFlowThroughCounter());
+		this.sink.flow(body, UV_RUNNER_L1_FLOWTHROUGH_COUNTER, UnliftedUnitializedVariablesAnalysis.getL1flowThroughCounter());
 		UnliftedUnitializedVariablesAnalysis.reset();
 
 		ProfilingTag profilingTag = (ProfilingTag) body.getTag("ProfilingTag");
