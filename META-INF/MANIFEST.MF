@@ -33,7 +33,8 @@ Bundle-ClassPath: .,
  lib/commons-collections-3.2.1.jar,
  lib/commons-lang-2.6.jar,
  lib/colt.jar,
- lib/concurrent.jar
+ lib/concurrent.jar,
+ lib/overseer.jar
 Export-Package: beaver,
  br,
  br.ufal.cideei,
