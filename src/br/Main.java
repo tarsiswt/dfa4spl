@@ -7,6 +7,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 
 import soot.ArrayType;
 import soot.Local;
@@ -35,6 +36,25 @@ import soot.util.JasminOutputStream;
 
 public class Main {
 
+	// #ifdef CACHEPURGE
+	private static long[] wasteOfSpace = new long[131072]; // 131072*64 bits =
+															// 8388608 bits =
+															// 8MB
+	private static Random rdm = new Random();
+	private static long acc = 0;
+
+	static {
+		for (int index = 0; index < wasteOfSpace.length; index++) {
+			wasteOfSpace[index] = rdm.nextLong();
+		}
+	}
+
+	public static long randomLong() {
+		return wasteOfSpace[rdm.nextInt(wasteOfSpace.length)];
+	}
+
+	// #endif
+
 	public static void main(String[] args) throws IOException {
 
 		Options.v().set_whole_program(true);
@@ -44,7 +64,7 @@ public class Main {
 		SootClass sClass;
 		SootMethod method;
 
-		// Carregar dependências e a raiz Object
+		// Carregar dependï¿½ncias e a raiz Object
 		SootClass objClass = scene.loadClassAndSupport("java.lang.Object");
 		scene.loadClassAndSupport("java.lang.System");
 
@@ -52,28 +72,29 @@ public class Main {
 		sClass = new SootClass("HelloWorld", Modifier.PUBLIC);
 
 		/*
-		 * É obrigatório definir a superclasse, pois quando ela não é definida,
-		 * o compilador se encarrega de fazê-lo, mas nesse caso é obrigatório
-		 * explicitá-la.
+		 * ï¿½ obrigatï¿½rio definir a superclasse, pois quando ela nï¿½o ï¿½ definida,
+		 * o compilador se encarrega de fazï¿½-lo, mas nesse caso ï¿½ obrigatï¿½rio
+		 * explicitï¿½-la.
 		 */
 		sClass.setSuperclass(Scene.v().getSootClass("java.lang.Object"));
 		scene.addClass(sClass);
 
 		/*
-		 * Criar a assinatura do método(nome, parâmetros e retorno):
+		 * Criar a assinatura do mï¿½todo(nome, parï¿½metros e retorno):
 		 * 
 		 * public static void main(String[])
 		 * 
-		 * o corpo será definido mais abaixo
+		 * o corpo serï¿½ definido mais abaixo
 		 */
-		method = new SootMethod("main", Arrays.asList(new Type[] { ArrayType.v(RefType.v("java.lang.String"), 1) }), VoidType.v(), Modifier.PUBLIC
-				| Modifier.STATIC);
+		method = new SootMethod("main", Arrays.asList(new Type[] { ArrayType.v(
+				RefType.v("java.lang.String"), 1) }), VoidType.v(),
+				Modifier.PUBLIC | Modifier.STATIC);
 
 		sClass.addMethod(method);
 
-		// Este bloco é utilizado para definir o corpo do método
+		// Este bloco ï¿½ utilizado para definir o corpo do mï¿½todo
 		{
-			// Um Body só deve ser instanciado relacionando-o diretamente a uma
+			// Um Body sï¿½ deve ser instanciado relacionando-o diretamente a uma
 			// IR
 			JimpleBody body = Jimple.v().newBody(method);
 
@@ -83,25 +104,46 @@ public class Main {
 			Local arg, tmpRef;
 
 			// Add some locals, java.lang.String l0
-			arg = Jimple.v().newLocal("l0", ArrayType.v(RefType.v("java.lang.String"), 1));
+			arg = Jimple.v().newLocal("l0",
+					ArrayType.v(RefType.v("java.lang.String"), 1));
 			locals.add(arg);
 
 			// Add locals, java.io.printStream tmpRef
-			tmpRef = Jimple.v().newLocal("tmpRef", RefType.v("java.io.PrintStream"));
+			tmpRef = Jimple.v().newLocal("tmpRef",
+					RefType.v("java.io.PrintStream"));
 			locals.add(tmpRef);
 
 			// add "l0 = @parameter0"
-			units.add(Jimple.v().newIdentityStmt(arg, Jimple.v().newParameterRef(ArrayType.v(RefType.v("java.lang.String"), 1), 0)));
+			units.add(Jimple.v().newIdentityStmt(
+					arg,
+					Jimple.v().newParameterRef(
+							ArrayType.v(RefType.v("java.lang.String"), 1), 0)));
 
 			// add "tmpRef = java.lang.System.out"
-			Unit tmpRefAssignUnit = Jimple.v().newAssignStmt(tmpRef,
-					Jimple.v().newStaticFieldRef(Scene.v().getField("<java.lang.System: java.io.PrintStream out>").makeRef()));
+			Unit tmpRefAssignUnit = Jimple
+					.v()
+					.newAssignStmt(
+							tmpRef,
+							Jimple
+									.v()
+									.newStaticFieldRef(
+											Scene
+													.v()
+													.getField(
+															"<java.lang.System: java.io.PrintStream out>")
+													.makeRef()));
 			units.add(tmpRefAssignUnit);
 
 			// insert "tmpRef.println("Hello world!")"
 			{
-				SootMethod toCall = Scene.v().getMethod("<java.io.PrintStream: void println(java.lang.String)>");
-				units.add(Jimple.v().newInvokeStmt(Jimple.v().newVirtualInvokeExpr(tmpRef, toCall.makeRef(), StringConstant.v("Hello world!"))));
+				SootMethod toCall = Scene
+						.v()
+						.getMethod(
+								"<java.io.PrintStream: void println(java.lang.String)>");
+				units.add(Jimple.v().newInvokeStmt(
+						Jimple.v().newVirtualInvokeExpr(tmpRef,
+								toCall.makeRef(),
+								StringConstant.v("Hello world!"))));
 			}
 
 			// insert "return"
@@ -111,11 +153,14 @@ public class Main {
 				UnitGraph unitGraph = new BriefUnitGraph(body);
 				SimpleLocalDefs localDefs = new SimpleLocalDefs(unitGraph);
 
-				SimpleLocalUses localUses = new SimpleLocalUses(unitGraph, localDefs);
-				List localUsesOfTmpRefValueBoxPair = localUses.getUsesOf(tmpRefAssignUnit);
+				SimpleLocalUses localUses = new SimpleLocalUses(unitGraph,
+						localDefs);
+				List localUsesOfTmpRefValueBoxPair = localUses
+						.getUsesOf(tmpRefAssignUnit);
 
 				SimpleLiveLocals liveLocals = new SimpleLiveLocals(unitGraph);
-				List liveLocalsBefore = liveLocals.getLiveLocalsAfter(tmpRefAssignUnit);
+				List liveLocalsBefore = liveLocals
+						.getLiveLocalsAfter(tmpRefAssignUnit);
 
 				scene.setMainClass(sClass);
 				scene.loadNecessaryClasses();
@@ -138,13 +183,33 @@ public class Main {
 		// Options.output_format_class);
 		String fileName = SourceLocator.v().getSourceForClass(sClass.getName());
 		System.out.println(fileName);
-		OutputStream streamOut = new JasminOutputStream(new FileOutputStream(fileName));
-		PrintWriter writerOut = new PrintWriter(new OutputStreamWriter(streamOut));
+		OutputStream streamOut = new JasminOutputStream(new FileOutputStream(
+				fileName));
+		PrintWriter writerOut = new PrintWriter(new OutputStreamWriter(
+				streamOut));
 		JasminClass jasminClass = new soot.jimple.JasminClass(sClass);
 		jasminClass.print(writerOut);
 		writerOut.flush();
 		streamOut.close();
 
 	}
+
+	// #ifdef CACHEPURGE
+	public static void waste() {
+		// reads cells from the useless array and do some useless calculations
+		long acc = 0;
+		boolean bool = rdm.nextBoolean();
+		for (int i = 0; i < wasteOfSpace.length; i++) {
+			if (bool) {
+				bool = !bool;
+				acc += wasteOfSpace[i];
+			} else {
+				bool = !bool;
+				acc -= wasteOfSpace[i];
+			}
+		}
+		Main.acc = acc;
+	}
+	// #endif
 
 }
