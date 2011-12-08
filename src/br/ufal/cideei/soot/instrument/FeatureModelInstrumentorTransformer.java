@@ -42,8 +42,7 @@ import br.ufal.cideei.util.count.AbstractMetricsSink;
 
 /**
  * The Class FeatureModelInstrumentor is a Soot transformation for transcribing feature information to every Unit. This
- * is done via Tag annonations. The feature model and its format from which the information will be extracted is still
- * unkown.
+ * is done via Tag annonations (FeatureTag).
  */
 // TODO: change class name to something more appropriate, like
 // "FeatureInstrumentorTransformer"
