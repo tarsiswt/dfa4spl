@@ -111,6 +111,8 @@ public class WholeLineLiftedReachingDefinitions extends BodyTransformer {
 //@			this.sink.flow(body, RD_LIFTED_CACHE_MISSES, cacheMissesFromThread);
 //@			
 			//#endif
+			
+			LiftedReachingDefinitions.reset();
 		}
 
 		ProfilingTag profilingTag = (ProfilingTag) body.getTag("ProfilingTag");
