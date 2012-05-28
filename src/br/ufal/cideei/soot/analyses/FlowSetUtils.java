@@ -46,7 +46,7 @@ import br.ufal.cideei.soot.instrument.ILazyConfigRep;
 /**
  * Utility class for collecting data/metrics about FlowSets.
  * 
- * @author Társis
+ * @author Tï¿½rsis
  * 
  */
 public class FlowSetUtils {
@@ -138,7 +138,7 @@ public class FlowSetUtils {
 //@	 * @param analysis
 //@	 * @return
 //@	 */
-//@	public static double averageSharingDegree(Body body, ForwardFlowAnalysis<Unit, MapLiftedFlowSet> analysis) {
+//@	public static <A extends FlowSet> double averageSharingDegree(Body body, ForwardFlowAnalysis<Unit, A> analysis) {
 //@		ConfigTag tag = (ConfigTag) body.getTag(ConfigTag.CONFIG_TAG_NAME);
 //@		ILazyConfigRep lazyConfig = (ILazyConfigRep) tag.getConfigReps().iterator().next();
 //@
@@ -147,8 +147,8 @@ public class FlowSetUtils {
 //@		List<Double> sharingDegrees = new ArrayList<Double>();
 //@		PatchingChain<Unit> units = body.getUnits();
 //@		for (Unit unit : units) {
-//@			MapLiftedFlowSet flowBefore = analysis.getFlowBefore(unit);
-//@			MapLiftedFlowSet flowAfter = analysis.getFlowAfter(unit);
+//@			FlowSet flowBefore = analysis.getFlowBefore(unit);
+//@			FlowSet flowAfter = analysis.getFlowAfter(unit);
 //@
 //@			sharingDegrees.add(noOfConfigs / flowBefore.size());
 //@			sharingDegrees.add(noOfConfigs / flowAfter.size());

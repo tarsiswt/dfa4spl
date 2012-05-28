@@ -48,6 +48,7 @@ import br.ufal.cideei.soot.SootManager;
 //#ifdef LAZY
 //@import br.ufal.cideei.soot.analyses.wholeline.WholeLineLazyReachingDefinitions;
 //@import br.ufal.cideei.soot.analyses.wholeline.WholeLineLazyUninitializedVariables;
+//@import br.ufal.cideei.soot.analyses.wholeline.WholeLineReversedLazyReachingDefinitions;
 //@
 //#else
 
@@ -156,7 +157,8 @@ public class DoAnalysisOnClassPath extends AbstractHandler {
 		} finally {
 			SootManager.reset();
 			// #ifdef METRICS
-			sink.terminate();
+			if (sink != null)
+				sink.terminate();
 			// #endif
 		}
 
@@ -246,6 +248,13 @@ public class DoAnalysisOnClassPath extends AbstractHandler {
 		// #endif
 		// @ );
 		// @ PackManager.v().getPack("jap").add(reachingDefLazy);
+		// @
+		// @ Transform reachingDefReversedLazy = new Transform("jap.rdrevlazy", WholeLineReversedLazyReachingDefinitions.v()
+		// #ifdef METRICS
+		// @ .setMetricsSink(sink)
+		// #endif
+		// @ );
+		// @ PackManager.v().getPack("jap").add(reachingDefReversedLazy);
 		// @
 		// @ Transform uninitVarsLazy = new Transform("jap.uninitvarlazy", WholeLineLazyUninitializedVariables.v()
 		// #ifdef METRICS
