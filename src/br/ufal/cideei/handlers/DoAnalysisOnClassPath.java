@@ -41,7 +41,9 @@ import soot.G;
 import soot.PackManager;
 import soot.Scene;
 import soot.Transform;
+import br.ufal.cideei.features.AlloyConfigurationCheck;
 import br.ufal.cideei.features.CIDEFeatureExtracterFactory;
+import br.ufal.cideei.features.FeatureSetChecker;
 import br.ufal.cideei.features.IFeatureExtracter;
 import br.ufal.cideei.soot.SootManager;
 
@@ -69,6 +71,7 @@ import br.ufal.cideei.util.count.MetricsTable;
 //#endif
 
 import br.ufal.cideei.soot.instrument.FeatureModelInstrumentorTransformer;
+import br.ufpe.cin.dfa4spl.plverifier.alloy.io.CannotReadAlloyFileException;
 
 //TODO: this class is very similar to DoFeatureObliviousAnalysisOnClassPath. Check for common funcionality and for code reuse opportunities.
 /**
@@ -227,14 +230,22 @@ public class DoAnalysisOnClassPath extends AbstractHandler {
 		}
 
 		Scene.v().loadNecessaryClasses();
+		
+		AlloyConfigurationCheck alloyConfigurationCheck;
+		try {
+			alloyConfigurationCheck = new AlloyConfigurationCheck("/home/tarsis/runtime-EclipseApplication(1)/sketches/TesteMarcio.als");
+		} catch (CannotReadAlloyFileException e) {
+			e.printStackTrace();
+			return;
+		}
 
-		addPacks(classPath, extracter);
+		addPacks(classPath, extracter, alloyConfigurationCheck);
 
 		SootManager.runPacks(extracter);
 	}
 
-	private void addPacks(String classPath, IFeatureExtracter extracter) {
-		Transform instrumentation = new Transform("jtp.fminst", new FeatureModelInstrumentorTransformer(extracter, classPath)
+	private void addPacks(String classPath, IFeatureExtracter extracter, FeatureSetChecker checker) {
+		Transform instrumentation = new Transform("jtp.fminst", new FeatureModelInstrumentorTransformer(extracter, classPath, checker)
 		// #ifdef METRICS
 				.setMetricsSink(sink)
 		// #endif

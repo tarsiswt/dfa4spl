@@ -34,7 +34,8 @@ Bundle-ClassPath: .,
  lib/commons-lang-2.6.jar,
  lib/colt.jar,
  lib/concurrent.jar,
- lib/overseer.jar
+ lib/overseer.jar,
+ lib/alloy4.jar
 Export-Package: beaver,
  br,
  br.ufal.cideei,

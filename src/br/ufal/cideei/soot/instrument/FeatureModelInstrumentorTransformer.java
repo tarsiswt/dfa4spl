@@ -44,6 +44,8 @@ import soot.SootClass;
 import soot.Unit;
 import soot.tagkit.SourceFileTag;
 import soot.tagkit.SourceLnPosTag;
+import br.ufal.cideei.features.AlloyConfigurationCheck;
+import br.ufal.cideei.features.FeatureSetChecker;
 import br.ufal.cideei.features.IFeatureExtracter;
 import br.ufal.cideei.soot.instrument.bitrep.BitConfigRep;
 import br.ufal.cideei.soot.instrument.bitrep.BitFeatureRep;
@@ -93,13 +95,15 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 	protected static String INSTRUMENTATION = "instrumentation";
 
 	// #endif
+	private FeatureSetChecker checker;
 
 	/*
 	 * TODO: maybe injecting the sink depency in a different way could make this funcionality less intrusive.
 	 */
-	public FeatureModelInstrumentorTransformer(IFeatureExtracter extracter, String classPath) {
+	public FeatureModelInstrumentorTransformer(IFeatureExtracter extracter, String classPath, FeatureSetChecker checker) {
 		FeatureModelInstrumentorTransformer.classPath = classPath;
 		FeatureModelInstrumentorTransformer.extracter = extracter;
+		this.checker = checker;
 	}
 
 	// #ifdef METRICS
@@ -240,7 +244,7 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 //@
 		// #else
 		
-		 configTag = new ConfigTag(BitConfigRep.localConfigurations(idGen, unmodAllPresentFeaturesId).getConfigs());
+		 configTag = new ConfigTag(BitConfigRep.localConfigurations(idGen, unmodAllPresentFeaturesId, checker).getConfigs());
 		 body.addTag(configTag);
 		
 		// #endif

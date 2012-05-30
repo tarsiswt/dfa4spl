@@ -59,7 +59,7 @@ import br.ufal.cideei.util.count.MetricsTable;
 /**
  * Invokes feature-insensitive analyses on a Eclipse project. Mainly for collecting data/metrics.
  * 
- * @author Társis
+ * @author Tï¿½rsis
  */
 public class DoFeatureObliviousAnalysisOnClassPath extends AbstractHandler {
 	// #ifdef METRICS
@@ -199,7 +199,7 @@ public class DoFeatureObliviousAnalysisOnClassPath extends AbstractHandler {
 	}
 
 	private void addPacks(String classPath, IFeatureExtracter extracter) {
-		Transform instrumentation = new Transform("jtp.fminst", new FeatureModelInstrumentorTransformer(extracter, classPath)
+		Transform instrumentation = new Transform("jtp.fminst", new FeatureModelInstrumentorTransformer(extracter, classPath, null)
 		// #ifdef METRICS
 				.setMetricsSink(sink)
 		// #endif

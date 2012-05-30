@@ -21,15 +21,21 @@
 
 package br.ufal.cideei.soot.instrument.bitrep;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.commons.collections.BidiMap;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.collections.bidimap.UnmodifiableBidiMap;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
+import br.ufal.cideei.features.AlloyConfigurationCheck;
+import br.ufal.cideei.features.FeatureSetChecker;
 import br.ufal.cideei.soot.instrument.IConfigRep;
 import br.ufal.cideei.soot.instrument.IFeatureRep;
+import br.ufal.cideei.util.MapUtil;
 
 public final class BitConfigRep implements IConfigRep {
 
@@ -43,17 +49,32 @@ public final class BitConfigRep implements IConfigRep {
 		this.id = index;
 		this.hashCode = new HashCodeBuilder(17, 31).append(id).toHashCode();
 	}
-
+	
 	public BitConfigRep(int index, BidiMap atoms) {
 		this.atoms = (UnmodifiableBidiMap) UnmodifiableBidiMap.decorate(atoms);
 		id = index;
 		this.hashCode = new HashCodeBuilder(17, 31).append(id).toHashCode();
 	}
 
-	public static SetBitConfigRep localConfigurations(int highestId, UnmodifiableBidiMap atoms) {
+	private static boolean isValid(int index, BidiMap atoms, FeatureSetChecker checker) {
+		if (checker == null)
+			return true;
+		Set<String> features = new HashSet<String>();
+		Collection<Integer> values = atoms.values();
+		for (Integer featureId : values) {
+			if ((featureId & index) == featureId) {
+				features.add((String) atoms.getKey(featureId));
+			}
+		}
+		return checker.check(features);
+	}
+	
+	public static SetBitConfigRep localConfigurations(int highestId, UnmodifiableBidiMap atoms, FeatureSetChecker checker) {
 		Set<IConfigRep> localConfigs = new HashSet<IConfigRep>();
 		for (int index = 0; index < highestId; index++) {
-			localConfigs.add(new BitConfigRep(index, atoms));
+			if (isValid(index, atoms, checker)) {
+				localConfigs.add(new BitConfigRep(index, atoms));
+			}
 		}
 		return new SetBitConfigRep(localConfigs, atoms, highestId);
 	}
