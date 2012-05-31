@@ -56,7 +56,7 @@ public final class BitConfigRep implements IConfigRep {
 		this.hashCode = new HashCodeBuilder(17, 31).append(id).toHashCode();
 	}
 
-	private static boolean isValid(int index, BidiMap atoms, FeatureSetChecker checker) {
+	public static boolean isValid(int index, BidiMap atoms, FeatureSetChecker checker) {
 		if (checker == null)
 			return true;
 		Set<String> enabledFeatures = new HashSet<String>();

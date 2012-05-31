@@ -26,6 +26,7 @@ import java.util.Collection;
 import org.apache.commons.collections.bidimap.UnmodifiableBidiMap;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
+import br.ufal.cideei.features.FeatureSetChecker;
 import br.ufal.cideei.soot.instrument.IConfigRep;
 import br.ufal.cideei.soot.instrument.IFeatureRep;
 import br.ufal.cideei.soot.instrument.ILazyConfigRep;
@@ -41,18 +42,21 @@ public class BitVectorConfigRep implements ILazyConfigRep {
 	private BitVectorConfigRep(int size, UnmodifiableBidiMap atoms) {
 		this.bitVector = new BitVector(size);
 		this.atoms = atoms;
-		this.hashCode = new HashCodeBuilder(17, 31).append(bitVector).toHashCode();
+		this.hashCode = new HashCodeBuilder(17, 31).append(this.bitVector).toHashCode();
 	}
 
 	private BitVectorConfigRep(UnmodifiableBidiMap atoms, BitVector bitVector) {
 		this.atoms = atoms;
 		this.bitVector = bitVector;
-		this.hashCode = new HashCodeBuilder(17, 31).append(bitVector).toHashCode();
+		this.hashCode = new HashCodeBuilder(17, 31).append(this.bitVector).toHashCode();
 	}
 
-	public static BitVectorConfigRep localConfigurations(int highestId, UnmodifiableBidiMap atoms) {
+	public static BitVectorConfigRep localConfigurations(int highestId, UnmodifiableBidiMap atoms, FeatureSetChecker checker) {
 		BitVectorConfigRep bvcr = new BitVectorConfigRep(highestId, atoms);
-		bvcr.bitVector.not();
+		for (int index = 0; index < highestId; index++) {
+			if (BitConfigRep.isValid(index, atoms, checker))
+				bvcr.bitVector.putQuick(index, true);
+		}
 		return bvcr;
 	}
 
@@ -69,7 +73,9 @@ public class BitVectorConfigRep implements ILazyConfigRep {
 			cloneForRight.not();
 			cloneForRight.and(this.bitVector);
 
-			return new Pair<ILazyConfigRep, ILazyConfigRep>(new BitVectorConfigRep(atoms, cloneForLeft), new BitVectorConfigRep(atoms, cloneForRight));
+			return new Pair<ILazyConfigRep, ILazyConfigRep>(
+					new BitVectorConfigRep(this.atoms, cloneForLeft), 
+					new BitVectorConfigRep(this.atoms, cloneForRight));
 		} else {
 			throw new UnsupportedOperationException();
 		}
@@ -77,7 +83,7 @@ public class BitVectorConfigRep implements ILazyConfigRep {
 
 	@Override
 	public Pair<ILazyConfigRep, ILazyConfigRep> split(Collection<IConfigRep> belongedConfigs) {
-		return null;
+		throw new UnsupportedOperationException("not yet implemented");
 	}
 
 	@Override

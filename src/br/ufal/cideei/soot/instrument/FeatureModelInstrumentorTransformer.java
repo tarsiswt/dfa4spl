@@ -234,7 +234,7 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 
 		// #ifdef LAZY
 
-		BitVectorConfigRep localConfigurations = BitVectorConfigRep.localConfigurations(idGen, unmodAllPresentFeaturesId);
+		BitVectorConfigRep localConfigurations = BitVectorConfigRep.localConfigurations(idGen, unmodAllPresentFeaturesId, checker);
 		emptyBitVectorRep.generateBitVector(idGen);
 		
 		Set<IConfigRep> lazyConfig = new HashSet<IConfigRep>();

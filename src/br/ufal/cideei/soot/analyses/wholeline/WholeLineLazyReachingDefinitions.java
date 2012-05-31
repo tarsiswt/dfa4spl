@@ -94,7 +94,7 @@ public class WholeLineLazyReachingDefinitions extends BodyTransformer {
 		// #ifdef METRICS
 
 		// #ifdef LAZY
-//		 if (body.getMethod().getSignature().contains("f(")) {
+//		 if (body.getMethod().getSignature().contains("main(")) {
 //		 FlowSetUtils.pbm(body, lazyReachingDefinitions, System.getProperty("user.home") + File.separator +
 //		 "lazy-pix.pbm");
 //									
