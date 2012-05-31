@@ -162,29 +162,14 @@ public class AlloyConfigurationCheck implements FeatureSetChecker {
 		}
 		
 		Expr andExpression = makeAND(functions);
-
-		System.out.println(andExpression);
-
 		Func testFunc = getFunc("testConfiguration");
-		
 		setFuncBody(testFunc, andExpression);
-		
-		System.out.println(testFunc.getBody());
-		
-		boolean result = executeCommand("verify", Constants.RUN_COMMAND);
-		
-		if (result) {
-			System.out.println("VALID!");
-		} else {
-			System.out.println("INVALID!");
-		}
-		
-		return result;
+		return executeCommand("verify", Constants.RUN_COMMAND);
 	}
 
 	@Override
 	public boolean check(Set<String> trueSet, Set<String> falseSet) {
-		if (trueSet.size() == 0)
+		if (trueSet.size() == 0 && falseSet.size() == 0)
 			return true;
 		try {
 			return isValid(trueSet, falseSet);
