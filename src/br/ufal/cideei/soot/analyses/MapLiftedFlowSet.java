@@ -116,102 +116,102 @@ public class MapLiftedFlowSet extends AbstractFlowSet {
 	@Override
 	public void union(FlowSet aOther, FlowSet aDest) {
 		// #ifdef LAZY
-//@		MapLiftedFlowSet other = (MapLiftedFlowSet) aOther;
-//@		MapLiftedFlowSet dest = (MapLiftedFlowSet) aDest;
-//@
-//@		Set<Entry<IConfigRep, FlowSet>> entrySet = this.map.entrySet();
-//@		Set<Entry<IConfigRep, FlowSet>> otherEntrySet = other.map.entrySet();
-//@
-//@		HashMap<IConfigRep, FlowSet> destMap = new HashMap<IConfigRep, FlowSet>();
-//@
-//@		for (Entry<IConfigRep, FlowSet> entry : entrySet) {
-//@			for (Entry<IConfigRep, FlowSet> otherEntry : otherEntrySet) {
-//@				ILazyConfigRep key = (ILazyConfigRep) entry.getKey();
-//@				ILazyConfigRep otherKey = (ILazyConfigRep) otherEntry.getKey();
-//@
-//@				ILazyConfigRep intersection = key.intersection(otherKey);
-//@				if (intersection.size() != 0) {
-//@					FlowSet otherFlowSet = otherEntry.getValue();
-//@					ArraySparseSet destFlowSet = new ArraySparseSet();
-//@					entry.getValue().union(otherFlowSet, destFlowSet);
-//@					destMap.put(intersection, destFlowSet);
-//@				}
-//@			}
-//@		}
-//@
-//@		dest.map = destMap;
-//@
+		MapLiftedFlowSet other = (MapLiftedFlowSet) aOther;
+		MapLiftedFlowSet dest = (MapLiftedFlowSet) aDest;
+
+		Set<Entry<IConfigRep, FlowSet>> entrySet = this.map.entrySet();
+		Set<Entry<IConfigRep, FlowSet>> otherEntrySet = other.map.entrySet();
+
+		HashMap<IConfigRep, FlowSet> destMap = new HashMap<IConfigRep, FlowSet>();
+
+		for (Entry<IConfigRep, FlowSet> entry : entrySet) {
+			for (Entry<IConfigRep, FlowSet> otherEntry : otherEntrySet) {
+				ILazyConfigRep key = (ILazyConfigRep) entry.getKey();
+				ILazyConfigRep otherKey = (ILazyConfigRep) otherEntry.getKey();
+
+				ILazyConfigRep intersection = key.intersection(otherKey);
+				if (intersection.size() != 0) {
+					FlowSet otherFlowSet = otherEntry.getValue();
+					ArraySparseSet destFlowSet = new ArraySparseSet();
+					entry.getValue().union(otherFlowSet, destFlowSet);
+					destMap.put(intersection, destFlowSet);
+				}
+			}
+		}
+
+		dest.map = destMap;
+
 		// #else
-		 MapLiftedFlowSet otherLifted = (MapLiftedFlowSet) aOther;
-		 MapLiftedFlowSet destLifted = (MapLiftedFlowSet) aDest;
-		
-		 Set<Entry<IConfigRep, FlowSet>> entrySet = map.entrySet();
-		 for (Entry<IConfigRep, FlowSet> entry : entrySet) {
-		 // key
-		 IConfigRep config = entry.getKey();
-		 // val
-		 FlowSet thisNormal = entry.getValue();
-		
-		 FlowSet otherNormal = otherLifted.map.get(config);
-		 if (otherNormal == null) {
-		 otherNormal = new ArraySparseSet();
-		 }
-		
-		 ArraySparseSet destNewFlowSet = new ArraySparseSet();
-		 destLifted.map.put(config, destNewFlowSet);
-		 thisNormal.union(otherNormal, destNewFlowSet);
-		 }
+//@		 MapLiftedFlowSet otherLifted = (MapLiftedFlowSet) aOther;
+//@		 MapLiftedFlowSet destLifted = (MapLiftedFlowSet) aDest;
+//@		
+//@		 Set<Entry<IConfigRep, FlowSet>> entrySet = map.entrySet();
+//@		 for (Entry<IConfigRep, FlowSet> entry : entrySet) {
+//@		 // key
+//@		 IConfigRep config = entry.getKey();
+//@		 // val
+//@		 FlowSet thisNormal = entry.getValue();
+//@		
+//@		 FlowSet otherNormal = otherLifted.map.get(config);
+//@		 if (otherNormal == null) {
+//@		 otherNormal = new ArraySparseSet();
+//@		 }
+//@		
+//@		 ArraySparseSet destNewFlowSet = new ArraySparseSet();
+//@		 destLifted.map.put(config, destNewFlowSet);
+//@		 thisNormal.union(otherNormal, destNewFlowSet);
+//@		 }
 		// #endif
 	}
 
 	@Override
 	public void intersection(FlowSet aOther, FlowSet aDest) {
 		// #ifdef LAZY
-//@		MapLiftedFlowSet other = (MapLiftedFlowSet) aOther;
-//@		MapLiftedFlowSet dest = (MapLiftedFlowSet) aDest;
-//@
-//@		Set<Entry<IConfigRep, FlowSet>> entrySet = this.map.entrySet();
-//@		Set<Entry<IConfigRep, FlowSet>> otherEntrySet = other.map.entrySet();
-//@
-//@		HashMap<IConfigRep, FlowSet> destMap = new HashMap<IConfigRep, FlowSet>();
-//@
-//@		for (Entry<IConfigRep, FlowSet> entry : entrySet) {
-//@			for (Entry<IConfigRep, FlowSet> otherEntry : otherEntrySet) {
-//@				ILazyConfigRep key = (ILazyConfigRep) entry.getKey();
-//@				ILazyConfigRep otherKey = (ILazyConfigRep) otherEntry.getKey();
-//@
-//@				ILazyConfigRep intersection = key.intersection(otherKey);
-//@				if (intersection.size() != 0) {
-//@					FlowSet otherFlowSet = otherEntry.getValue();
-//@					ArraySparseSet destFlowSet = new ArraySparseSet();
-//@					entry.getValue().intersection(otherFlowSet, destFlowSet);
-//@					destMap.put(intersection, destFlowSet);
-//@				}
-//@			}
-//@		}
-//@
-//@		dest.map = destMap;
-//@
+		MapLiftedFlowSet other = (MapLiftedFlowSet) aOther;
+		MapLiftedFlowSet dest = (MapLiftedFlowSet) aDest;
+
+		Set<Entry<IConfigRep, FlowSet>> entrySet = this.map.entrySet();
+		Set<Entry<IConfigRep, FlowSet>> otherEntrySet = other.map.entrySet();
+
+		HashMap<IConfigRep, FlowSet> destMap = new HashMap<IConfigRep, FlowSet>();
+
+		for (Entry<IConfigRep, FlowSet> entry : entrySet) {
+			for (Entry<IConfigRep, FlowSet> otherEntry : otherEntrySet) {
+				ILazyConfigRep key = (ILazyConfigRep) entry.getKey();
+				ILazyConfigRep otherKey = (ILazyConfigRep) otherEntry.getKey();
+
+				ILazyConfigRep intersection = key.intersection(otherKey);
+				if (intersection.size() != 0) {
+					FlowSet otherFlowSet = otherEntry.getValue();
+					ArraySparseSet destFlowSet = new ArraySparseSet();
+					entry.getValue().intersection(otherFlowSet, destFlowSet);
+					destMap.put(intersection, destFlowSet);
+				}
+			}
+		}
+
+		dest.map = destMap;
+
 		// #else
-		 MapLiftedFlowSet otherLifted = (MapLiftedFlowSet) aOther;
-		 MapLiftedFlowSet destLifted = (MapLiftedFlowSet) aDest;
-		
-		 Set<Entry<IConfigRep, FlowSet>> entrySet = map.entrySet();
-		 for (Entry<IConfigRep, FlowSet> entry : entrySet) {
-		 // key
-		 IConfigRep config = entry.getKey();
-		 // val
-		 FlowSet thisNormal = entry.getValue();
-		
-		 FlowSet otherNormal = otherLifted.map.get(config);
-		 if (otherNormal == null) {
-		 otherNormal = new ArraySparseSet();
-		 }
-		
-		 ArraySparseSet destNewFlowSet = new ArraySparseSet();
-		 destLifted.map.put(config, destNewFlowSet);
-		 thisNormal.intersection(otherNormal, destNewFlowSet);
-		 }
+//@		 MapLiftedFlowSet otherLifted = (MapLiftedFlowSet) aOther;
+//@		 MapLiftedFlowSet destLifted = (MapLiftedFlowSet) aDest;
+//@		
+//@		 Set<Entry<IConfigRep, FlowSet>> entrySet = map.entrySet();
+//@		 for (Entry<IConfigRep, FlowSet> entry : entrySet) {
+//@		 // key
+//@		 IConfigRep config = entry.getKey();
+//@		 // val
+//@		 FlowSet thisNormal = entry.getValue();
+//@		
+//@		 FlowSet otherNormal = otherLifted.map.get(config);
+//@		 if (otherNormal == null) {
+//@		 otherNormal = new ArraySparseSet();
+//@		 }
+//@		
+//@		 ArraySparseSet destNewFlowSet = new ArraySparseSet();
+//@		 destLifted.map.put(config, destNewFlowSet);
+//@		 thisNormal.intersection(otherNormal, destNewFlowSet);
+//@		 }
 		// #endif
 	}
 

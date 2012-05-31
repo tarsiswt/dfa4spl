@@ -59,14 +59,17 @@ public final class BitConfigRep implements IConfigRep {
 	private static boolean isValid(int index, BidiMap atoms, FeatureSetChecker checker) {
 		if (checker == null)
 			return true;
-		Set<String> features = new HashSet<String>();
+		Set<String> enabledFeatures = new HashSet<String>();
+		Set<String> disabledFeatures = new HashSet<String>();
 		Collection<Integer> values = atoms.values();
 		for (Integer featureId : values) {
-			if ((featureId & index) == featureId) {
-				features.add((String) atoms.getKey(featureId));
-			}
+			String featureStr = (String) atoms.getKey(featureId);
+			if ((featureId & index) == featureId)
+				enabledFeatures.add(featureStr);
+			else
+				disabledFeatures.add(featureStr);
 		}
-		return checker.check(features);
+		return checker.check(enabledFeatures, disabledFeatures);
 	}
 	
 	public static SetBitConfigRep localConfigurations(int highestId, UnmodifiableBidiMap atoms, FeatureSetChecker checker) {

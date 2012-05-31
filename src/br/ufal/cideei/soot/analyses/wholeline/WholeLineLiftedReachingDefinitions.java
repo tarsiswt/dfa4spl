@@ -35,11 +35,6 @@ import br.ufal.cideei.util.count.AbstractMetricsSink;
 
 //#endif
 
-//#ifdef LAZY
-//@import br.ufal.cideei.soot.analyses.reachingdefs.LazyLiftedReachingDefinitions;
-//@
-//#endif
-
 import soot.Body;
 import soot.BodyTransformer;
 import soot.toolkits.graph.BriefUnitGraph;

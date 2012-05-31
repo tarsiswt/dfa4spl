@@ -47,9 +47,9 @@ public class FeatureSensitiveEstimative extends FeatureObliviousEstimative {
 		ConfigTag configTag = (ConfigTag) body.getTag(ConfigTag.CONFIG_TAG_NAME);
 		int noOfConfigurations;
 		// #ifdef LAZY
-//@		noOfConfigurations = configTag.getConfigReps().iterator().next().size();
+		noOfConfigurations = configTag.getConfigReps().iterator().next().size();
 		// #else
-		noOfConfigurations = configTag.size();
+//@		noOfConfigurations = configTag.size();
 		// #endif
 
 		ProfilingTag profilingTag = (ProfilingTag) body.getTag("ProfilingTag");

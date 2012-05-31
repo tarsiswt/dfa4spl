@@ -173,16 +173,24 @@ public class ReversedLazyLiftedReachingDefinitions extends ForwardFlowAnalysis<U
 					gen(sourceFlowSet, unit, destFlowSet, null);
 					
 					// Add the mapping to the top level FlowSet (mapping)
-					destMapping.put(destFlowSet, first);
+					IConfigRep config = destMapping.get(destFlowSet);
+					if (config == null)
+						destMapping.put(destFlowSet, first);
+					else 
+						destMapping.put(destFlowSet, ((ILazyConfigRep)config).union(first));
 				} else {
 					/*
 					 * This lazy configuration must map the same value that L
 					 * mapped to.
 					 */
 					ILazyConfigRep second = split.getSecond();
-					if (second.size() != 0)
-						destMapping.put(destFlowSet, second);
-
+					if (second.size() != 0) {
+						IConfigRep config = destMapping.get(destFlowSet);
+						if (config == null)
+							destMapping.put(destFlowSet, second);
+						else 
+							destMapping.put(destFlowSet, ((ILazyConfigRep)config).union(second));
+					}
 					/*
 					 * This flowset will contain the result of the GEN/KILL operations,
 					 * and is to be mapped from FIRST.
@@ -197,7 +205,11 @@ public class ReversedLazyLiftedReachingDefinitions extends ForwardFlowAnalysis<U
 				 *  There is nothing to be done in this case, thus we only copy the mapping
 				 *  from the source.
 				 */
-				destMapping.put(sourceFlowSet, lazyConfig);
+				IConfigRep config = destMapping.get(sourceFlowSet);
+				if (config == null)
+					destMapping.put(sourceFlowSet, lazyConfig);
+				else
+					destMapping.put(sourceFlowSet, ((ILazyConfigRep)config).union(lazyConfig));
 			}
 		}
 		// #ifdef METRICS

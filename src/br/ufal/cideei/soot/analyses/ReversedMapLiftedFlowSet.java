@@ -64,6 +64,10 @@ public class ReversedMapLiftedFlowSet extends AbstractFlowSet {
 //		return this.map.get(config);
 //	}
 
+	public ReversedMapLiftedFlowSet() {
+		map = new HashMap<FlowSet, IConfigRep>();
+	}
+
 	@Override
 	public ReversedMapLiftedFlowSet clone() {
 		Set<Entry<FlowSet, IConfigRep>> entrySet = map.entrySet();
