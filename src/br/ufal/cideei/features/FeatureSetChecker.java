@@ -4,6 +4,6 @@ import java.util.Set;
 
 public interface FeatureSetChecker {
 
-	public boolean check(Set<String> set);
+	public boolean check(Set<String> trueSet, Set<String> falseSet);
 
 }

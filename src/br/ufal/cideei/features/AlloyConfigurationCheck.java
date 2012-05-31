@@ -1,9 +1,11 @@
 package br.ufal.cideei.features;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import br.ufpe.cin.dfa4spl.plverifier.alloy.AlloyFunctionWrapper;
 import br.ufpe.cin.dfa4spl.plverifier.alloy.CannotFindBooleanSig;
 import br.ufpe.cin.dfa4spl.plverifier.alloy.CannotFindFunc;
 import br.ufpe.cin.dfa4spl.plverifier.alloy.Constants;
@@ -64,6 +66,19 @@ public class AlloyConfigurationCheck implements FeatureSetChecker {
 		}
 	}
 
+	private Expr makeAND(List<AlloyFunctionWrapper> functions) {
+		List<Expr> args = new ArrayList<Expr>();
+		args.add(functions.get(0).getSig());
+
+		if (functions.size() == 1) {
+			return ExprCall.make(Pos.UNKNOWN, Pos.UNKNOWN, functions.get(0).getFunc(), args, 0);
+		} else {
+			Expr expressionCall = ExprCall.make(Pos.UNKNOWN, Pos.UNKNOWN, functions.get(0).getFunc(), args, 0);
+			functions.remove(0);
+			return ExprBinary.Op.AND.make(Pos.UNKNOWN, Pos.UNKNOWN, expressionCall, makeAND(functions));
+		}
+	}
+	
 	private void setFuncBody(Func func, Expr newBody) {
 		try {
 			func.setBody(newBody);
@@ -131,17 +146,23 @@ public class AlloyConfigurationCheck implements FeatureSetChecker {
 		return result;
 	}
 	
-	private boolean isValid(Set<String> features) throws CannotFindFunc, CannotFindBooleanSig {
-		List<Expr> sigNames = new ArrayList<Expr>();
+	private boolean isValid(Set<String> trueFeatures, Set<String> falseFeatures) throws CannotFindFunc, CannotFindBooleanSig {
 		
-		for (String feature : features) {
-			sigNames.add(getBooleanSig(feature));
-		}
+		List<AlloyFunctionWrapper> functions = new ArrayList<AlloyFunctionWrapper>();
 		
 		Func isTrueFunc = getFunc("isTrue");
+		Func isFalseFunc = getFunc("isFalse");
 		
-		Expr andExpression = makeAND(isTrueFunc, sigNames);
+		for (String feature : trueFeatures) {
+			functions.add(new AlloyFunctionWrapper(isTrueFunc, getBooleanSig(feature)));			
+		}
 		
+		for (String feature : falseFeatures) {
+			functions.add(new AlloyFunctionWrapper(isFalseFunc, getBooleanSig(feature)));			
+		}
+		
+		Expr andExpression = makeAND(functions);
+
 		System.out.println(andExpression);
 
 		Func testFunc = getFunc("testConfiguration");
@@ -162,11 +183,11 @@ public class AlloyConfigurationCheck implements FeatureSetChecker {
 	}
 
 	@Override
-	public boolean check(Set<String> set) {
-		if (set.size() == 0)
+	public boolean check(Set<String> trueSet, Set<String> falseSet) {
+		if (trueSet.size() == 0)
 			return true;
 		try {
-			return isValid(set);
+			return isValid(trueSet, falseSet);
 		} catch (CannotFindFunc e) {
 			e.printStackTrace();
 		} catch (CannotFindBooleanSig e) {
