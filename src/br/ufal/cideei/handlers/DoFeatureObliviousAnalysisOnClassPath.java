@@ -80,7 +80,7 @@ public class DoFeatureObliviousAnalysisOnClassPath extends AbstractHandler {
 					IJavaProject javaProject = (IJavaProject) firstElement;
 
 					// #ifdef METRICS
-					sink = new MetricsSink(new MetricsTable(new File(System.getProperty("user.home") + File.separator + javaProject.getElementName().trim().replace(' ', '-') + "fo.xls")));
+					sink = new MetricsSink(new MetricsTable(new File(System.getProperty("user.home") + File.separator + javaProject.getElementName().trim().toLowerCase().replace(' ', '-') + "fo.xls")));
 					// #endif
 					
 					IClasspathEntry[] classPathEntries = null;
