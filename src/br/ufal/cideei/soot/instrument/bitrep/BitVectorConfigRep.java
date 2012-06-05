@@ -59,6 +59,12 @@ public class BitVectorConfigRep implements ILazyConfigRep {
 		}
 		return bvcr;
 	}
+	
+	public static BitVectorConfigRep localConfigurations(int highestId, UnmodifiableBidiMap atoms) {
+		BitVectorConfigRep bvcr = new BitVectorConfigRep(highestId, atoms);
+		bvcr.bitVector.not();
+		return bvcr;
+	}
 
 	@Override
 	public Pair<ILazyConfigRep, ILazyConfigRep> split(IFeatureRep featureRep) {

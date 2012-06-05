@@ -199,7 +199,7 @@ public class DoFeatureObliviousAnalysisOnClassPath extends AbstractHandler {
 	}
 
 	private void addPacks(String classPath, IFeatureExtracter extracter) {
-		Transform instrumentation = new Transform("jtp.fminst", new FeatureModelInstrumentorTransformer(extracter, classPath, null)
+		Transform instrumentation = new Transform("jtp.fminst", new FeatureModelInstrumentorTransformer(extracter, classPath)
 		// #ifdef METRICS
 				.setMetricsSink(sink)
 		// #endif

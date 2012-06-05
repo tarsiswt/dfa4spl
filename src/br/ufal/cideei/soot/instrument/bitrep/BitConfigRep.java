@@ -81,6 +81,14 @@ public final class BitConfigRep implements IConfigRep {
 		}
 		return new SetBitConfigRep(localConfigs, atoms, highestId);
 	}
+	
+	public static SetBitConfigRep localConfigurations(int highestId, UnmodifiableBidiMap atoms) {
+		Set<IConfigRep> localConfigs = new HashSet<IConfigRep>();
+		for (int index = 0; index < highestId; index++) {
+			localConfigs.add(new BitConfigRep(index, atoms));
+		}
+		return new SetBitConfigRep(localConfigs, atoms, highestId);
+	}
 
 	public int getId() {
 		return id;

@@ -95,15 +95,23 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 	protected static String INSTRUMENTATION = "instrumentation";
 
 	// #endif
-	private FeatureSetChecker checker;
+	
+	// #ifdef FEATUREMODEL
+//@	private FeatureSetChecker checker;
+//@
+//@	public FeatureModelInstrumentorTransformer setFeatureModelChecker(FeatureSetChecker checker) {
+//@		this.checker = checker;
+//@		return this;
+//@	}
+	// #endif
 
 	/*
 	 * TODO: maybe injecting the sink depency in a different way could make this funcionality less intrusive.
 	 */
-	public FeatureModelInstrumentorTransformer(IFeatureExtracter extracter, String classPath, FeatureSetChecker checker) {
+	
+	public FeatureModelInstrumentorTransformer(IFeatureExtracter extracter, String classPath) {
 		FeatureModelInstrumentorTransformer.classPath = classPath;
 		FeatureModelInstrumentorTransformer.extracter = extracter;
-		this.checker = checker;
 	}
 
 	// #ifdef METRICS
@@ -234,7 +242,11 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 
 		// #ifdef LAZY
 
-		BitVectorConfigRep localConfigurations = BitVectorConfigRep.localConfigurations(idGen, unmodAllPresentFeaturesId, checker);
+		BitVectorConfigRep localConfigurations = BitVectorConfigRep.localConfigurations(idGen, unmodAllPresentFeaturesId
+				// #ifdef FEATUREMODEL
+//@				, checker
+				// #endif
+				);
 		emptyBitVectorRep.generateBitVector(idGen);
 		
 		Set<IConfigRep> lazyConfig = new HashSet<IConfigRep>();
@@ -244,8 +256,12 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 
 		// #else
 //@		
-//@		 configTag = new ConfigTag(BitConfigRep.localConfigurations(idGen, unmodAllPresentFeaturesId, checker).getConfigs());
-//@		 body.addTag(configTag);
+//@		configTag = new ConfigTag(BitConfigRep.localConfigurations(idGen, unmodAllPresentFeaturesId
+		// #ifdef FEATUREMODEL
+//@		, checker
+		// #endif
+//@		).getConfigs());
+//@		body.addTag(configTag);
 //@		
 		// #endif
 	}

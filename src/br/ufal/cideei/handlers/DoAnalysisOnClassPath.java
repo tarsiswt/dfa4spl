@@ -235,7 +235,8 @@ public class DoAnalysisOnClassPath extends AbstractHandler {
 		
 		AlloyConfigurationCheck alloyConfigurationCheck;
 		try {
-			alloyConfigurationCheck = new AlloyConfigurationCheck("/home/tarsis/runtime-EclipseApplication(1)/sketches/TesteMarcio.als");
+			String absolutePath = javaProject.getResource().getLocation().toFile().getAbsolutePath();
+			alloyConfigurationCheck = new AlloyConfigurationCheck(absolutePath + File.separator  + "fm.als");
 		} catch (CannotReadAlloyFileException e) {
 			e.printStackTrace();
 			return;
@@ -247,9 +248,12 @@ public class DoAnalysisOnClassPath extends AbstractHandler {
 	}
 
 	private void addPacks(String classPath, IFeatureExtracter extracter, FeatureSetChecker checker) {
-		Transform instrumentation = new Transform("jtp.fminst", new FeatureModelInstrumentorTransformer(extracter, classPath, checker)
+		Transform instrumentation = new Transform("jtp.fminst", new FeatureModelInstrumentorTransformer(extracter, classPath)
 		// #ifdef METRICS
 				.setMetricsSink(sink)
+		// #endif
+		// #ifdef FEATUREMODEL
+//@				.setFeatureModelChecker(checker)
 		// #endif
 		);
 		PackManager.v().getPack("jtp").add(instrumentation);
