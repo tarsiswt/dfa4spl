@@ -171,8 +171,8 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 
 		// #ifdef LAZY
 		/*
-		 * in the lazy approach, the representation can only be consolidade after all features have been discovery. All
-		 * IFeatureRep will stored so that it is possible to consolidade later.
+		 * in the lazy approach, the representation can only be consolidate after all features have been discovery. All
+		 * IFeatureRep will stored so that it is possible to consolidate later.
 		 */
 		List<BitVectorFeatureRep> generateVectorLater = new ArrayList<BitVectorFeatureRep>();
 		// #endif
