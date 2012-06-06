@@ -137,8 +137,8 @@ public class MetricsTable {
 
 			if (value instanceof Double) {
 				Cell cell = entryRow.createCell(columnIndex);
-				cell.setCellValue((Double) value);
 				cell.setCellType(HSSFCell.CELL_TYPE_NUMERIC);
+				cell.setCellValue((Double) value);
 
 			} else {
 				Cell cell = entryRow.createCell(columnIndex);
@@ -150,7 +150,7 @@ public class MetricsTable {
 	}
 
 	private void printHeaders() {
-		MapIterator columnMapIterator = columnMapping.mapIterator();
+		MapIterator columnMapIterator = columnMapping.orderedMapIterator();
 		Row headerRow = sheet.createRow(0);
 		rowCount++;
 
