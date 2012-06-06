@@ -58,22 +58,22 @@ import soot.util.JasminOutputStream;
 public class Main {
 
 	// #ifdef CACHEPURGE
-	private static long[] wasteOfSpace = new long[131072]; // 131072*64 bits =
-															// 8388608 bits =
-															// 8MB
-	private static Random rdm = new Random();
-	private static long acc = 0;
-
-	static {
-		for (int index = 0; index < wasteOfSpace.length; index++) {
-			wasteOfSpace[index] = rdm.nextLong();
-		}
-	}
-
-	public static long randomLong() {
-		return wasteOfSpace[rdm.nextInt(wasteOfSpace.length)];
-	}
-
+//@	private static long[] wasteOfSpace = new long[131072]; // 131072*64 bits =
+//@															// 8388608 bits =
+//@															// 8MB
+//@	private static Random rdm = new Random();
+//@	private static long acc = 0;
+//@
+//@	static {
+//@		for (int index = 0; index < wasteOfSpace.length; index++) {
+//@			wasteOfSpace[index] = rdm.nextLong();
+//@		}
+//@	}
+//@
+//@	public static long randomLong() {
+//@		return wasteOfSpace[rdm.nextInt(wasteOfSpace.length)];
+//@	}
+//@
 	// #endif
 
 	public static void main(String[] args) throws IOException {
@@ -216,21 +216,21 @@ public class Main {
 	}
 
 	// #ifdef CACHEPURGE
-	public static void waste() {
-		// reads cells from the useless array and do some useless calculations
-		long acc = 0;
-		boolean bool = rdm.nextBoolean();
-		for (int i = 0; i < wasteOfSpace.length; i++) {
-			if (bool) {
-				bool = !bool;
-				acc += wasteOfSpace[i];
-			} else {
-				bool = !bool;
-				acc -= wasteOfSpace[i];
-			}
-		}
-		Main.acc = acc;
-	}
+//@	public static void waste() {
+//@		// reads cells from the useless array and do some useless calculations
+//@		long acc = 0;
+//@		boolean bool = rdm.nextBoolean();
+//@		for (int i = 0; i < wasteOfSpace.length; i++) {
+//@			if (bool) {
+//@				bool = !bool;
+//@				acc += wasteOfSpace[i];
+//@			} else {
+//@				bool = !bool;
+//@				acc -= wasteOfSpace[i];
+//@			}
+//@		}
+//@		Main.acc = acc;
+//@	}
 	// #endif
 
 }

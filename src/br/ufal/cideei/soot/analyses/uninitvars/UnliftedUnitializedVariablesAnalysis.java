@@ -142,7 +142,7 @@ public class UnliftedUnitializedVariablesAnalysis extends ForwardFlowAnalysis<Un
 	@Override
 	protected void flowThrough(FlowSet source, Unit unit, FlowSet dest) {
 		//#ifdef CACHEPURGE
-		br.Main.waste();
+//@		br.Main.waste();
 		//#endif
 		
 		// #ifdef METRICS

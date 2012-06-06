@@ -101,8 +101,9 @@ public class WholeLineReversedLazyReachingDefinitions extends BodyTransformer {
 			ReversedLazyLiftedReachingDefinitions.reset();
 		}
 
-		ProfilingTag profilingTag = (ProfilingTag) body.getTag("ProfilingTag");
-		profilingTag.setRdAnalysisTime2(endAnalysis - startAnalysis);
+		this.sink.flow(body, "rd (a5)", endAnalysis - startAnalysis);
+//		ProfilingTag profilingTag = (ProfilingTag) body.getTag("ProfilingTag");
+//		profilingTag.setRdAnalysisTime2(endAnalysis - startAnalysis);
 		// #endif
 	}
 }

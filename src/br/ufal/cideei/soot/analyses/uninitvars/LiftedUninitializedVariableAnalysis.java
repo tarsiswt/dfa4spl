@@ -148,7 +148,7 @@ public class LiftedUninitializedVariableAnalysis extends ForwardFlowAnalysis<Uni
 	@Override
 	protected void flowThrough(MapLiftedFlowSet source, Unit unit, MapLiftedFlowSet dest) {
 		//#ifdef CACHEPURGE
-		br.Main.waste();
+//@		br.Main.waste();
 		//#endif
 		
 		// #ifdef METRICS

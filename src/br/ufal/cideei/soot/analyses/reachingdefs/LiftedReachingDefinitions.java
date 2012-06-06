@@ -136,7 +136,7 @@ public class LiftedReachingDefinitions extends
 	@Override
 	protected void flowThrough(MapLiftedFlowSet source, Unit unit, MapLiftedFlowSet dest) {
 		//#ifdef CACHEPURGE
-		br.Main.waste();
+//@		br.Main.waste();
 		//#endif
 
 		// #ifdef METRICS

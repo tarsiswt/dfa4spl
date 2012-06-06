@@ -123,7 +123,7 @@ public class UnliftedReachingDefinitions extends ForwardFlowAnalysis<Unit, FlowS
 	@Override
 	protected void flowThrough(FlowSet source, Unit unit, FlowSet dest) {
 		//#ifdef CACHEPURGE
-		br.Main.waste();
+//@		br.Main.waste();
 		//#endif
 		
 		// #ifdef METRICS
