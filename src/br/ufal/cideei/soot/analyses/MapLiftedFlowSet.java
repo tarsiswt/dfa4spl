@@ -135,11 +135,17 @@ public class MapLiftedFlowSet extends AbstractFlowSet {
 					ArraySparseSet destFlowSet = new ArraySparseSet();
 					entry.getValue().union(otherFlowSet, destFlowSet);
 					destMap.put(intersection, destFlowSet);
+					
+					if (intersection.equals(key)) {
+						break;
+					}
 				}
 			}
 		}
 
-		dest.map = destMap;
+		dest.map.clear();
+		dest.map.putAll(destMap);
+		// XXX replacing the two lines above with dest.map = destMap; could be much faster
 
 		// #else
 //@		 MapLiftedFlowSet otherLifted = (MapLiftedFlowSet) aOther;
@@ -186,11 +192,17 @@ public class MapLiftedFlowSet extends AbstractFlowSet {
 					ArraySparseSet destFlowSet = new ArraySparseSet();
 					entry.getValue().intersection(otherFlowSet, destFlowSet);
 					destMap.put(intersection, destFlowSet);
+					
+					if (intersection.equals(key)) {
+						break;
+					}
 				}
 			}
 		}
 
-		dest.map = destMap;
+		dest.map.clear();
+		dest.map.putAll(destMap);
+		// XXX replacing the two lines above with dest.map = destMap; could be much faster
 
 		// #else
 //@		 MapLiftedFlowSet otherLifted = (MapLiftedFlowSet) aOther;
