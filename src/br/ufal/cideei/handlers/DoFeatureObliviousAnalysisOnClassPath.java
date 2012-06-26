@@ -22,6 +22,8 @@
 package br.ufal.cideei.handlers;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -59,82 +61,90 @@ import br.ufal.cideei.util.count.MetricsTable;
 /**
  * Invokes feature-insensitive analyses on a Eclipse project. Mainly for collecting data/metrics.
  * 
- * @author T�rsis
+ * @author Társis
  */
 public class DoFeatureObliviousAnalysisOnClassPath extends AbstractHandler {
 	// #ifdef METRICS
 	private static MetricsSink sink;
-
 	// #endif
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
-		// TODO: exteriorize this number as a configuration parameter. Abstract away the looping.
-		int times = 10;
 		try {
-			for (int i = 0; i < times; i++) {
-
-				IStructuredSelection selection = (IStructuredSelection) HandlerUtil.getActiveMenuSelection(event);
-				Object firstElement = selection.getFirstElement();
-				if (firstElement instanceof IJavaProject) {
-					IJavaProject javaProject = (IJavaProject) firstElement;
-
-					// #ifdef METRICS
-					sink = new MetricsSink(new MetricsTable(new File(System.getProperty("user.home") + File.separator + javaProject.getElementName().trim().toLowerCase().replace(' ', '-') + "fo.xls")));
-					// #endif
-					
-					IClasspathEntry[] classPathEntries = null;
-					try {
-						classPathEntries = javaProject.getResolvedClasspath(true);
-					} catch (JavaModelException e) {
-						e.printStackTrace();
-						throw new ExecutionException("No source classpath identified");
+			IStructuredSelection selection = (IStructuredSelection) HandlerUtil.getActiveMenuSelection(event);
+			Object firstElement = selection.getFirstElement();
+			
+			if (!(firstElement instanceof IJavaProject)) {
+				throw new UnsupportedOperationException("selected resource is not a java project");
+			}
+			
+			IJavaProject javaProject = (IJavaProject) firstElement;
+			
+			IClasspathEntry[] classPathEntries = null;
+			try {
+				classPathEntries = javaProject.getResolvedClasspath(true);
+			} catch (JavaModelException e) {
+				e.printStackTrace();
+				throw new ExecutionException("No source classpath identified");
+			}
+			
+			/*
+			 * To build the path string variable that will represent Soot's classpath we will first iterate
+			 * through all libs (.jars) files, then through all source classpaths.
+			 * 
+			 * FIXME: WARNING: A bug was found on Soot, in which the FileSourceTag would contain incorrect
+			 * information regarding the absolute location of the source file. In this workaround, the classpath
+			 * must be injected into the FeatureModelInstrumentorTransformer class (done though its
+			 * constructor).
+			 * 
+			 * As a consequence, we CANNOT build an string with all classpaths that contains source code for the
+			 * project and thus only one source code classpath can be analysed at a given time.
+			 * 
+			 * This seriously restricts the range of projects that can be analysed with this tool.
+			 */
+			List<IClasspathEntry> sourceClasspathEntries = new ArrayList<IClasspathEntry>();
+			StringBuilder libsPaths = new StringBuilder();
+			for (IClasspathEntry entry : classPathEntries) {
+				if (entry.getEntryKind() == IClasspathEntry.CPE_LIBRARY) {
+					File file = entry.getPath().makeAbsolute().toFile();
+					if (file.isAbsolute()) {
+						libsPaths.append(file.getAbsolutePath() + File.pathSeparator);
+					} else {
+						libsPaths.append(ResourcesPlugin.getWorkspace().getRoot().getFile(entry.getPath()).getLocation().toOSString() + File.pathSeparator);
 					}
-
-					/*
-					 * To build the path string variable that will represent Soot's classpath we will first iterate
-					 * through all libs (.jars) files, then through all source classpaths.
-					 * 
-					 * FIXME: WARNING: A bug was found on Soot, in which the FileSourceTag would contain incorrect
-					 * information regarding the absolute location of the source file. In this workaround, the classpath
-					 * must be injected into the FeatureModelInstrumentorTransformer class (done though its
-					 * constructor).
-					 * 
-					 * As a consequence, we CANNOT build an string with all classpaths that contains source code for the
-					 * project and thus one only source code classpath can be analysed at a given time.
-					 * 
-					 * This seriously restricts the range of projects that can be analysed with this tool.
-					 */
-					StringBuilder libsPaths = new StringBuilder();
-					for (IClasspathEntry entry : classPathEntries) {
-						if (entry.getEntryKind() == IClasspathEntry.CPE_LIBRARY) {
-							File file = entry.getPath().makeAbsolute().toFile();
-							if (file.isAbsolute()) {
-								libsPaths.append(file.getAbsolutePath() + File.pathSeparator);
-							} else {
-								libsPaths.append(ResourcesPlugin.getWorkspace().getRoot().getFile(entry.getPath()).getLocation().toOSString() + File.pathSeparator);
-							}
-						}
-					}
-					for (IClasspathEntry entry : classPathEntries) {
-						if (entry.getEntryKind() == IClasspathEntry.CPE_SOURCE) {
-							this.addPacks(javaProject, entry, libsPaths.toString());
-						}
-					}
+				} else if (entry.getEntryKind() == IClasspathEntry.CPE_SOURCE) {
+					sourceClasspathEntries.add(entry);
 				}
+			}
+			
+			if (sourceClasspathEntries.size() != 1) {
+				throw new UnsupportedOperationException("project must have exactly one source classpath entry");
+			}
+			
+			IClasspathEntry entry = sourceClasspathEntries.get(0);
+			
+			final int times = 10;
+			for (int i = 0; i < times; i++) {
+				// #ifdef METRICS
+				sink = new MetricsSink(new MetricsTable(new File(System.getProperty("user.home") + File.separator + javaProject.getElementName().trim().toLowerCase().replace(' ', '-') + "-fo.xls")));
+				// #endif
+				
+				this.addPacks(javaProject, entry, libsPaths.toString());
 				SootManager.reset();
 				// #ifdef METRICS
 				sink.terminate();
-				sink = null;
 				// #endif
 				System.out.println("=============" + (i + 1) + "/" + times + "=============");
 			}
+			sink.createSummaryFile();
 		} catch (Throwable e) {
 			e.printStackTrace();
 		} finally {
 			SootManager.reset();
 			// #ifdef METRICS
-			sink.terminate();
+			if (sink != null) {
+				sink.terminate();
+			}
 			// #endif
 		}
 

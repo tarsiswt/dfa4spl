@@ -50,5 +50,14 @@ public class MetricsSink extends AbstractMetricsSink {
 			e.printStackTrace();
 		}
 	}
+	
+	public void createSummaryFile() {
+		try {
+			table.createSummary();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 
 }

@@ -43,17 +43,17 @@ public class UnliftedReachingDefinitions extends ForwardFlowAnalysis<Unit, FlowS
 
 	// #ifdef METRICS
 	private long flowThroughTimeAccumulator = 0;
-	
+
 	public long getFlowThroughTime() {
 		return this.flowThroughTimeAccumulator;
 	}
-	
+
 	private static long flowThroughCounter = 0;
-	
+
 	public static long getFlowThroughCounter() {
 		return flowThroughCounter;
 	}
-	
+
 	private static long L1flowThroughCounter = 0;
 
 	public static long getL1flowThroughCounter() {
@@ -125,7 +125,7 @@ public class UnliftedReachingDefinitions extends ForwardFlowAnalysis<Unit, FlowS
 		//#ifdef CACHEPURGE
 //@		br.Main.waste();
 		//#endif
-		
+
 		// #ifdef METRICS
 		flowThroughCounter++;
 		long timeSpentOnFlowThrough = System.nanoTime();

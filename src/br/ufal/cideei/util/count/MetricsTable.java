@@ -204,6 +204,25 @@ public class MetricsTable {
 		workBook.write(outStream);
 		outStream.close();
 	}
+	
+	public void createSummary() throws IOException	{
+		
+		boolean lazy = false;
+		boolean fm = false;
+		// #ifdef LAZY
+		lazy = true;
+		// #endif
+		// #ifdef FEATUREMODEL
+//@		fm = true;
+		// #endif
+		SummarySheet.make(new Benchmark(fm, lazy) {
+
+			public int sumFooterRow() { return rowCount - 2; }
+			
+			public String file() { return output.getAbsolutePath(); }
+			
+			public int avgFooterRow() { return rowCount - 1; } }).summary();
+	}
 
 	private void dumpAllEntries() {
 		TreeSet sortedKeySet = new TreeSet(map.keySet());

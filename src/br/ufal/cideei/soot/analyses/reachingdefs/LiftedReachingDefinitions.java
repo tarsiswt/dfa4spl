@@ -42,8 +42,7 @@ import br.ufal.cideei.soot.instrument.IFeatureRep;
  * implemented. Everything else is quite similar to a 'regular' FlowSet-based
  * analysis.
  */
-public class LiftedReachingDefinitions extends
-		ForwardFlowAnalysis<Unit, MapLiftedFlowSet> {
+public class LiftedReachingDefinitions extends ForwardFlowAnalysis<Unit, MapLiftedFlowSet> {
 
 	private Collection<IConfigRep> configurations;
 
@@ -78,10 +77,9 @@ public class LiftedReachingDefinitions extends
 	 * @param graph
 	 *            the graph
 	 */
-	public LiftedReachingDefinitions(DirectedGraph<Unit> graph,
-			Collection<IConfigRep> configs) {
+	public LiftedReachingDefinitions(DirectedGraph<Unit> graph, Collection<IConfigRep> configurations) {
 		super(graph);
-		this.configurations = configs;
+		this.configurations = configurations;
 	}
 
 	/*
@@ -102,8 +100,7 @@ public class LiftedReachingDefinitions extends
 	 * java.lang.Object, java.lang.Object)
 	 */
 	@Override
-	protected void merge(MapLiftedFlowSet source1, MapLiftedFlowSet source2,
-			MapLiftedFlowSet dest) {
+	protected void merge(MapLiftedFlowSet source1, MapLiftedFlowSet source2, MapLiftedFlowSet dest) {
 		source1.union(source2, dest);
 	}
 
@@ -153,8 +150,8 @@ public class LiftedReachingDefinitions extends
 			FlowSet destFlowSet = dest.getLattice(config);
 			if (config.belongsToConfiguration(featureRep)) {
 				L1flowThroughCounter++;
-				kill(sourceFlowSet, unit, destFlowSet, null);
-				gen(sourceFlowSet, unit, destFlowSet, null);
+				kill(sourceFlowSet, unit, destFlowSet);
+				gen(destFlowSet, unit);
 			} else {
 				sourceFlowSet.copy(destFlowSet);
 			}
@@ -174,8 +171,7 @@ public class LiftedReachingDefinitions extends
 	 * @param dest
 	 * @param configuration
 	 */
-	protected void kill(FlowSet source, Unit unit, FlowSet dest,
-			Set<String> configuration) {
+	private void kill(FlowSet source, Unit unit, FlowSet dest) {
 		FlowSet kills = new ArraySparseSet();
 		if (unit instanceof AssignStmt) {
 			AssignStmt assignStmt = (AssignStmt) unit;
@@ -201,8 +197,7 @@ public class LiftedReachingDefinitions extends
 	 *            the unit
 	 * @param configuration
 	 */
-	protected void gen(FlowSet source, Unit unit, FlowSet dest,
-			Set<String> configuration) {
+	private void gen(FlowSet dest, Unit unit) {
 		if (unit instanceof AssignStmt) {
 			dest.add(unit);
 		}
