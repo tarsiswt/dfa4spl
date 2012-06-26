@@ -148,7 +148,7 @@ public class DoAnalysisOnClassPath extends AbstractHandler {
 			
 			IClasspathEntry entry = sourceClasspathEntries.get(0);
 			
-			int times = 4;
+			final int times = 10;
 			for (int i = 0; i < times; i++) {
 				// #ifdef METRICS
 				String sinkFile = System.getProperty("user.home") + File.separator + javaProject.getElementName().trim().toLowerCase().replace(' ', '-') + "-fs";
