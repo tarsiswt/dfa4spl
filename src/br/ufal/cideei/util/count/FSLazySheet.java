@@ -33,7 +33,7 @@ public class FSLazySheet extends SummarySheet {
 		this.bench = bench;
 		try {
 			FileInputStream fileInputStream = new FileInputStream(new File(bench.file()));
-			this.workbook = WorkbookFactory.create(new FileInputStream(new File(bench.file())));
+			this.workbook = WorkbookFactory.create(fileInputStream);
 			fileInputStream.close();
 		} catch (InvalidFormatException e) {
 			// TODO Auto-generated catch block
@@ -104,6 +104,7 @@ public class FSLazySheet extends SummarySheet {
 		jimplification.add(0, "JIMPLIFICATION");
 		listOfLists.add(jimplification);
 		
-		createSummary(workbook, listOfLists, bench);
+		writeTable(workbook, listOfLists);
+		writeWorkbookToFile(workbook, bench);
 	}
 }

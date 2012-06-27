@@ -87,7 +87,7 @@ public class FSSheet extends SummarySheet {
 
 		List<String> fs_uv_a2 = oneFromEverySheet(workbook, bench.sumFooterRow(), uv_a2);
 		fs_uv_a2.add(0, "UV A2");
-		listOfLists.add(fs_rd_a2);
+		listOfLists.add(fs_uv_a2);
 
 		List<String> instrumentation = oneFromEverySheet(workbook, bench.sumFooterRow(), this.instrumentation);
 		instrumentation.add(0, "INSTRUMENTATION");
@@ -101,6 +101,7 @@ public class FSSheet extends SummarySheet {
 		jimplification.add(0, "JIMPLIFICATION");
 		listOfLists.add(jimplification);
 		
-		createSummary(workbook, listOfLists, bench);
+		writeTable(workbook, listOfLists);
+		writeWorkbookToFile(workbook, bench);
 	}
 }

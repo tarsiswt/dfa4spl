@@ -15,6 +15,9 @@ import org.apache.poi.ss.util.CellReference;
 
 public abstract class SummarySheet {
 	
+	public final static int ROW_OFFSET = 9;
+	public final static int COL_OFFSET = 2;
+	
 	public static SummarySheet make(Benchmark bench) {
 		if (bench.lazy())
 			return new FSLazySheet(bench);
@@ -47,13 +50,11 @@ public abstract class SummarySheet {
 	
 	public abstract void summary() throws IOException;
 	
-	protected void createSummary(Workbook workbook, List<List<String>> listOfLists, Benchmark bench) throws IOException {
+	public static void writeTable(Workbook workbook, List<List<String>> listOfLists) throws IOException {
 		Iterator<List<String>> iterator = listOfLists.iterator();
 		
 		// main data summary
 		Sheet summarySheet = workbook.createSheet("summary");
-		final int ROW_OFFSET = 9;
-		final int COL_OFFSET = 2;
 		for (int rowIndex = ROW_OFFSET; iterator.hasNext(); rowIndex++) {
 			List<String> rowAsListOfStrings = iterator.next();
 			Row row = summarySheet.createRow(rowIndex);
@@ -84,7 +85,9 @@ public abstract class SummarySheet {
 			avgWithoutOutlierCell.setCellFormula("(SUM(" + range + ") - MAX(" + range + ") - MIN(" + range + "))/" + (rowAsListOfStrings.size() - 1 - 2));
 			avgCell.setCellFormula("AVERAGE(" + range + ")");
 		}
-		
+	}
+	
+	protected void writeWorkbookToFile(Workbook workbook, Benchmark bench) throws IOException {
 		FileOutputStream fileInputStream;
 		String file = bench.file();
 		String fileWithoutExtension = file.substring(0, file.length()-4);
