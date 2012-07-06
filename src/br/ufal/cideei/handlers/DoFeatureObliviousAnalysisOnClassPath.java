@@ -59,6 +59,7 @@ import br.ufal.cideei.soot.count.LocalCounter;
 import br.ufal.cideei.soot.instrument.FeatureModelInstrumentorTransformer;
 import br.ufal.cideei.util.count.MetricsSink;
 import br.ufal.cideei.util.count.MetricsTable;
+import br.ufpe.cin.dfa4spl.plverifier.alloy.io.CannotReadAlloyFileException;
 
 /**
  * Invokes feature-insensitive analyses on a Eclipse project. Mainly for collecting data/metrics.
@@ -130,7 +131,7 @@ public class DoFeatureObliviousAnalysisOnClassPath extends AbstractHandler {
 				// #ifdef METRICS
 				String sinkFile = System.getProperty("user.home") + File.separator + javaProject.getElementName().trim().toLowerCase().replace(' ', '-') + "-fo";
 				// #ifdef LAZY
-					sinkFile += "-lazy";
+//@					sinkFile += "-lazy";
 				// #endif
 				// #ifdef FEATUREMODEL
 //@						sinkFile += "-fm";
