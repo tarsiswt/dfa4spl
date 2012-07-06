@@ -28,6 +28,7 @@ import soot.Body;
 public class MetricsSink extends AbstractMetricsSink {
 
 	private MetricsTable table;
+	private boolean terminated = false;
 
 	public MetricsSink(MetricsTable table) {
 		this.table = table;
@@ -42,9 +43,17 @@ public class MetricsSink extends AbstractMetricsSink {
 		table.setProperty(body.getMethod().getSignature(), property, value);
 	}
 	
+	public boolean terminated() {
+		return terminated;
+	}
+	
 	public void terminate() {
+		if (terminated) {
+			throw new IllegalStateException("sink already terminated"); 
+		}
 		try {
 			table.dumpEntriesAndClose();
+			terminated = true;
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

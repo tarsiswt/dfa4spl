@@ -142,7 +142,7 @@ public class DoFeatureObliviousAnalysisOnClassPath extends AbstractHandler {
 		} finally {
 			SootManager.reset();
 			// #ifdef METRICS
-			if (sink != null) {
+			if (sink != null && !sink.terminated()) {
 				sink.terminate();
 			}
 			// #endif
