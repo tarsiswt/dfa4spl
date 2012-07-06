@@ -136,7 +136,7 @@ public class DoFeatureObliviousAnalysisOnClassPath extends AbstractHandler {
 				// #endif
 				System.out.println("=============" + (i + 1) + "/" + times + "=============");
 			}
-			sink.createSummaryFile();
+			sink.createFeatureObliviousSummaryFile();
 		} catch (Throwable e) {
 			e.printStackTrace();
 		} finally {

@@ -205,7 +205,7 @@ public class MetricsTable {
 		outStream.close();
 	}
 	
-	public void createSummary() throws IOException	{
+	public void createSummary() throws IOException, InvalidFormatException	{
 		
 		boolean lazy = false;
 		boolean fm = false;
@@ -216,6 +216,21 @@ public class MetricsTable {
 //@		fm = true;
 		// #endif
 		SummarySheet.make(new Benchmark(fm, lazy) {
+
+			public int sumFooterRow() { return rowCount - 2; }
+			
+			public String file() { return output.getAbsolutePath(); }
+			
+			public int avgFooterRow() { return rowCount - 1; } }).summary();
+	}
+	
+	public void createObliviousSummary() throws IOException, InvalidFormatException {
+		boolean fm = false;
+		// #ifdef FEATUREMODEL
+		//@		fm = true;
+		// #endif
+		
+		SummarySheet.make(new Benchmark(fm) {
 
 			public int sumFooterRow() { return rowCount - 2; }
 			

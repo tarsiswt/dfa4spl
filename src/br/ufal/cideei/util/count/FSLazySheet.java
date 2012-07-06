@@ -23,28 +23,17 @@ public class FSLazySheet extends SummarySheet {
 	private int instrumentation;
 	private int color_table;
 	private int jimplification;
-	private Workbook workbook;
-	private Benchmark bench;
+	private final Workbook workbook;
+	private final Benchmark bench;
 	
-	public FSLazySheet(Benchmark bench) {
+	public FSLazySheet(Benchmark bench) throws InvalidFormatException, IOException {
 		if (!bench.lazy())
 			throw new IllegalArgumentException(bench.toString() + " must be lazy");
 		
 		this.bench = bench;
-		try {
-			FileInputStream fileInputStream = new FileInputStream(new File(bench.file()));
-			this.workbook = WorkbookFactory.create(fileInputStream);
-			fileInputStream.close();
-		} catch (InvalidFormatException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		FileInputStream fileInputStream = new FileInputStream(new File(bench.file()));
+		this.workbook = WorkbookFactory.create(fileInputStream);
+		fileInputStream.close();
 		
 		Sheet someSheet = workbook.getSheetAt(0);
 		Row firstRow = someSheet.getRow(0);

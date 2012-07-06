@@ -23,6 +23,8 @@ package br.ufal.cideei.util.count;
 
 import java.io.IOException;
 
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
+
 import soot.Body;
 
 public class MetricsSink extends AbstractMetricsSink {
@@ -64,6 +66,21 @@ public class MetricsSink extends AbstractMetricsSink {
 		try {
 			table.createSummary();
 		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InvalidFormatException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	public void createFeatureObliviousSummaryFile() {
+		try {
+			table.createObliviousSummary();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InvalidFormatException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}

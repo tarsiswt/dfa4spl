@@ -23,26 +23,17 @@ public class FSSheet extends SummarySheet {
 	private int instrumentation;
 	private int color_table;
 	private int jimplification;
-	private Workbook workbook;
-	private Benchmark bench;
+	private final Workbook workbook;
+	private final Benchmark bench;
 	
-	public FSSheet(Benchmark bench) {
+	public FSSheet(Benchmark bench) throws InvalidFormatException, FileNotFoundException, IOException {
 		if (bench.lazy())
 			throw new IllegalArgumentException(bench.toString() + " can't be lazy");
 		
 		this.bench = bench;
-		try {
-			this.workbook = WorkbookFactory.create(new FileInputStream(new File(bench.file())));
-		} catch (InvalidFormatException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		FileInputStream fileInputStream = new FileInputStream(new File(bench.file()));
+		this.workbook = WorkbookFactory.create(fileInputStream);
+		fileInputStream.close();
 
 		Sheet someSheet = workbook.getSheetAt(0);
 		Row firstRow = someSheet.getRow(0);

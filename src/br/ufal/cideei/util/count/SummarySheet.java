@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -18,7 +19,10 @@ public abstract class SummarySheet {
 	public final static int ROW_OFFSET = 9;
 	public final static int COL_OFFSET = 2;
 	
-	public static SummarySheet make(Benchmark bench) {
+	public static SummarySheet make(Benchmark bench) throws InvalidFormatException, FileNotFoundException, IOException {
+		if (bench.oblivious())
+			return new FOSheet(bench);
+		
 		if (bench.lazy())
 			return new FSLazySheet(bench);
 		else
