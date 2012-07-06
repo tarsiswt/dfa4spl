@@ -58,6 +58,12 @@ public class ReversedLazyLiftedUninitializedVariables extends ForwardFlowAnalysi
 
 	// #ifdef METRICS
 	private long flowThroughTimeAccumulator = 0;
+	
+	protected static long mergeCounter = 0;
+
+	public static long getMergecounter() {
+		return mergeCounter;
+	}
 
 	public long getFlowThroughTime() {
 		return this.flowThroughTimeAccumulator;
@@ -71,6 +77,7 @@ public class ReversedLazyLiftedUninitializedVariables extends ForwardFlowAnalysi
 
 	public static void reset() {
 		flowThroughCounter = 0;
+		mergeCounter = 0;
 	}
 
 	// #endif
@@ -199,8 +206,10 @@ public class ReversedLazyLiftedUninitializedVariables extends ForwardFlowAnalysi
 					IConfigRep config = destMapping.get(destFlowSet);
 					if (config == null)
 						destMapping.put(destFlowSet, first);
-					else 
+					else  {
 						destMapping.put(destFlowSet, ((ILazyConfigRep)config).union(first));
+						mergeCounter++;
+					}
 				} else {
 					/*
 					 * This lazy configuration must map the same value that L
@@ -211,8 +220,10 @@ public class ReversedLazyLiftedUninitializedVariables extends ForwardFlowAnalysi
 						IConfigRep config = destMapping.get(destFlowSet);
 						if (config == null)
 							destMapping.put(destFlowSet, second);
-						else 
+						else  {
 							destMapping.put(destFlowSet, ((ILazyConfigRep)config).union(second));
+							mergeCounter++;
+						}
 					}
 
 					/*
@@ -221,7 +232,13 @@ public class ReversedLazyLiftedUninitializedVariables extends ForwardFlowAnalysi
 					 */
 					FlowSet destToBeAppliedLattice = sourceFlowSet.clone();
 					kill(sourceFlowSet, unit, destToBeAppliedLattice);
-					destMapping.put(destToBeAppliedLattice, first);
+					IConfigRep config = destMapping.get(destToBeAppliedLattice);
+					if (config == null)
+						destMapping.put(destToBeAppliedLattice, first);
+					else {
+						destMapping.put(destToBeAppliedLattice, ((ILazyConfigRep)config).union(first));
+						mergeCounter++;
+					}
 				}
 			} else {
 				/*
@@ -231,8 +248,10 @@ public class ReversedLazyLiftedUninitializedVariables extends ForwardFlowAnalysi
 				IConfigRep config = destMapping.get(sourceFlowSet);
 				if (config == null)
 					destMapping.put(sourceFlowSet, lazyConfig);
-				else
+				else {
 					destMapping.put(sourceFlowSet, ((ILazyConfigRep)config).union(lazyConfig));
+					mergeCounter++;
+				}
 			}
 			
 		}

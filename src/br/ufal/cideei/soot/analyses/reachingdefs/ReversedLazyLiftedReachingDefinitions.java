@@ -51,6 +51,12 @@ public class ReversedLazyLiftedReachingDefinitions extends ForwardFlowAnalysis<U
 	// #ifdef METRICS
 	private long flowThroughTimeAccumulator = 0;
 
+	protected static long mergeCounter = 0;
+
+	public static long getMergeCounter() {
+		return mergeCounter;
+	}
+	
 	public long getFlowThroughTime() {
 		return this.flowThroughTimeAccumulator;
 	}
@@ -63,6 +69,7 @@ public class ReversedLazyLiftedReachingDefinitions extends ForwardFlowAnalysis<U
 
 	public static void reset() {
 		flowThroughCounter = 0;
+		mergeCounter = 0;
 	}
 
 	// #endif
@@ -176,8 +183,10 @@ public class ReversedLazyLiftedReachingDefinitions extends ForwardFlowAnalysis<U
 					IConfigRep config = destMapping.get(destFlowSet);
 					if (config == null)
 						destMapping.put(destFlowSet, first);
-					else 
+					else {
 						destMapping.put(destFlowSet, ((ILazyConfigRep)config).union(first));
+						mergeCounter++;
+					}
 				} else {
 					/*
 					 * This lazy configuration must map the same value that L
@@ -188,8 +197,10 @@ public class ReversedLazyLiftedReachingDefinitions extends ForwardFlowAnalysis<U
 						IConfigRep config = destMapping.get(destFlowSet);
 						if (config == null)
 							destMapping.put(destFlowSet, second);
-						else 
+						else {
 							destMapping.put(destFlowSet, ((ILazyConfigRep)config).union(second));
+							mergeCounter++;
+						}
 					}
 					/*
 					 * This flowset will contain the result of the GEN/KILL operations,
@@ -198,7 +209,13 @@ public class ReversedLazyLiftedReachingDefinitions extends ForwardFlowAnalysis<U
 					FlowSet destToBeAppliedLattice = new ArraySparseSet();
 					kill(sourceFlowSet, unit, destToBeAppliedLattice, null);
 					gen(sourceFlowSet, unit, destToBeAppliedLattice, null);
-					destMapping.put(destToBeAppliedLattice, first);
+					IConfigRep config = destMapping.get(destToBeAppliedLattice);
+					if (config == null)
+						destMapping.put(destToBeAppliedLattice, first);
+					else {
+						destMapping.put(destToBeAppliedLattice, ((ILazyConfigRep)config).union(first));
+						mergeCounter++;
+					}
 				}
 			} else {
 				/*
@@ -208,8 +225,10 @@ public class ReversedLazyLiftedReachingDefinitions extends ForwardFlowAnalysis<U
 				IConfigRep config = destMapping.get(sourceFlowSet);
 				if (config == null)
 					destMapping.put(sourceFlowSet, lazyConfig);
-				else
+				else {
 					destMapping.put(sourceFlowSet, ((ILazyConfigRep)config).union(lazyConfig));
+					mergeCounter++;
+				}
 			}
 		}
 		// #ifdef METRICS

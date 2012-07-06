@@ -98,6 +98,7 @@ public class WholeLineReversedLazyReachingDefinitions extends BodyTransformer {
 //			this.sink.flow(body, RD_REVERSED_LAZY_MEM, FlowSetUtils.lazyMemoryUnits(body, lazyReachingDefinitions, true, 1, configTag.getConfigReps().iterator().next().size()));
 			this.sink.flow(body, RD_REVERSED_LAZY_SHARING_DEGREE, FlowSetUtils.averageSharingDegree(body, reversedLazyReachingDefinitions));
 			this.sink.flow(body, RD_REVERSED_LAZY_FLOWTHROUGH_COUNTER, ReversedLazyLiftedReachingDefinitions.getFlowThroughCounter());
+			this.sink.flow(body, "rd (a5) merge", ReversedLazyLiftedReachingDefinitions.getMergeCounter());
 			ReversedLazyLiftedReachingDefinitions.reset();
 		}
 

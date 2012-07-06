@@ -97,6 +97,7 @@ public class WholeLineReversedLazyUninitializedVariables extends BodyTransformer
 //			this.sink.flow(body, UV_REVERSED_LAZY_MEM, FlowSetUtils.lazyMemoryUnits(body, lazyReachingDefinitions, true, 1, configTag.getConfigReps().iterator().next().size()));
 			this.sink.flow(body, UV_REVERSED_LAZY_SHARING_DEGREE, FlowSetUtils.averageSharingDegree(body, reversedLazyReachingDefinitions));
 			this.sink.flow(body, UV_REVERSED_LAZY_FLOWTHROUGH_COUNTER, ReversedLazyLiftedUninitializedVariables.getFlowThroughCounter());
+			this.sink.flow(body, "uv (a5) merge", ReversedLazyLiftedUninitializedVariables.getMergecounter());
 			ReversedLazyLiftedUninitializedVariables.reset();
 		}
 		this.sink.flow(body, "uv (a5)", endAnalysis - startAnalysis);
