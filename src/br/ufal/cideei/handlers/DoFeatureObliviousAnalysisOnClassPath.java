@@ -42,7 +42,9 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import soot.PackManager;
 import soot.Scene;
 import soot.Transform;
+import br.ufal.cideei.features.AlloyConfigurationCheck;
 import br.ufal.cideei.features.CIDEFeatureExtracterFactory;
+import br.ufal.cideei.features.FeatureSetChecker;
 import br.ufal.cideei.features.IFeatureExtracter;
 import br.ufal.cideei.soot.SootManager;
 import br.ufal.cideei.soot.analyses.wholeline.WholeLineObliviousReachingDefinitionsAnalysis;
@@ -126,7 +128,14 @@ public class DoFeatureObliviousAnalysisOnClassPath extends AbstractHandler {
 			final int times = 10;
 			for (int i = 0; i < times; i++) {
 				// #ifdef METRICS
-				sink = new MetricsSink(new MetricsTable(new File(System.getProperty("user.home") + File.separator + javaProject.getElementName().trim().toLowerCase().replace(' ', '-') + "-fo.xls")));
+				String sinkFile = System.getProperty("user.home") + File.separator + javaProject.getElementName().trim().toLowerCase().replace(' ', '-') + "-fo";
+				// #ifdef LAZY
+					sinkFile += "-lazy";
+				// #endif
+				// #ifdef FEATUREMODEL
+//@						sinkFile += "-fm";
+				// #endif
+				sink = new MetricsSink(new MetricsTable(new File(sinkFile + ".xls")));
 				// #endif
 				
 				this.addPacks(javaProject, entry, libsPaths.toString());
@@ -203,16 +212,30 @@ public class DoFeatureObliviousAnalysisOnClassPath extends AbstractHandler {
 			}
 		}
 		Scene.v().loadNecessaryClasses();
+		
+		AlloyConfigurationCheck alloyConfigurationCheck = null;
+		// #ifdef FEATUREMODEL
+//@		try {
+//@			String absolutePath = javaProject.getResource().getLocation().toFile().getAbsolutePath();
+//@			alloyConfigurationCheck = new AlloyConfigurationCheck(absolutePath + File.separator  + "fm.als");
+//@		} catch (CannotReadAlloyFileException e) {
+//@			e.printStackTrace();
+//@			return;
+//@		}
+		// #endif
 
-		addPacks(classPath, extracter);
+		addPacks(classPath, extracter, alloyConfigurationCheck);
 
 		SootManager.runPacks(extracter);
 	}
 
-	private void addPacks(String classPath, IFeatureExtracter extracter) {
+	private void addPacks(String classPath, IFeatureExtracter extracter, FeatureSetChecker checker) {
 		Transform instrumentation = new Transform("jtp.fminst", new FeatureModelInstrumentorTransformer(extracter, classPath)
 		// #ifdef METRICS
 				.setMetricsSink(sink)
+		// #endif
+		// #ifdef FEATUREMODEL
+//@				.setFeatureModelChecker(checker)
 		// #endif
 		);
 		PackManager.v().getPack("jtp").add(instrumentation);
