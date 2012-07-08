@@ -59,19 +59,24 @@ public class WholeLineObliviousUninitializedVariablesAnalysis extends BodyTransf
 
 	@Override
 	protected void internalTransform(Body body, String phase, Map options) {
-		long totalAnalysis = 0;
 
-		long startAnalysis = 0;
-		long endAnalysis = 0;
+		ProfilingTag profilingTag = (ProfilingTag) body.getTag("ProfilingTag");
+		profilingTag.setPreprocessingTime(0);
 
 		ConfigTag configTag = (ConfigTag) body.getTag(ConfigTag.CONFIG_TAG_NAME);
+		// #ifdef LAZY
+		if (true)
+			throw new IllegalStateException("Feature oblivious analysis in lazy mode not supported");
+		// #endif
 
-		int maximumBodySize = 0;
-		int minimalBodySize = 0;
-
-		SimpleUninitializedVariableAnalysis analysis = null;
+		long totalAnalysis = 0;
 
 		if (configTag.size() > 1) {
+			int maximumBodySize = 0;
+			Body maximumBody = null;
+			int minimalBodySize = 0;
+			Body minimalBody = null;
+			
 			Set<IConfigRep> configs = configTag.getConfigReps();
 			for (IConfigRep config : configs) {
 
@@ -93,53 +98,62 @@ public class WholeLineObliviousUninitializedVariablesAnalysis extends BodyTransf
 				 * If the body size is 0, then cannot continue. Store maximum and minimal size.
 				 */
 				int newBodySize = newBodyUnits.size();
-				if (newBodySize == 0) {
-					continue;
-				} else {
-					if (newBodySize > maximumBodySize) {
-						maximumBodySize = newBodySize;
-					}
-					if (newBodySize < minimalBodySize) {
-						minimalBodySize = newBodySize;
-					}
+
+				if (newBodySize > maximumBodySize) {
+					maximumBodySize = newBodySize;
+					maximumBody = newBody;
 				}
-
-				UnitGraph newBodyGraph = new BriefUnitGraph(body);
-
-				// #ifdef METRICS
-				startAnalysis = System.nanoTime();
-				// #endif
-				analysis = new SimpleUninitializedVariableAnalysis(newBodyGraph);
-				// #ifdef METRICS
-				endAnalysis = System.nanoTime();
-				totalAnalysis += (endAnalysis - startAnalysis);
-				// #endif
+				if (newBodySize < minimalBodySize && newBodySize > 0) {
+					minimalBodySize = newBodySize;
+					minimalBody = newBody;
+				}
 			}
+			
+			if (minimalBody == null) {
+				minimalBody = body;
+				minimalBodySize = body.getUnits().size();
+			}
+			
+			// #ifdef METRICS
+			long maximumAnalysis;
+			{
+				UnitGraph maximumBodyGraph = new BriefUnitGraph(maximumBody);
+				long startAnalysis = System.nanoTime();
+				new SimpleUninitializedVariableAnalysis(maximumBodyGraph);
+				long endAnalysis = System.nanoTime();
+				maximumAnalysis = (endAnalysis - startAnalysis);
+			}
+			
+			long minimumAnalysis;
+			{
+				UnitGraph minimalBodyGraph = new BriefUnitGraph(minimalBody);
+				long startAnalysis = System.nanoTime();
+				new SimpleUninitializedVariableAnalysis(minimalBodyGraph);
+				long endAnalysis = System.nanoTime();
+				minimumAnalysis = (endAnalysis - startAnalysis);
+			}
+			
+			totalAnalysis = (maximumAnalysis + minimumAnalysis) / 2;
+			
+			double minimalProportionalJimplificationTime = (minimalBodySize * profilingTag.getJimplificationTime()) / maximumBodySize;
+			profilingTag.setJimplificationTime((profilingTag.getJimplificationTime() + Math.round(minimalProportionalJimplificationTime)) / 2);
+			// #endif
 		} else {
 			UnitGraph bodyGraph = new BriefUnitGraph(body);
 			// #ifdef METRICS
-			startAnalysis = System.nanoTime();
+			long startAnalysis = System.nanoTime();
 			// #endif
-			analysis = new SimpleUninitializedVariableAnalysis(bodyGraph);
+			SimpleUninitializedVariableAnalysis simpleUninitializedVariables = new SimpleUninitializedVariableAnalysis(bodyGraph);
 			// #ifdef METRICS
-			endAnalysis = System.nanoTime();
+			long endAnalysis = System.nanoTime();
 			totalAnalysis = endAnalysis - startAnalysis;
+			
+			this.sink.flow(body, "UV A1 flowthrough time", simpleUninitializedVariables.getFlowThroughTime());
+			this.sink.flow(body, "UV A1 flowthrough", simpleUninitializedVariables.getFlowThroughCounter());
 			// #endif
 		}
 
-		// #ifdef METRICS
-		this.sink.flow(body, "UV A1 flowthrough time", analysis.getFlowThroughTime());
-		this.sink.flow(body, "UV A1 flowthrough", analysis.getFlowThroughCounter());
-		ProfilingTag profilingTag = (ProfilingTag) body.getTag("ProfilingTag");
 		profilingTag.setUvAnalysisTime(totalAnalysis);
-		profilingTag.setPreprocessingTime(0);
-
-		// minimal = (minSize* maxTime)/maxSize
-		if (minimalBodySize != 0 && maximumBodySize != 0) {
-			double minimalProportionalJimplificationTime = (minimalBodySize * profilingTag.getJimplificationTime()) / maximumBodySize;
-			profilingTag.setJimplificationTime((profilingTag.getJimplificationTime() + Math.round(minimalProportionalJimplificationTime)) / 2);
-		}
-		// #endif
 	}
 
 	public Transformer setMetricsSink(MetricsSink sink) {

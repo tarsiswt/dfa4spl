@@ -62,18 +62,17 @@ public class FeatureObliviousEstimative extends BodyTransformer {
 		long rdAnalysisTime = profilingTag.getRdAnalysisTime();
 		long uvAnalysisTime = profilingTag.getUvAnalysisTime();
 		long jimplificationTime = profilingTag.getJimplificationTime();
+		
+		if (noOfConfigurations < 1)
+			throw new IllegalStateException("#configurations < 1 for method " + body.getMethod().getName());
 
 		sink.flow(body, PREPROCESSING, profilingTag.getPreprocessingTime());
 		sink.flow(body, FeatureObliviousEstimative.CLASS_PROPERTY, body.getMethod().getDeclaringClass().getName());
 		sink.flow(body, FeatureObliviousEstimative.CONFIGURATIONS_SIZE, noOfConfigurations);
 		sink.flow(body, FeatureObliviousEstimative.NUMBER_OF_UNITS, body.getUnits().size());
-		sink.flow(body, FeatureObliviousEstimative.REACHING_DEFINITIONS, rdAnalysisTime);
-		sink.flow(body, FeatureObliviousEstimative.UNINITIALIZED_VARIABLES, uvAnalysisTime);
-		if (noOfConfigurations > 1) {
-			sink.flow(body, FeatureObliviousEstimative.JIMPLIFICATION, noOfConfigurations * jimplificationTime);
-		} else {
-			sink.flow(body, FeatureObliviousEstimative.JIMPLIFICATION, jimplificationTime);
-		}
+		sink.flow(body, FeatureObliviousEstimative.REACHING_DEFINITIONS, rdAnalysisTime * noOfConfigurations);
+		sink.flow(body, FeatureObliviousEstimative.UNINITIALIZED_VARIABLES, uvAnalysisTime * noOfConfigurations);
+		sink.flow(body, FeatureObliviousEstimative.JIMPLIFICATION, noOfConfigurations * jimplificationTime);
 	}
 }
 // #endif
