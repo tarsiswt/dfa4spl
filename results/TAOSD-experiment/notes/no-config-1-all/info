@@ -1,0 +1,5 @@
+in this experiment with maq-marcelo data, the analysis time for the Lampiro benchmark was set to 0 if the number of configurations of the method was 1 (meaning it has no features).
+
+The data for the other benchmarks remain the same, but the resume for Lampiro was (re)generated and merged into the resume.xls, replacing the old data for Lampiro.
+
+The R-script that generates statistical data had to be run again.
