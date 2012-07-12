@@ -1,0 +1,7 @@
+These sheets are based on the ones in the files: maq-marcelo-rev-132-nofm.rar and maq-marcelo-rev-132-fm.rar, both are the results of the experiment for reviion 132, without and with the FM respectively.
+
+The sheets are packed into the file fs.rar for publishing in the companion website.
+
+The sheets for BerkeleyDB and Lampiro with the FM are missing because there seems to be a bug in the implementation of the FM checking.
+
+In the root folder are the sheets without the FM. In the fm folder are the sheets with the FM.

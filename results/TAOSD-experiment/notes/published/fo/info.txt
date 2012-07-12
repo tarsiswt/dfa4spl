@@ -1,0 +1,7 @@
+These sheets are based on the ones in the files: maq-marcelo-rev-136-fo.tar.bz2 and maq-marcelo-rev-135-fm-fo.tar.bz2, which are the results of the experiment for reviion 136 and 135 respectively.
+
+The sheets are packed into the file fo.rar for publishing in the companion website.
+
+The sheets for BerkeleyDB and Lampiro are missing because there seems to be a bug in the implementation of the FM checking.
+
+In the root folder are the sheets without the FM. In the fm folder are the sheets with the FM.
