@@ -132,104 +132,104 @@ public class FlowSetUtils {
 	}
 	
 	//#ifdef LAZY
-	/**
-	 * Calculates the average sharing degree of lazy flow sets.
-	 * @param body
-	 * @param analysis
-	 * @return
-	 */
-	public static <A extends FlowSet> double averageSharingDegree(Body body, ForwardFlowAnalysis<Unit, A> analysis) {
-		ConfigTag tag = (ConfigTag) body.getTag(ConfigTag.CONFIG_TAG_NAME);
-		ILazyConfigRep lazyConfig = (ILazyConfigRep) tag.getConfigReps().iterator().next();
-
-		double noOfConfigs = lazyConfig.size();
-
-		List<Double> sharingDegrees = new ArrayList<Double>();
-		PatchingChain<Unit> units = body.getUnits();
-		for (Unit unit : units) {
-			FlowSet flowBefore = analysis.getFlowBefore(unit);
-			FlowSet flowAfter = analysis.getFlowAfter(unit);
-
-			sharingDegrees.add(noOfConfigs / flowBefore.size());
-			sharingDegrees.add(noOfConfigs / flowAfter.size());
-		}
-
-		double accumulator = 0.0;
-		for (Double degree : sharingDegrees) {
-			accumulator += degree;
-		}
-
-		return accumulator / sharingDegrees.size();
-	}
-
-	/**
-	 * Creates a PBM pixel matrix of an lazy analysis.
-	 * 
-	 * @param body
-	 * @param analysis
-	 * @param fileName
-	 * @return
-	 */
-	public static File pbm(Body body, ForwardFlowAnalysis<Unit, MapLiftedFlowSet> analysis, String fileName) {
-		ConfigTag tag = (ConfigTag) body.getTag(ConfigTag.CONFIG_TAG_NAME);
-		final int MAX_WIDTH = tag.getConfigReps().iterator().next().size();
-		List<LinkedList<Integer>> matrix = createPixMatrix(body, analysis, MAX_WIDTH);
-
-		createPixMatrix(body, analysis, MAX_WIDTH);
-
-		OutputStream streamOut;
-		try {
-			streamOut = new FileOutputStream(fileName);
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-			return null;
-		}
-		PrintWriter writerOut = new PrintWriter(new OutputStreamWriter(streamOut));
-		writerOut.println("P2");
-		writerOut.println(matrix.get(0).size() + " " + matrix.size());
-		writerOut.println("10");
-		for (LinkedList<Integer> row : matrix) {
-			for (Integer pix : row) {
-				writerOut.print(pix);
-				writerOut.print(' ');
-			}
-			writerOut.println("");
-		}
-		writerOut.flush();
-		try {
-			streamOut.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return null;
-		}
-		return new File(fileName);
-	}
-
-	private static List<LinkedList<Integer>> createPixMatrix(Body body, ForwardFlowAnalysis<Unit, MapLiftedFlowSet> analysis, final int MAX_WIDTH) {
-		List<LinkedList<Integer>> matrix = new ArrayList<LinkedList<Integer>>();
-		int index = 0, size = 0;
-		PatchingChain<Unit> units = body.getUnits();
-		for (Unit unit : units) {
-			size = analysis.getFlowAfter(unit).size();
-
-			LinkedList<Integer> row = new LinkedList<Integer>();
-			for (index = 0; index < size; index++) {
-				row.add(0);
-			}
-			boolean headTailFlip = true;
-			while (row.size() != MAX_WIDTH) {
-				if (headTailFlip)
-					row.addFirst(9);
-				else
-					row.addLast(9);
-
-				headTailFlip = !headTailFlip;
-			}
-			matrix.add(row);
-		}
-		return matrix;
-	}
-	
+//@	/**
+//@	 * Calculates the average sharing degree of lazy flow sets.
+//@	 * @param body
+//@	 * @param analysis
+//@	 * @return
+//@	 */
+//@	public static <A extends FlowSet> double averageSharingDegree(Body body, ForwardFlowAnalysis<Unit, A> analysis) {
+//@		ConfigTag tag = (ConfigTag) body.getTag(ConfigTag.CONFIG_TAG_NAME);
+//@		ILazyConfigRep lazyConfig = (ILazyConfigRep) tag.getConfigReps().iterator().next();
+//@
+//@		double noOfConfigs = lazyConfig.size();
+//@
+//@		List<Double> sharingDegrees = new ArrayList<Double>();
+//@		PatchingChain<Unit> units = body.getUnits();
+//@		for (Unit unit : units) {
+//@			FlowSet flowBefore = analysis.getFlowBefore(unit);
+//@			FlowSet flowAfter = analysis.getFlowAfter(unit);
+//@
+//@			sharingDegrees.add(noOfConfigs / flowBefore.size());
+//@			sharingDegrees.add(noOfConfigs / flowAfter.size());
+//@		}
+//@
+//@		double accumulator = 0.0;
+//@		for (Double degree : sharingDegrees) {
+//@			accumulator += degree;
+//@		}
+//@
+//@		return accumulator / sharingDegrees.size();
+//@	}
+//@
+//@	/**
+//@	 * Creates a PBM pixel matrix of an lazy analysis.
+//@	 * 
+//@	 * @param body
+//@	 * @param analysis
+//@	 * @param fileName
+//@	 * @return
+//@	 */
+//@	public static File pbm(Body body, ForwardFlowAnalysis<Unit, MapLiftedFlowSet> analysis, String fileName) {
+//@		ConfigTag tag = (ConfigTag) body.getTag(ConfigTag.CONFIG_TAG_NAME);
+//@		final int MAX_WIDTH = tag.getConfigReps().iterator().next().size();
+//@		List<LinkedList<Integer>> matrix = createPixMatrix(body, analysis, MAX_WIDTH);
+//@
+//@		createPixMatrix(body, analysis, MAX_WIDTH);
+//@
+//@		OutputStream streamOut;
+//@		try {
+//@			streamOut = new FileOutputStream(fileName);
+//@		} catch (FileNotFoundException e) {
+//@			e.printStackTrace();
+//@			return null;
+//@		}
+//@		PrintWriter writerOut = new PrintWriter(new OutputStreamWriter(streamOut));
+//@		writerOut.println("P2");
+//@		writerOut.println(matrix.get(0).size() + " " + matrix.size());
+//@		writerOut.println("10");
+//@		for (LinkedList<Integer> row : matrix) {
+//@			for (Integer pix : row) {
+//@				writerOut.print(pix);
+//@				writerOut.print(' ');
+//@			}
+//@			writerOut.println("");
+//@		}
+//@		writerOut.flush();
+//@		try {
+//@			streamOut.close();
+//@		} catch (IOException e) {
+//@			// TODO Auto-generated catch block
+//@			e.printStackTrace();
+//@			return null;
+//@		}
+//@		return new File(fileName);
+//@	}
+//@
+//@	private static List<LinkedList<Integer>> createPixMatrix(Body body, ForwardFlowAnalysis<Unit, MapLiftedFlowSet> analysis, final int MAX_WIDTH) {
+//@		List<LinkedList<Integer>> matrix = new ArrayList<LinkedList<Integer>>();
+//@		int index = 0, size = 0;
+//@		PatchingChain<Unit> units = body.getUnits();
+//@		for (Unit unit : units) {
+//@			size = analysis.getFlowAfter(unit).size();
+//@
+//@			LinkedList<Integer> row = new LinkedList<Integer>();
+//@			for (index = 0; index < size; index++) {
+//@				row.add(0);
+//@			}
+//@			boolean headTailFlip = true;
+//@			while (row.size() != MAX_WIDTH) {
+//@				if (headTailFlip)
+//@					row.addFirst(9);
+//@				else
+//@					row.addLast(9);
+//@
+//@				headTailFlip = !headTailFlip;
+//@			}
+//@			matrix.add(row);
+//@		}
+//@		return matrix;
+//@	}
+//@	
 	//#endif
 }

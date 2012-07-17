@@ -131,7 +131,7 @@ public class DoFeatureObliviousAnalysisOnClassPath extends AbstractHandler {
 				// #ifdef METRICS
 				String sinkFile = System.getProperty("user.home") + File.separator + javaProject.getElementName().trim().toLowerCase().replace(' ', '-') + "-fo";
 				// #ifdef LAZY
-					sinkFile += "-lazy";
+//@					sinkFile += "-lazy";
 				// #endif
 				// #ifdef FEATUREMODEL
 //@						sinkFile += "-fm";

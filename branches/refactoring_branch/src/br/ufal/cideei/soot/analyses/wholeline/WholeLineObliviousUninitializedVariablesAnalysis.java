@@ -65,8 +65,8 @@ public class WholeLineObliviousUninitializedVariablesAnalysis extends BodyTransf
 
 		ConfigTag configTag = (ConfigTag) body.getTag(ConfigTag.CONFIG_TAG_NAME);
 		// #ifdef LAZY
-		if (true)
-			throw new IllegalStateException("Feature oblivious analysis in lazy mode not supported");
+//@		if (true)
+//@			throw new IllegalStateException("Feature oblivious analysis in lazy mode not supported");
 		// #endif
 
 		long totalAnalysis = 0;

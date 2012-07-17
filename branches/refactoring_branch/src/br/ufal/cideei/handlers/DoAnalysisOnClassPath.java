@@ -50,19 +50,19 @@ import br.ufal.cideei.features.IFeatureExtracter;
 import br.ufal.cideei.soot.SootManager;
 
 //#ifdef LAZY
-
-import br.ufal.cideei.soot.analyses.wholeline.WholeLineLazyReachingDefinitions;
-import br.ufal.cideei.soot.analyses.wholeline.WholeLineLazyUninitializedVariables;
-import br.ufal.cideei.soot.analyses.wholeline.WholeLineReversedLazyReachingDefinitions;
-import br.ufal.cideei.soot.analyses.wholeline.WholeLineReversedLazyUninitializedVariables;
-
+//@
+//@import br.ufal.cideei.soot.analyses.wholeline.WholeLineLazyReachingDefinitions;
+//@import br.ufal.cideei.soot.analyses.wholeline.WholeLineLazyUninitializedVariables;
+//@import br.ufal.cideei.soot.analyses.wholeline.WholeLineReversedLazyReachingDefinitions;
+//@import br.ufal.cideei.soot.analyses.wholeline.WholeLineReversedLazyUninitializedVariables;
+//@
 //#else
-//@
-//@import br.ufal.cideei.soot.analyses.wholeline.WholeLineLiftedReachingDefinitions;
-//@import br.ufal.cideei.soot.analyses.wholeline.WholeLineLiftedUninitializedVariableAnalysis;
-//@import br.ufal.cideei.soot.analyses.wholeline.WholeLineRunnerReachingDefinitions;
-//@import br.ufal.cideei.soot.analyses.wholeline.WholeLineRunnerUninitializedVariable;
-//@
+
+import br.ufal.cideei.soot.analyses.wholeline.WholeLineLiftedReachingDefinitions;
+import br.ufal.cideei.soot.analyses.wholeline.WholeLineLiftedUninitializedVariableAnalysis;
+import br.ufal.cideei.soot.analyses.wholeline.WholeLineRunnerReachingDefinitions;
+import br.ufal.cideei.soot.analyses.wholeline.WholeLineRunnerUninitializedVariable;
+
 //#endif
 
 //#ifdef METRICS
@@ -153,7 +153,7 @@ public class DoAnalysisOnClassPath extends AbstractHandler {
 				// #ifdef METRICS
 				String sinkFile = System.getProperty("user.home") + File.separator + javaProject.getElementName().trim().toLowerCase().replace(' ', '-') + "-fs";
 				// #ifdef LAZY
-					sinkFile += "-lazy";
+//@					sinkFile += "-lazy";
 				// #endif
 				// #ifdef FEATUREMODEL
 //@						sinkFile += "-fm";
@@ -274,64 +274,64 @@ public class DoAnalysisOnClassPath extends AbstractHandler {
 		PackManager.v().getPack("jtp").add(instrumentation);
 
 		// #ifdef LAZY
-		 Transform reachingDefLazy = new Transform("jap.rdlazy", WholeLineLazyReachingDefinitions.v()
+//@		 Transform reachingDefLazy = new Transform("jap.rdlazy", WholeLineLazyReachingDefinitions.v()
 		// #ifdef METRICS
-		 .setMetricsSink(sink)
+//@		 .setMetricsSink(sink)
 		// #endif
-		 );
-		 PackManager.v().getPack("jap").add(reachingDefLazy);
-		
-		 Transform reachingDefReversedLazy = new Transform("jap.rdrevlazy", WholeLineReversedLazyReachingDefinitions.v()
+//@		 );
+//@		 PackManager.v().getPack("jap").add(reachingDefLazy);
+//@		
+//@		 Transform reachingDefReversedLazy = new Transform("jap.rdrevlazy", WholeLineReversedLazyReachingDefinitions.v()
 		// #ifdef METRICS
-		 .setMetricsSink(sink)
+//@		 .setMetricsSink(sink)
 		// #endif
-		 );
-		 PackManager.v().getPack("jap").add(reachingDefReversedLazy);
-		
-		 Transform uninitVarsLazy = new Transform("jap.uninitvarlazy", WholeLineLazyUninitializedVariables.v()
+//@		 );
+//@		 PackManager.v().getPack("jap").add(reachingDefReversedLazy);
+//@		
+//@		 Transform uninitVarsLazy = new Transform("jap.uninitvarlazy", WholeLineLazyUninitializedVariables.v()
 		// #ifdef METRICS
-		 .setMetricsSink(sink)
+//@		 .setMetricsSink(sink)
 		// #endif
-		 );
-		 PackManager.v().getPack("jap").add(uninitVarsLazy);
-
-		 Transform uninitVarsReversedLazy = new Transform("jap.uninitvarrevlazy", WholeLineReversedLazyUninitializedVariables.v()
+//@		 );
+//@		 PackManager.v().getPack("jap").add(uninitVarsLazy);
+//@
+//@		 Transform uninitVarsReversedLazy = new Transform("jap.uninitvarrevlazy", WholeLineReversedLazyUninitializedVariables.v()
 		// #ifdef METRICS
-		 .setMetricsSink(sink)
+//@		 .setMetricsSink(sink)
 		// #endif
-		 );
-		 PackManager.v().getPack("jap").add(uninitVarsReversedLazy);
-		
+//@		 );
+//@		 PackManager.v().getPack("jap").add(uninitVarsReversedLazy);
+//@		
 		// #else
-//@
-//@		Transform reachingDefRunner = new Transform("jap.rdrunner", WholeLineRunnerReachingDefinitions.v()
+
+		Transform reachingDefRunner = new Transform("jap.rdrunner", WholeLineRunnerReachingDefinitions.v()
 		// #ifdef METRICS
-//@				.setMetricsSink(sink)
+				.setMetricsSink(sink)
 		// #endif
-//@		);
-//@		PackManager.v().getPack("jap").add(reachingDefRunner);
-//@
-//@		Transform reachingDefLifted = new Transform("jap.rdlifted", new WholeLineLiftedReachingDefinitions()
+		);
+		PackManager.v().getPack("jap").add(reachingDefRunner);
+
+		Transform reachingDefLifted = new Transform("jap.rdlifted", new WholeLineLiftedReachingDefinitions()
 		// #ifdef METRICS
-//@				.setMetricsSink(sink)
+				.setMetricsSink(sink)
 		// #endif
-//@		);
-//@		PackManager.v().getPack("jap").add(reachingDefLifted);
-//@
-//@		Transform uninitVarsLifted = new Transform("jap.uninitvarlifted", new WholeLineLiftedUninitializedVariableAnalysis()
+		);
+		PackManager.v().getPack("jap").add(reachingDefLifted);
+
+		Transform uninitVarsLifted = new Transform("jap.uninitvarlifted", new WholeLineLiftedUninitializedVariableAnalysis()
 		// #ifdef METRICS
-//@				.setMetricsSink(sink)
+				.setMetricsSink(sink)
 		// #endif
-//@		);
-//@		PackManager.v().getPack("jap").add(uninitVarsLifted);
-//@
-//@		Transform uninitVarsRunner = new Transform("jap.uninitvarrunner", WholeLineRunnerUninitializedVariable.v()
+		);
+		PackManager.v().getPack("jap").add(uninitVarsLifted);
+
+		Transform uninitVarsRunner = new Transform("jap.uninitvarrunner", WholeLineRunnerUninitializedVariable.v()
 		// #ifdef METRICS
-//@				.setMetricsSink(sink)
+				.setMetricsSink(sink)
 		// #endif
-//@		);
-//@		PackManager.v().getPack("jap").add(uninitVarsRunner);
-//@
+		);
+		PackManager.v().getPack("jap").add(uninitVarsRunner);
+
 		// #endif
 
 		// #ifdef METRICS

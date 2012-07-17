@@ -210,7 +210,7 @@ public class MetricsTable {
 		boolean lazy = false;
 		boolean fm = false;
 		// #ifdef LAZY
-		lazy = true;
+//@		lazy = true;
 		// #endif
 		// #ifdef FEATUREMODEL
 //@		fm = true;

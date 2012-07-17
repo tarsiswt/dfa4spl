@@ -55,10 +55,10 @@ import br.ufal.cideei.soot.instrument.bitrep.SetBitConfigRep;
 import br.ufal.cideei.util.CachedICompilationUnitParser;
 
 //#ifdef LAZY
-import java.util.ArrayList;
-import java.util.List;
-import br.ufal.cideei.util.SetUtil;
-
+//@import java.util.ArrayList;
+//@import java.util.List;
+//@import br.ufal.cideei.util.SetUtil;
+//@
 //#endif
 
 import br.ufal.cideei.util.count.AbstractMetricsSink;
@@ -161,20 +161,20 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 		BidiMap allPresentFeaturesId = new DualHashBidiMap();
 		FeatureTag emptyFeatureTag;
 		// #ifdef LAZY
-		BitVectorFeatureRep emptyBitVectorRep = new BitVectorFeatureRep(Collections.EMPTY_SET, allPresentFeaturesId);
-		emptyFeatureTag = new FeatureTag(emptyBitVectorRep);
-		
+//@		BitVectorFeatureRep emptyBitVectorRep = new BitVectorFeatureRep(Collections.EMPTY_SET, allPresentFeaturesId);
+//@		emptyFeatureTag = new FeatureTag(emptyBitVectorRep);
+//@		
 		// #else
-//@		emptyFeatureTag = new FeatureTag(new BitFeatureRep(Collections.EMPTY_SET, allPresentFeaturesId));
-//@
+		emptyFeatureTag = new FeatureTag(new BitFeatureRep(Collections.EMPTY_SET, allPresentFeaturesId));
+
 		// #endif
 
 		// #ifdef LAZY
-		/*
-		 * in the lazy approach, the representation can only be consolidate after all features have been discovery. All
-		 * IFeatureRep will stored so that it is possible to consolidate later.
-		 */
-		List<BitVectorFeatureRep> generateVectorLater = new ArrayList<BitVectorFeatureRep>();
+//@		/*
+//@		 * in the lazy approach, the representation can only be consolidate after all features have been discovery. All
+//@		 * IFeatureRep will stored so that it is possible to consolidate later.
+//@		 */
+//@		List<BitVectorFeatureRep> generateVectorLater = new ArrayList<BitVectorFeatureRep>();
 		// #endif
 
 		int idGen = 1;
@@ -202,14 +202,14 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 					IFeatureRep featRep;
 					FeatureTag featureTag;
 					// #ifdef LAZY
-					featRep = new BitVectorFeatureRep(nextUnitColors, allPresentFeaturesId);
-					generateVectorLater.add((BitVectorFeatureRep) featRep);
-					featureTag = new FeatureTag(featRep);
-					nextUnit.addTag(featureTag);
+//@					featRep = new BitVectorFeatureRep(nextUnitColors, allPresentFeaturesId);
+//@					generateVectorLater.add((BitVectorFeatureRep) featRep);
+//@					featureTag = new FeatureTag(featRep);
+//@					nextUnit.addTag(featureTag);
 					// #else
-//@					
-//@					 featRep = new BitFeatureRep(nextUnitColors, allPresentFeaturesId);
-//@					
+					
+					 featRep = new BitFeatureRep(nextUnitColors, allPresentFeaturesId);
+					
 					// #endif
 					featureTag = new FeatureTag(featRep);
 					nextUnit.addTag(featureTag);
@@ -221,13 +221,13 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 		UnmodifiableBidiMap unmodAllPresentFeaturesId = (UnmodifiableBidiMap) UnmodifiableBidiMap.decorate(allPresentFeaturesId);
 
 		// #ifdef LAZY
-		/*
-		 * generate vectors
-		 */
-
-		for (BitVectorFeatureRep featureRep : generateVectorLater) {
-			featureRep.generateBitVector(idGen);
-		}
+//@		/*
+//@		 * generate vectors
+//@		 */
+//@
+//@		for (BitVectorFeatureRep featureRep : generateVectorLater) {
+//@			featureRep.generateBitVector(idGen);
+//@		}
 		// #endif
 
 		// #ifdef METRICS
@@ -241,28 +241,28 @@ public class FeatureModelInstrumentorTransformer extends BodyTransformer {
 		ConfigTag configTag;
 
 		// #ifdef LAZY
-
-		BitVectorConfigRep localConfigurations = BitVectorConfigRep.localConfigurations(idGen, unmodAllPresentFeaturesId
+//@
+//@		BitVectorConfigRep localConfigurations = BitVectorConfigRep.localConfigurations(idGen, unmodAllPresentFeaturesId
 				// #ifdef FEATUREMODEL
 //@				, checker
 				// #endif
-				);
-		emptyBitVectorRep.generateBitVector(idGen);
-		
-		Set<IConfigRep> lazyConfig = new HashSet<IConfigRep>();
-		lazyConfig.add(localConfigurations);
-		configTag = new ConfigTag(lazyConfig);
-		body.addTag(configTag);
-
-		// #else
+//@				);
+//@		emptyBitVectorRep.generateBitVector(idGen);
 //@		
-//@		configTag = new ConfigTag(BitConfigRep.localConfigurations(idGen, unmodAllPresentFeaturesId
+//@		Set<IConfigRep> lazyConfig = new HashSet<IConfigRep>();
+//@		lazyConfig.add(localConfigurations);
+//@		configTag = new ConfigTag(lazyConfig);
+//@		body.addTag(configTag);
+//@
+		// #else
+		
+		configTag = new ConfigTag(BitConfigRep.localConfigurations(idGen, unmodAllPresentFeaturesId
 		// #ifdef FEATUREMODEL
 //@		, checker
 		// #endif
-//@		).getConfigs());
-//@		body.addTag(configTag);
-//@		
+		).getConfigs());
+		body.addTag(configTag);
+		
 		// #endif
 	}
 
